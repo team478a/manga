@@ -91,6 +91,6 @@ test("Marketplace Homeは公開一般作品とactive商品情報だけを読む"
   assert.doesNotMatch(page, /createAdminClient/);
   assert.doesNotMatch(
     page,
-    /\bfavorites?\b|\breviews?\b|\bratings?\b|\brankings?\b|\brecommendations?\b/i,
+    /\breviews?\b|\bratings?\b|\brankings?\b|\brecommendations?\b/i,
   );
 });

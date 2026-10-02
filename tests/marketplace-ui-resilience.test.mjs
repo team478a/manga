@@ -86,7 +86,7 @@ test("Phase UI-5でも未契約機能とProduction操作を追加しない", asy
 
   assert.doesNotMatch(
     combined,
-    /お気に入り|フォロー|レビュー|星評価|ランキング|急上昇|レコメンド|Continue Reading/,
+    /フォロー|レビュー|星評価|ランキング|急上昇|レコメンド|Continue Reading/,
   );
   assert.doesNotMatch(combined, /createAdminClient|\.update\(|\.insert\(|\.delete\(/);
 });

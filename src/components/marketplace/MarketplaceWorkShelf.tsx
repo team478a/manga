@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { MarketplaceWorkCard } from "./MarketplaceWorkCard";
+import type { MarketplaceFavoriteSnapshot } from "@/lib/marketplace-favorites";
 import type { MarketplaceCatalogSale } from "@/lib/marketplace-catalog";
 import type { MarketplaceHomeWork } from "@/lib/marketplace-home";
 
@@ -12,6 +13,7 @@ export function MarketplaceWorkShelf({
   saleByWork,
   linkHref = "/works",
   linkLabel = "すべて見る",
+  favoriteSnapshot,
 }: {
   title: string;
   description: string;
@@ -20,6 +22,7 @@ export function MarketplaceWorkShelf({
   saleByWork: Map<string, MarketplaceCatalogSale | null>;
   linkHref?: string;
   linkLabel?: string;
+  favoriteSnapshot?: MarketplaceFavoriteSnapshot;
 }) {
   if (!works.length) return null;
 
@@ -50,6 +53,15 @@ export function MarketplaceWorkShelf({
         {works.map((work) => (
           <MarketplaceWorkCard
             creatorName={creatorByWork.get(work.id) ?? "クリエイター"}
+            favoriteControl={
+              favoriteSnapshot
+                ? {
+                    availability: favoriteSnapshot.availability,
+                    isFavorite: favoriteSnapshot.workIds.has(work.id),
+                    returnTo: "/",
+                  }
+                : undefined
+            }
             key={work.id}
             sale={saleByWork.get(work.id) ?? null}
             work={work}

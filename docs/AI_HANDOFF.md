@@ -1,5 +1,18 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Marketplace Phase 2-1 お気に入り（あとで読む）（2026-10-02）
+
+- Branch `codex/marketplace-favorites-phase2-20261002`で、公開一般作品を購入権限と分離して本人だけが保存・解除・一覧確認できる最小機能を実装した。
+- Home／作品一覧／作品詳細は共通`MarketplaceFavoriteButton`と同じServer Actionを使用する。認証済み利用者の一覧は`/dashboard/favorites`で、loading／error／emptyを区別する。
+- DBは`marketplace_favorites`のbuyer-work一意関係、本人限定RLS、公開一般作品だけのINSERTを持つ。authenticatedにはSELECT／INSERT／DELETEだけを付与し、anon／UPDATEを許可しない。
+- 同一追加と存在しない解除は冪等。非公開化・成人区分へ変更された作品は一覧へ表示しない。本棚、Reader、Checkout、購入、注文、決済契約は変更しない。
+- migration未適用時は既存Marketplaceを壊さずお気に入り操作を隠す。Production migrationはこのPRで適用せず、merge後に別の明示承認を必要とする。
+- 件数公開、ランキング、通知、Creatorフォロー、レビュー、推薦、閲覧追跡、Continue Readingは対象外。
+- 集中31/31、Hub全1240/1240、migration／rollback静的93/93、Hub typecheck、ESLint、依存境界error 0（既知warning 2）、Production build、diff checkが成功した。詳細は`docs/MARKETPLACE_FAVORITES_PHASE2_20261002.md`。
+- Production作品・商品・注文・決済・Provider・creditは変更していない。次はDraft PRの全CI／Vercel成功で停止する。
+
+---
+
 ## 0.0 Marketplace Production空状態read-only受入れ（2026-10-02）
 
 - Draft PR #609のbranch `codex/marketplace-acceptance-blocker-20261002`で、ログイン済みChromeからProduction `https://app.mang-ai.com`へread-only接続した。利用者`tanaka`の認証は`/`、`/works`、`/dashboard/purchases`、`/dashboard/works`で維持された。

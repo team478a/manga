@@ -54,5 +54,5 @@ test("Creator sectionは作者表示に限定し未契約のFollowやReviewを�
 
   assert.match(page, /この作品のクリエイター/);
   assert.match(page, /\{creatorName\}/);
-  assert.doesNotMatch(page, /お気に入り|フォロー|レビュー|星評価|ランキング|急上昇/);
+  assert.doesNotMatch(page, /フォロー|レビュー|星評価|ランキング|急上昇/);
 });

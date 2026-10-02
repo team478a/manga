@@ -5,6 +5,7 @@ import { MarketplaceInlineError } from "@/components/marketplace/MarketplaceInli
 import { MarketplaceWorkCard } from "@/components/marketplace/MarketplaceWorkCard";
 import { inspectMarketplaceCheckoutMode } from "@/lib/checkout-mode";
 import { hasSupabaseEnv } from "@/lib/env";
+import { loadMarketplaceFavoriteSnapshot } from "@/lib/marketplace-favorites";
 import {
   hasActiveMarketplaceCatalogProduct,
   prioritizeMarketplaceCatalogSales,
@@ -18,7 +19,13 @@ import {
 import { createClient } from "@/lib/supabase/server";
 import type { Work } from "@/lib/types";
 
-type WorksSearchParams = { q?: string; tag?: string; sale?: string };
+type WorksSearchParams = {
+  q?: string;
+  tag?: string;
+  sale?: string;
+  favorite_error?: string;
+  favorite_message?: string;
+};
 type PublicCatalogWork = Work & {
   digital_products: MarketplaceCatalogProduct[] | null;
 };
@@ -119,6 +126,15 @@ export default async function WorksPage({
     new Set((tagRows ?? []).flatMap((row) => row.tags ?? [])),
   ).sort((a, b) => a.localeCompare(b, "ja"));
   const filtering = Boolean(keyword || selectedTag || saleOnly);
+  const favoriteSnapshot = await loadMarketplaceFavoriteSnapshot(
+    visibleWorks.map((work) => work.id),
+  );
+  const returnParams = new URLSearchParams();
+  if (keyword) returnParams.set("q", keyword);
+  if (selectedTag) returnParams.set("tag", selectedTag);
+  if (saleOnly) returnParams.set("sale", "active");
+  const returnQuery = returnParams.toString();
+  const returnTo = `/works${returnQuery ? `?${returnQuery}` : ""}`;
 
   return (
     <main className="marketplace-page">
@@ -139,6 +155,17 @@ export default async function WorksPage({
           selectedTag={selectedTag}
           tags={tags}
         />
+
+        {params.favorite_error ? (
+          <p className="mt-5 rounded-lg bg-red-50 p-4 text-sm text-red-700" role="alert">
+            {params.favorite_error}
+          </p>
+        ) : null}
+        {params.favorite_message ? (
+          <p className="mt-5 rounded-lg bg-emerald-50 p-4 text-sm text-emerald-800" role="status">
+            {params.favorite_message}
+          </p>
+        ) : null}
 
         <div className="mt-6 flex items-center justify-between gap-4">
           <p className="text-sm font-semibold text-stone-600">
@@ -164,6 +191,11 @@ export default async function WorksPage({
               return (
                 <MarketplaceWorkCard
                   creatorName={creatorByWork.get(work.id) ?? "クリエイター"}
+                  favoriteControl={{
+                    availability: favoriteSnapshot.availability,
+                    isFavorite: favoriteSnapshot.workIds.has(work.id),
+                    returnTo,
+                  }}
                   key={work.id}
                   sale={sale}
                   work={work}

@@ -1,5 +1,9 @@
 import Link from "next/link";
 import { MarketplaceCover } from "./MarketplaceCover";
+import {
+  MarketplaceFavoriteButton,
+  type MarketplaceFavoriteControl,
+} from "./MarketplaceFavoriteButton";
 import { yen } from "@/lib/format";
 import type { MarketplaceCatalogSale } from "@/lib/marketplace-catalog";
 import type { Work } from "@/lib/types";
@@ -8,13 +12,15 @@ export function MarketplaceWorkCard({
   work,
   sale,
   creatorName,
+  favoriteControl,
 }: {
   work: Work;
   sale: MarketplaceCatalogSale | null;
   creatorName: string;
+  favoriteControl?: MarketplaceFavoriteControl;
 }) {
   return (
-    <article className="group min-w-0">
+    <article className="group relative min-w-0">
       <Link
         className="block rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-4"
         href={`/works/${work.id}`}
@@ -59,6 +65,14 @@ export function MarketplaceWorkCard({
           </div>
         </div>
       </Link>
+      {favoriteControl ? (
+        <div className="absolute right-2 top-2 z-10">
+          <MarketplaceFavoriteButton
+            control={favoriteControl}
+            workId={work.id}
+          />
+        </div>
+      ) : null}
     </article>
   );
 }
