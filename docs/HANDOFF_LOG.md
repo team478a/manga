@@ -1,5 +1,16 @@
 # MANGAI AI Handoff Log
 
+## 2026-10-02 Codex: Marketplace UI-4 本棚
+
+- Branch `codex/marketplace-bookshelf-20261002`。Marketplace UI-3 commit `b1cb487b`上のstacked作業で、最新基準`5c775aeb`は通常mergeで取り込んだ。
+- `/dashboard/purchases`を表紙、作品タイトル、作者、漫画を読む、Download中心の本棚UIへ変更した。購入日・商品・価格、テスト購入、返金済み、ダウンロード回数も補助情報として表示する。
+- 購入者本人の注文だけを取得するrepository境界、paid／refunded、販売停止後のReader権限、5分間の署名Download URLを維持した。表紙と作者は既存relationの最小列追加だけで取得し、新しいAPI・DB契約は追加していない。
+- 読込失敗、空本棚、返金済み、作品情報欠落を分離した。Continue Readingや評価・推薦機能は追加していない。Production作品、商品、publication、Checkout、Stripe、注文、決済、環境変数、DB migrationは変更していない。
+- 集中29/29、Hub 1225/1225、Hub typecheck、ESLint、deps error 0（既知warning 2）、packages build、Next Production build、diff check成功。認証済み実データの目視はSupabase未設定のため未実施。
+- 次: UI-4 review後、Phase UI-5の横断responsive／accessibility／状態監査へ進む。
+
+---
+
 ## 2026-10-02 Codex: Marketplace UI-3 作品詳細
 
 - Branch `codex/marketplace-work-detail-20261002`。Marketplace UI-2 commit `af100910`上のstacked作業で、最新基準`4344c4f3`は通常mergeで取り込んだ。

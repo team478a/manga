@@ -1,5 +1,15 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Marketplace UI-4 本棚（2026-10-02）
+
+- Branch `codex/marketplace-bookshelf-20261002`。Marketplace UI-3 `b1cb487b`をstacked baseにし、最新基準`5c775aeb`はmerge commit `8e3c3a1c`で取り込んだ。
+- `/dashboard/purchases`を本棚型へ更新した。購入作品ごとに縦長表紙、作品タイトル、作者、購入情報、Reader CTA、Download CTAを表示し、スマホ1列／Desktop 2列にした。空本棚は作品検索へ案内する。
+- 購入履歴repositoryは既存のbuyer profile絞り込みとpaid／refunded契約を維持し、既存relationから`image_url`と`display_name`だけを追加取得する。販売停止済み作品のReader権限、Download route、5分署名URL、error feedbackは変更していない。
+- Production、作品・商品状態、publication、Checkout、Stripe、注文、決済、Storage、環境変数、migrationは変更していない。集中29/29、Hub 1225/1225、Hub typecheck、ESLint、deps、packages／Next Production build、diff check成功。Supabase未設定のため認証済み実データの目視確認は未実施。
+- 次はUI-5。Marketplace全体のresponsive、accessibility、empty／error／loading stateを監査し、不足分だけを補う。
+
+---
+
 ## 0.0 Marketplace UI-3 作品詳細（2026-10-02）
 
 - Branch `codex/marketplace-work-detail-20261002`。Marketplace UI-2 `af100910`をstacked baseにし、最新基準`4344c4f3`はmerge commit `add44d45`で取り込んだ。

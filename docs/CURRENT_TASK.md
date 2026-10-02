@@ -1,5 +1,19 @@
 # MANGAI Current Task
 
+## 2026-10-02 Marketplace UI-4 本棚
+
+- 状態: `IMPLEMENTED / LOCAL_RELEVANT_GATES_PASSED / PRODUCTION_UNCHANGED`
+- Branch: `codex/marketplace-bookshelf-20261002`
+- Base: Marketplace UI-3 `b1cb487b`をstacked baseとし、最新`feature/manga-canvas-mvp`の`5c775aeb`をmerge commit `8e3c3a1c`で取り込み済み。
+- `/dashboard/purchases`を購入履歴一覧から漫画書店型の本棚へ変更し、縦長2:3表紙、作品タイトル、作者表示名、購入日・商品・価格、漫画を読む、Downloadをカード単位で表示する。スマホは1列、Desktopは2列とし、mobile bottom navigationの本棚導線を維持する。
+- 既存の購入者本人絞り込み、paid／refunded取得、販売停止後の固定publication Reader権限、5分間の署名Download URL、download error feedbackを維持した。購入履歴queryは既存relationから表紙URLと作者表示名の最小列だけを追加取得する。
+- 読込失敗は空本棚と区別してfail closedにし、再読込導線を維持した。購入0件、返金済み、作品・表紙情報欠落にも個別表示を用意した。Continue Reading、お気に入り、フォロー、レビュー、星評価、ランキング、急上昇、レコメンドは追加していない。
+- Production作品公開、商品active化、release checkpoint、publication fixation、Checkout enable、Stripe、実決済、環境変数、DB schema／migrationは変更していない。
+- 検証: Marketplace／購入／Download／Publication集中29/29、Hub 1225/1225、Hub typecheck、ESLint、deps error 0（既知warning 2）、packages build、Next.js Production build、`git diff --check`成功。認証済み購入データとローカルSupabase資格情報がないため実データ目視は未実施で、responsive構造と状態表示は静的回帰テストで固定した。
+- 次: UI-4のレビュー後、Phase UI-5としてMarketplace全体のresponsive、accessibility、empty／error／loading stateを横断監査し、不足だけを小さい変更単位で補う。
+
+---
+
 ## 2026-10-02 Marketplace UI-3 作品詳細
 
 - 状態: `IMPLEMENTED / LOCAL_RELEVANT_GATES_PASSED / PRODUCTION_UNCHANGED`
