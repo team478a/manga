@@ -46,5 +46,5 @@ test("purchase history keeps the existing download route and empty state", async
   assert.match(page, /error \? \(/);
   assert.match(page, /購入履歴を空として扱わず、読込を停止しました/);
   assert.match(page, /購入履歴を再読み込み/);
-  assert.match(page, /購入履歴はありません。/);
+  assert.match(page, /本棚はまだ空です。/);
 });

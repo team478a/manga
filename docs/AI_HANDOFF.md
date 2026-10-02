@@ -1,5 +1,15 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Marketplace UI監査差分調整（2026-10-02）
+
+- Branch `codex/marketplace-ui-adjustments-20261002`。監査Draft PR #609の`f117741f`上にstackし、P1/P2の表示差分だけを修正した。
+- 4画面の表紙を共通`MarketplaceCover`の`object-contain` + neutral matteへ統一した。Detailは試し読みを価格より先にし、既存owner／paid判定を共通helperへ集約して未購入「無料で試し読み」／購入済み・owner「漫画を読む」を出し分ける。
+- 「販売中の新着」、44px filter chip、本棚語彙、canary案内を調整した。Phase 2機能、DB、Production、Checkout、Stripe、決済は変更していない。
+- 関連37/37、Hub 1237/1237、Hub typecheck、ESLint、deps error 0（既知warning 2）、packages／Next Production build、RC repository structure、diff check成功。RC外部設定はPENDING、手動E2EはREQUIRED。
+- 実作品、指定4 viewport、認証済み本棚、Reader、実画面a11yは引き続き`BLOCKED_EXTERNAL_ENVIRONMENT`。Phase 2は`NO-GO`のまま、stacked Draft PRのCI確認後に停止する。
+
+---
+
 ## 0.0 Marketplace実画面受入れ・UI差分監査（2026-10-02）
 
 - 基準`feature/manga-canvas-mvp@ee7018fe`、監査branch`codex/marketplace-acceptance-blocker-20261002`、Draft PR #609。UIコードは変更せず、Home、Works、Detail、Reader、Bookshelf、Header、Mobile Nav、状態設計、responsive、a11yを監査した。

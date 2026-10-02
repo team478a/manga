@@ -46,12 +46,14 @@ test("読者画面はサンプルと購入後本文を分離し縦長画像を�
     read("src/app/works/[id]/page.tsx"),
   ]);
   assert.match(service, /status", "paid"/);
+  assert.match(service, /getWorkReaderEntitlement/);
+  assert.match(service, /fullAccess: owner \|\| purchased/);
   assert.match(service, /filter\(\(page\) => page\.is_sample\)/);
   assert.match(service, /createSignedUrl\(selected\.storage_path, 300\)/);
   assert.match(page, /max-h-\[85vh\].*object-contain/);
   assert.match(page, /前のページ/);
   assert.match(page, /次のページ/);
-  assert.match(detail, /本文を読む/);
+  assert.match(detail, /漫画を読む/);
 });
 
 test("販売同期はlive Canvasではなく明示したrelease checkpointを使用する", async () => {

@@ -1,5 +1,19 @@
 # MANGAI Current Task
 
+## 2026-10-02 Marketplace UI監査差分調整
+
+- 状態: `IMPLEMENTED / STATIC_VERIFIED / REAL_DATA_ACCEPTANCE_BLOCKED / PHASE2_NO_GO / PRODUCTION_UNCHANGED`
+- Branch: `codex/marketplace-ui-adjustments-20261002`。監査Draft PR #609のcommit `f117741f`をstacked baseとする。
+- Home、Works、Detail、本棚の表紙を共通`MarketplaceCover`へ統一し、`object-contain`とneutral matteで表紙全体を守る。画像hover拡大は行わない。
+- Detailは試し読みを価格より前へ移し、既存owner／paid判定を共通read-only helperへ集約した。未購入は「無料で試し読み」、購入済み／ownerは「漫画を読む」、sample-onlyは「サンプルを試し読み」と表示する。Reader権限とCheckout条件は変更していない。
+- 「注目作品」を実際の選定規則に合う「販売中の新着」へ変更し、filter chipを44px、本棚を「N冊の本」「本棚はまだ空です。」へ変更した。canary対象外・販売準備中も購入不能理由を補足する。
+- P1-1〜P1-3、P2-1〜P2-5は静的に解消。P1-4の実作品・4 viewport・認証済み本棚・Reader・実画面a11yは外部環境不足のため継続して`BLOCKED_EXTERNAL_ENVIRONMENT`。
+- 検証: 関連37/37、Hub 1237/1237、Hub typecheck、ESLint、deps error 0（既知warning 2）、packages／Next Production build、RC repository structure、`git diff --check`成功。RC外部設定はPENDING、手動E2EはREQUIRED。
+- Production作品、商品、publication、Checkout enable、Stripe、注文、決済、環境変数、DB schema／migration、Phase 2機能は変更していない。
+- 次: stacked Draft PRを提出し、CI成功後に停止する。実データread-only受入れ完了まではPhase 2へ進まない。
+
+---
+
 ## 2026-10-02 Marketplace実画面受入れ・UI差分監査
 
 - 状態: `AUDITED_STATIC / BLOCKED_EXTERNAL_ENVIRONMENT / PHASE2_NO_GO / PRODUCTION_UNCHANGED`

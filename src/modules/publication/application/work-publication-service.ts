@@ -13,6 +13,44 @@ export type WorkPublicationVersion = {
   current: boolean;
 };
 
+export type WorkReaderEntitlement = {
+  profileId: string | null;
+  owner: boolean;
+  purchased: boolean;
+  fullAccess: boolean;
+};
+
+export async function getWorkReaderEntitlement(
+  workId: string,
+  creatorProfileId: string,
+): Promise<WorkReaderEntitlement> {
+  const { profile } = await getCurrentProfile();
+  const owner = profile?.id === creatorProfileId;
+  let purchased = false;
+
+  if (profile && !owner) {
+    const admin = createAdminClient();
+    const paid = await admin
+      .from("orders")
+      .select("id,digital_products:product_id(work_id)")
+      .eq("buyer_profile_id", profile.id)
+      .eq("status", "paid");
+    purchased = (paid.data ?? []).some((row) => {
+      const product = row.digital_products as unknown as {
+        work_id?: string;
+      } | null;
+      return product?.work_id === workId;
+    });
+  }
+
+  return {
+    profileId: profile?.id ?? null,
+    owner,
+    purchased,
+    fullAccess: owner || purchased,
+  };
+}
+
 export async function listOwnedWorkPublications(workId: string) {
   const { profile } = await requireProfile();
   const supabase = await createClient();
@@ -41,22 +79,12 @@ export async function getReadableWorkPublication(workId: string, requestedPage: 
     .select("id,creator_id,title,is_public,status,current_publication_id")
     .eq("id", workId).eq("content_class", "general").maybeSingle();
   if (!work) throw new ValidationError("漫画原稿がありません。");
-  const { profile } = await getCurrentProfile();
-  const owner = profile?.id === work.creator_id;
-  let purchased = false;
-  if (profile && !owner) {
-    const paid = await admin.from("orders").select("id,digital_products:product_id(work_id)")
-      .eq("buyer_profile_id", profile.id).eq("status", "paid");
-    purchased = (paid.data ?? []).some((row) => {
-      const product = row.digital_products as unknown as { work_id?: string } | null;
-      return product?.work_id === workId;
-    });
-  }
+  const entitlement = await getWorkReaderEntitlement(workId, work.creator_id);
   if (!canReadFixedWorkPublication({
     currentPublicationId: work.current_publication_id,
     isPublic: work.is_public,
-    owner,
-    purchased,
+    owner: entitlement.owner,
+    purchased: entitlement.purchased,
     status: work.status,
   }))
     throw new ValidationError("閲覧できる漫画原稿がありません。");
@@ -68,7 +96,9 @@ export async function getReadableWorkPublication(workId: string, requestedPage: 
     .eq("publication_id", publication.data.id).order("page_number");
   if (pages.error || pages.data?.length !== Number(publication.data.page_count))
     throw new ValidationError("公開版のページ一覧を確認できませんでした。");
-  const allowed = owner || purchased ? pages.data : pages.data.filter((page) => page.is_sample);
+  const allowed = entitlement.fullAccess
+    ? pages.data
+    : pages.data.filter((page) => page.is_sample);
   if (!allowed.length) throw new ValidationError("サンプルページは設定されていません。");
   const selected = allowed.find((page) => page.page_number === requestedPage) ?? allowed[0];
   const signed = await admin.storage.from(selected.storage_bucket).createSignedUrl(selected.storage_path, 300);
@@ -82,6 +112,6 @@ export async function getReadableWorkPublication(workId: string, requestedPage: 
     width: selected.width,
     height: selected.height,
     imageUrl: signed.data.signedUrl,
-    fullAccess: owner || purchased,
+    fullAccess: entitlement.fullAccess,
   };
 }
