@@ -1,5 +1,16 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Marketplace UI-5 Responsive・Accessibility・状態設計（2026-10-02）
+
+- Branch `codex/marketplace-ui-resilience-20261002`。Marketplace UI-4 `00306af9`をstacked baseにし、最新基準`5f61f3dc`はmerge commit `85b6c269`で取り込んだ。
+- Marketplace Home、作品一覧、作品詳細、本棚へ共通のaccessible loading stateを追加した。作品一覧・詳細・本棚はretry可能なerror boundary、作品詳細は専用not-foundを持ち、query失敗を正常な空状態や商品なしと混同しない。
+- 本文スキップリンク、keyboard focus ring、reduced-motion対応を追加した。既存のスマホ／Desktop responsive gridとmobile bottom navigationは維持した。
+- Production、作品・商品状態、publication、Checkout、Stripe、注文、決済、Storage、環境変数、migrationは変更していない。未契約のPhase 2機能も追加していない。
+- Marketplace集中29/29、Hub 1231/1231、Hub typecheck、ESLint、deps、packages／Next Production build、diff check成功。Desktop／390px browserでHome、作品一覧、error state、mobile navigation、skip-link focusを確認した。Supabase未設定のため実データ表示は未確認。
+- Marketplace UI-1〜5は実装完了。次はstacked差分のレビューとCI／PR判断であり、Production変更やPhase 2着手ではない。
+
+---
+
 ## 0.0 Marketplace UI-4 本棚（2026-10-02）
 
 - Branch `codex/marketplace-bookshelf-20261002`。Marketplace UI-3 `b1cb487b`をstacked baseにし、最新基準`5c775aeb`はmerge commit `8e3c3a1c`で取り込んだ。

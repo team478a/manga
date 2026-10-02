@@ -1,5 +1,19 @@
 # MANGAI Current Task
 
+## 2026-10-02 Marketplace UI-5 Responsive・Accessibility・状態設計
+
+- 状態: `IMPLEMENTED / LOCAL_RELEVANT_GATES_PASSED / PRODUCTION_UNCHANGED`
+- Branch: `codex/marketplace-ui-resilience-20261002`
+- Base: Marketplace UI-4 `00306af9`をstacked baseとし、最新`feature/manga-canvas-mvp`の`5f61f3dc`をmerge commit `85b6c269`で取り込み済み。
+- Marketplace Home、作品一覧、作品詳細、本棚に共通のaccessible loading skeletonを追加し、`aria-busy`、`aria-live`、`role=status`、reduced motionを適用した。作品一覧・詳細・本棚にはretry可能なerror boundaryを追加し、作品詳細には専用not-foundを追加した。
+- Supabase query失敗を作品0件・該当作品なし・商品なしと混同しないようにし、Homeと作品一覧は読込失敗を明示、作品詳細は取得失敗をerror boundaryへ送る。既存の空状態、返金済み、作品情報欠落の表示は維持した。
+- 全体へ本文スキップリンク、keyboard focus ring、`prefers-reduced-motion`対応を追加した。既存のスマホ2列／Desktop 4〜5列Grid、作品詳細1列／2列、本棚1列／2列を維持した。
+- Production作品公開、商品active化、release checkpoint、publication fixation、Checkout enable、Stripe、実決済、環境変数、DB schema／migrationは変更していない。お気に入り、フォロー、レビュー、星評価、ランキング、急上昇、レコメンド、Continue Readingも追加していない。
+- 検証: Marketplace／購入／Publication集中29/29、Hub 1231/1231、Hub typecheck、ESLint、deps error 0（既知warning 2）、packages build、Next.js Production build、`git diff --check`成功。localhostでDesktopと390x844 mobileのHome・作品一覧・error state、mobile navigation、本文スキップリンクとfocus表示を目視した。ローカルSupabase資格情報と認証済み購入データがないため、実作品表紙と実データ本棚の目視は未実施。
+- 次: Phase UI-1〜5の実装は完了。レビュー、CI、PR化へ進める場合もProduction状態は変更しない。Phase 2機能は別スコープとして明示承認後に扱う。
+
+---
+
 ## 2026-10-02 Marketplace UI-4 本棚
 
 - 状態: `IMPLEMENTED / LOCAL_RELEVANT_GATES_PASSED / PRODUCTION_UNCHANGED`

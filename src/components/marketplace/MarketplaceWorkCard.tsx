@@ -19,11 +19,11 @@ export function MarketplaceWorkCard({
         className="block rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-4"
         href={`/works/${work.id}`}
       >
-        <div className="relative aspect-[2/3] overflow-hidden rounded-lg border border-stone-200 bg-stone-100 shadow-sm transition duration-200 group-hover:-translate-y-1 group-hover:shadow-lg">
+        <div className="relative aspect-[2/3] overflow-hidden rounded-lg border border-stone-200 bg-stone-100 shadow-sm transition duration-200 group-hover:-translate-y-1 group-hover:shadow-lg motion-reduce:transform-none motion-reduce:transition-none">
           {work.image_url ? (
             <Image
               alt={`${work.title}の表紙`}
-              className="object-cover transition duration-300 group-hover:scale-[1.02]"
+              className="object-cover transition duration-300 group-hover:scale-[1.02] motion-reduce:transform-none motion-reduce:transition-none"
               fill
               sizes="(max-width: 639px) 50vw, (max-width: 1023px) 33vw, (max-width: 1279px) 25vw, 20vw"
               src={work.image_url}

@@ -1,6 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, BookOpen, PenLine, Search } from "lucide-react";
+import { Suspense } from "react";
+import { MarketplaceLoadingState } from "@/components/marketplace/MarketplaceLoadingState";
 import { MarketplaceWorkShelf } from "@/components/marketplace/MarketplaceWorkShelf";
 import { inspectMarketplaceCheckoutMode } from "@/lib/checkout-mode";
 import { hasSupabaseEnv } from "@/lib/env";
@@ -24,11 +26,12 @@ async function loadMarketplaceHome() {
     return {
       works: [] as MarketplaceHomeWork[],
       creatorByWork: new Map<string, string>(),
+      loadFailed: false,
     };
   }
 
   const supabase = await createClient();
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from("works")
     .select("*,digital_products(price,status)")
     .eq("is_public", true)
@@ -51,11 +54,12 @@ async function loadMarketplaceHome() {
   return {
     works,
     creatorByWork: mapPublicWorkCreatorAttributions(creatorRows),
+    loadFailed: Boolean(error),
   };
 }
 
-export default async function Home() {
-  const { works, creatorByWork } = await loadMarketplaceHome();
+async function MarketplaceHomeContent() {
+  const { works, creatorByWork, loadFailed } = await loadMarketplaceHome();
   const sections = selectMarketplaceHomeSections(works);
   const checkout = inspectMarketplaceCheckoutMode();
   const saleByWork = new Map<string, MarketplaceCatalogSale | null>(
@@ -141,16 +145,33 @@ export default async function Home() {
               </div>
             </article>
           ) : (
-            <div className="mx-auto w-full max-w-xl rounded-2xl border border-white/80 bg-white/80 p-7 shadow-xl shadow-violet-950/10">
+            <div
+              className={`mx-auto w-full max-w-xl rounded-2xl border bg-white/80 p-7 shadow-xl shadow-violet-950/10 ${
+                loadFailed ? "border-red-200" : "border-white/80"
+              }`}
+              role={loadFailed ? "alert" : undefined}
+            >
               <p className="text-sm font-black tracking-widest text-violet-700">
-                NEW STORIES ARE COMING
+                {loadFailed ? "TEMPORARILY UNAVAILABLE" : "NEW STORIES ARE COMING"}
               </p>
               <h2 className="mt-4 text-2xl font-black text-stone-950 sm:text-3xl">
-                新しい物語を届ける準備中です
+                {loadFailed
+                  ? "作品情報を読み込めませんでした"
+                  : "新しい物語を届ける準備中です"}
               </h2>
               <p className="mt-3 leading-7 text-stone-600">
-                公開作品は「漫画を探す」から確認できます。新作との出会いをお楽しみに。
+                {loadFailed
+                  ? "一時的に作品を取得できませんでした。時間をおいて再度お試しください。"
+                  : "公開作品は「漫画を探す」から確認できます。新作との出会いをお楽しみに。"}
               </p>
+              {loadFailed ? (
+                <Link
+                  className="mt-5 inline-flex min-h-11 items-center justify-center rounded-lg bg-violet-700 px-4 text-sm font-bold text-white outline-none transition hover:bg-violet-800 focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2"
+                  href="/"
+                >
+                  もう一度読み込む
+                </Link>
+              ) : null}
             </div>
           )}
         </div>
@@ -232,5 +253,15 @@ export default async function Home() {
         </div>
       </section>
     </main>
+  );
+}
+
+export default function Home() {
+  return (
+    <Suspense
+      fallback={<MarketplaceLoadingState title="書店を読み込んでいます" />}
+    >
+      <MarketplaceHomeContent />
+    </Suspense>
   );
 }

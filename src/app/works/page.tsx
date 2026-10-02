@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { EmptyState } from "@/components/EmptyState";
 import { MarketplaceSearchFilters } from "@/components/marketplace/MarketplaceSearchFilters";
+import { MarketplaceInlineError } from "@/components/marketplace/MarketplaceInlineError";
 import { MarketplaceWorkCard } from "@/components/marketplace/MarketplaceWorkCard";
 import { inspectMarketplaceCheckoutMode } from "@/lib/checkout-mode";
 import { hasSupabaseEnv } from "@/lib/env";
@@ -68,7 +69,10 @@ export default async function WorksPage({
     );
   if (selectedTag) worksQuery = worksQuery.contains("tags", [selectedTag]);
 
-  const [{ data: works }, { data: tagRows }] = await Promise.all([
+  const [
+    { data: works, error: worksError },
+    { data: tagRows, error: tagsError },
+  ] = await Promise.all([
     worksQuery.returns<PublicCatalogWork[]>(),
     supabase
       .from("works")
@@ -77,6 +81,25 @@ export default async function WorksPage({
       .eq("content_class", "general")
       .returns<Array<{ tags: string[] | null }>>(),
   ]);
+  if (worksError || tagsError) {
+    return (
+      <main className="marketplace-page">
+        <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+          <p className="text-sm font-bold text-violet-700">MANGAI STORE</p>
+          <h1 className="mt-2 text-3xl font-black tracking-tight sm:text-4xl">
+            漫画を探す
+          </h1>
+          <div className="mt-7">
+            <MarketplaceInlineError
+              description="公開作品を一時的に取得できませんでした。検索条件や作品情報は変更されていません。"
+              href="/works"
+              title="作品一覧を読み込めませんでした"
+            />
+          </div>
+        </div>
+      </main>
+    );
+  }
   const visibleWorks = prioritizeMarketplaceCatalogSales(
     (works ?? []).filter(
       (work) =>

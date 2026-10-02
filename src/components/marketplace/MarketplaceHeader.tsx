@@ -14,7 +14,7 @@ export function MarketplaceHeader({
 
   return (
     <>
-      <header className="sticky top-0 z-40 border-b border-stone-200/90 bg-white/95 backdrop-blur">
+      <header className="marketplace-header sticky top-0 z-40 border-b border-stone-200/90 bg-white/95 backdrop-blur">
         <div className="mx-auto flex min-h-16 w-full max-w-7xl items-center gap-4 px-4 sm:px-6 lg:px-8">
           <Link
             href="/"

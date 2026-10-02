@@ -1,5 +1,16 @@
 # MANGAI AI Handoff Log
 
+## 2026-10-02 Codex: Marketplace UI-5 Responsive・Accessibility・状態設計
+
+- Branch `codex/marketplace-ui-resilience-20261002`。Marketplace UI-4 commit `00306af9`上のstacked作業で、最新基準`5f61f3dc`はmerge commit `85b6c269`で取り込んだ。
+- Home、作品一覧、作品詳細、本棚へ共通loading skeletonを追加し、作品一覧・詳細・本棚にはretry可能なerror boundary、作品詳細には専用not-foundを追加した。query失敗と正常な空状態を分離してfail closedにした。
+- 本文スキップリンク、keyboard focus ring、`prefers-reduced-motion`対応を追加した。既存responsive gridとmobile bottom navigationを維持し、Desktop／390x844 mobileでHome、作品一覧、error state、skip-link focusを目視確認した。
+- Production作品、商品、publication、Checkout、Stripe、注文、決済、環境変数、DB migrationは変更していない。Phase 2機能も追加していない。
+- 集中29/29、Hub 1231/1231、Hub typecheck、ESLint、deps error 0（既知warning 2）、packages／Next Production build、diff check成功。Supabase未設定のため実作品表紙と認証済み本棚データの目視は未実施。
+- 次: Marketplace UI-1〜5を一連のstacked実装としてレビューし、必要ならPR化する。Production変更とPhase 2機能は別の明示承認が必要。
+
+---
+
 ## 2026-10-02 Codex: Marketplace UI-4 本棚
 
 - Branch `codex/marketplace-bookshelf-20261002`。Marketplace UI-3 commit `b1cb487b`上のstacked作業で、最新基準`5c775aeb`は通常mergeで取り込んだ。

@@ -28,7 +28,7 @@ export default async function WorkDetailPage({
 }) {
   const { id } = await params;
   const supabase = await createClient();
-  const { data: work } = await supabase
+  const { data: work, error: workError } = await supabase
     .from("works")
     .select("*")
     .eq("id", id)
@@ -36,6 +36,7 @@ export default async function WorkDetailPage({
     .eq("content_class", "general")
     .maybeSingle<Work>();
 
+  if (workError) throw new Error("marketplace_work_load_failed");
   if (!work) notFound();
   const { data: creatorRows } = await supabase.rpc(
     "list_public_work_creator_attributions",
@@ -61,13 +62,14 @@ export default async function WorkDetailPage({
     }
   }
 
-  const { data: products } = await supabase
+  const { data: products, error: productsError } = await supabase
     .from("digital_products")
     .select("id,work_id,creator_id,title,description,price,status,created_at")
     .eq("work_id", work.id)
     .eq("status", "active")
     .order("created_at", { ascending: false })
     .returns<DigitalProduct[]>();
+  if (productsError) throw new Error("marketplace_products_load_failed");
   const activeProducts = products ?? [];
   const lowestPrice = activeProducts.length
     ? Math.min(...activeProducts.map((product) => product.price))
