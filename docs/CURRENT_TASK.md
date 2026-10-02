@@ -1,5 +1,18 @@
 # MANGAI Current Task
 
+## 2026-10-02 Cloud売上注文のスマートフォン表示
+
+- 状態: `IMPLEMENTED / LOCAL_ALL_GATES_PASSED / PRODUCTION_UNCHANGED`
+- Branch: `codex/cloud-sales-mobile-orders-20261002`
+- Base: `9f5160a09c9edfd7317eb05457c930ef85cc16a2`（PR #600 merge commit）。
+- 売上管理の注文一覧を、スマートフォンでは横スクロール不要のカード、PCでは従来の表として表示する。受付日時、テスト／本番、購入者、状態、販売金額、手数料、受取額を各カードで確認できる。
+- 作品・商品設定へのowner-scopedリンクを共通部品化し、スマートフォンとPCで同じ遷移先・欠落時表示を使う。読込失敗と注文0件は1つの明示表示に保ち、注文・決済・公開状態を変更しない。
+- DB、schema、migration、RPC、Provider、生成、export Job、Asset、credit、利用期限、作品、checkpoint、publication、商品、注文、決済、Productionデータは変更していない。
+- 検証: 集中10/10、Hub 1211/1211、deps error 0（既知warning 2）、全型検査、ESLint、migration／rollback静的92/92、Hub Production build、RC repository structure、`git diff --check`成功。外部設定はPENDING、手動E2EはREQUIRED。
+- 次: commit、push、Draft PR化し、全CI／Vercel成功で停止する。merge後もProductionの作品・商品・注文・決済変更は利用者操作または別の明示承認を必要とする。
+
+---
+
 ## 2026-10-02 Cloud売上注文から作品・商品設定への導線
 
 - 状態: `IMPLEMENTED / LOCAL_ALL_GATES_PASSED / PRODUCTION_UNCHANGED`

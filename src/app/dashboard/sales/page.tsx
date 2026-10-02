@@ -2,13 +2,43 @@ import Link from "next/link";
 import { InlineErrorMessage } from "@/components/InlineErrorMessage";
 import { yen, statusLabel } from "@/lib/format";
 import { requireProfile } from "@/lib/auth";
-import { listSalesOrdersForCreator } from "@/modules/sales/infrastructure/sales-query-repository";
+import {
+  listSalesOrdersForCreator,
+  type SalesOrderRecord,
+} from "@/modules/sales/infrastructure/sales-query-repository";
 
 const orderDateTimeFormatter = new Intl.DateTimeFormat("ja-JP", {
   dateStyle: "medium",
   timeStyle: "short",
   timeZone: "Asia/Tokyo",
 });
+
+function OrderSourceLinks({ order }: { order: SalesOrderRecord }) {
+  return (
+    <>
+      {order.digital_products?.works ? (
+        <Link
+          className="block font-semibold text-leaf underline"
+          href={`/dashboard/works/${order.digital_products.works.id}/edit`}
+        >
+          {order.digital_products.works.title}
+        </Link>
+      ) : (
+        <span className="block font-semibold">作品情報なし</span>
+      )}
+      {order.digital_products ? (
+        <Link
+          className="mt-1 block text-sm text-leaf underline"
+          href={`/dashboard/products/${order.digital_products.id}/edit`}
+        >
+          {order.digital_products.title}
+        </Link>
+      ) : (
+        <span className="mt-1 block text-sm text-stone-600">商品情報なし</span>
+      )}
+    </>
+  );
+}
 
 export default async function SalesPage() {
   const { profile } = await requireProfile();
@@ -21,7 +51,9 @@ export default async function SalesPage() {
   const total = error
     ? null
     : orders
-        .filter((order) => order.status === "paid" && order.payment_mode === "live")
+        .filter(
+          (order) => order.status === "paid" && order.payment_mode === "live",
+        )
         .reduce((sum, order) => sum + order.creator_revenue, 0);
 
   return (
@@ -45,7 +77,9 @@ export default async function SalesPage() {
         <p className="mt-2 text-4xl font-bold">
           {total === null ? "確認できません" : yen(total)}
         </p>
-        <p className="mt-3 text-sm text-stone-600">テスト購入は受取予定額に含みません。</p>
+        <p className="mt-3 text-sm text-stone-600">
+          テスト購入は受取予定額に含みません。
+        </p>
       </div>
       {pageError ? (
         <InlineErrorMessage role="alert">{pageError}</InlineErrorMessage>
@@ -56,87 +90,139 @@ export default async function SalesPage() {
           「受付済み」は決済確認前、「支払い済み」は購入完了です。失敗・キャンセル・返金済みの注文は受取予定額に含みません。日時は日本時間で表示します。
           作品名・商品名から、所有する設定画面へ戻れます。
         </p>
-        <div className="mt-5 overflow-x-auto">
-          <table className="w-full min-w-[760px] text-left text-base">
-            <thead>
-              <tr className="border-b border-stone-200">
-                <th className="py-3">受付日時</th>
-                <th className="py-3">購入者</th>
-                <th className="py-3">作品・商品</th>
-                <th className="py-3">金額</th>
-                <th className="py-3">手数料</th>
-                <th className="py-3">受取</th>
-                <th className="py-3">状態</th>
-                <th className="py-3">区分</th>
-              </tr>
-            </thead>
-            <tbody>
-              {error ? (
-                <tr>
-                  <td className="py-5 text-stone-600" colSpan={8}>
-                    <p>注文一覧を空として扱わず、読込を停止しました。</p>
-                    <Link className="button-secondary mt-4" href="/dashboard/sales">
-                      注文・売上情報を再読み込み
-                    </Link>
-                  </td>
-                </tr>
-              ) : orders.length ? orders.map((order) => (
-                <tr className="border-b border-stone-100" key={order.id}>
-                  <td className="py-3 pr-4">
-                    <time dateTime={order.created_at}>
-                      {orderDateTimeFormatter.format(new Date(order.created_at))}
+        {error ? (
+          <div className="mt-5 text-stone-600">
+            <p>注文一覧を空として扱わず、読込を停止しました。</p>
+            <Link className="button-secondary mt-4" href="/dashboard/sales">
+              注文・売上情報を再読み込み
+            </Link>
+          </div>
+        ) : orders.length ? (
+          <>
+            <div
+              className="mt-5 space-y-4 md:hidden"
+              aria-label="スマートフォン向け注文一覧"
+            >
+              {orders.map((order) => (
+                <article
+                  className="rounded-2xl border border-stone-200 p-4"
+                  key={order.id}
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <time
+                      className="text-sm text-stone-600"
+                      dateTime={order.created_at}
+                    >
+                      {orderDateTimeFormatter.format(
+                        new Date(order.created_at),
+                      )}
                     </time>
-                  </td>
-                  <td className="py-3">{order.buyer_email}</td>
-                  <td className="py-3">
-                    {order.digital_products?.works ? (
-                      <Link
-                        className="block font-semibold text-leaf underline"
-                        href={`/dashboard/works/${order.digital_products.works.id}/edit`}
-                      >
-                        {order.digital_products.works.title}
-                      </Link>
-                    ) : (
-                      <span className="block font-semibold">作品情報なし</span>
-                    )}
-                    {order.digital_products ? (
-                      <Link
-                        className="mt-1 block text-sm text-leaf underline"
-                        href={`/dashboard/products/${order.digital_products.id}/edit`}
-                      >
-                        {order.digital_products.title}
-                      </Link>
-                    ) : (
-                      <span className="mt-1 block text-sm text-stone-600">商品情報なし</span>
-                    )}
-                  </td>
-                  <td className="py-3">{yen(order.amount)}</td>
-                  <td className="py-3">{yen(order.platform_fee)}</td>
-                  <td className="py-3 font-semibold">{yen(order.creator_revenue)}</td>
-                  <td className="py-3">{statusLabel(order.status)}</td>
-                  <td className="py-3">{order.payment_mode === "test" ? "テスト" : "本番"}</td>
-                </tr>
-              )) : (
-                <tr>
-                  <td className="py-5 text-stone-600" colSpan={8}>
-                    <p className="font-semibold text-stone-900">注文はまだありません。</p>
-                    <p className="mt-2 max-w-3xl leading-relaxed">
-                      販売中の作品から購入準備URLを案内し、管理者が確認した指定購入者・期間内で購入手続きが完了すると反映されます。画面を開いたままでは自動更新されないため、購入者から完了連絡を受けた後に再読み込みしてください。
-                    </p>
-                    <div className="mt-4 flex flex-wrap gap-2">
-                      <Link className="button-secondary" href="/creator">
-                        販売中の作品を確認
-                      </Link>
-                      <Link className="button-secondary" href="/dashboard/monitor/guide#internal-test-sale">
-                        テスト販売の手順
-                      </Link>
+                    <span className="rounded-full bg-stone-100 px-3 py-1 text-xs font-bold text-stone-700">
+                      {order.payment_mode === "test" ? "テスト" : "本番"}
+                    </span>
+                  </div>
+                  <div className="mt-3">
+                    <OrderSourceLinks order={order} />
+                  </div>
+                  <dl className="mt-4 grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
+                    <div className="col-span-2">
+                      <dt className="text-stone-500">購入者</dt>
+                      <dd className="mt-1 break-all text-stone-900">
+                        {order.buyer_email}
+                      </dd>
                     </div>
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+                    <div>
+                      <dt className="text-stone-500">状態</dt>
+                      <dd className="mt-1 font-semibold text-stone-900">
+                        {statusLabel(order.status)}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="text-stone-500">販売金額</dt>
+                      <dd className="mt-1 text-stone-900">
+                        {yen(order.amount)}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="text-stone-500">手数料</dt>
+                      <dd className="mt-1 text-stone-900">
+                        {yen(order.platform_fee)}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="text-stone-500">受取</dt>
+                      <dd className="mt-1 font-semibold text-stone-900">
+                        {yen(order.creator_revenue)}
+                      </dd>
+                    </div>
+                  </dl>
+                </article>
+              ))}
+            </div>
+            <div className="mt-5 hidden overflow-x-auto md:block">
+              <table className="w-full min-w-[760px] text-left text-base">
+                <thead>
+                  <tr className="border-b border-stone-200">
+                    <th className="py-3">受付日時</th>
+                    <th className="py-3">購入者</th>
+                    <th className="py-3">作品・商品</th>
+                    <th className="py-3">金額</th>
+                    <th className="py-3">手数料</th>
+                    <th className="py-3">受取</th>
+                    <th className="py-3">状態</th>
+                    <th className="py-3">区分</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {orders.map((order) => (
+                    <tr className="border-b border-stone-100" key={order.id}>
+                      <td className="py-3 pr-4">
+                        <time dateTime={order.created_at}>
+                          {orderDateTimeFormatter.format(
+                            new Date(order.created_at),
+                          )}
+                        </time>
+                      </td>
+                      <td className="py-3">{order.buyer_email}</td>
+                      <td className="py-3">
+                        <OrderSourceLinks order={order} />
+                      </td>
+                      <td className="py-3">{yen(order.amount)}</td>
+                      <td className="py-3">{yen(order.platform_fee)}</td>
+                      <td className="py-3 font-semibold">
+                        {yen(order.creator_revenue)}
+                      </td>
+                      <td className="py-3">{statusLabel(order.status)}</td>
+                      <td className="py-3">
+                        {order.payment_mode === "test" ? "テスト" : "本番"}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
+        ) : (
+          <div className="mt-5 text-stone-600">
+            <p className="font-semibold text-stone-900">
+              注文はまだありません。
+            </p>
+            <p className="mt-2 max-w-3xl leading-relaxed">
+              販売中の作品から購入準備URLを案内し、管理者が確認した指定購入者・期間内で購入手続きが完了すると反映されます。画面を開いたままでは自動更新されないため、購入者から完了連絡を受けた後に再読み込みしてください。
+            </p>
+            <div className="mt-4 flex flex-wrap gap-2">
+              <Link className="button-secondary" href="/creator">
+                販売中の作品を確認
+              </Link>
+              <Link
+                className="button-secondary"
+                href="/dashboard/monitor/guide#internal-test-sale"
+              >
+                テスト販売の手順
+              </Link>
+            </div>
+          </div>
+        )}
       </section>
     </main>
   );

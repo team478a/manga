@@ -1,5 +1,15 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Cloud売上注文のスマートフォン表示（2026-10-02）
+
+- Branch `codex/cloud-sales-mobile-orders-20261002`、Base `9f5160a09c9edfd7317eb05457c930ef85cc16a2`（PR #600 merge commit）。販売者がスマートフォンから注文・売上を横スクロールなしで確認するための表示改善である。
+- `md`未満では注文をカード表示し、受付日時、テスト／本番、購入者、状態、販売金額、手数料、受取額を2列以内で表示する。長い購入者メールはカード内で折り返す。PCでは従来の表を維持する。
+- 作品・商品設定リンクを共通化し、両表示とも同じowner-scoped編集画面へ遷移する。読込失敗と注文0件のfail-closed表示、live paid集計、test除外を維持する。
+- Production、DB、schema、migration、RPC、Provider、export Job、Asset、credit、作品、checkpoint、publication、商品、注文、決済は変更していない。集中10/10、Hub 1211/1211、deps error 0（既知warning 2）、全型検査、ESLint、migration／rollback静的92/92、Hub Production build、RC repository structure、diff check成功。
+- 次はDraft PRの全CI／Vercel成功で停止する。merge後もProductionの作品・商品・注文・決済変更は別の明示承認または利用者の明示操作が必要。
+
+---
+
 ## 0.0 Cloud売上注文から作品・商品設定への導線（2026-10-02）
 
 - Branch `codex/cloud-sales-order-source-links-20261002`、Base `5f61f3dc41c6a222622285ff1157b2e51626e936`（PR #599 merge commit）。販売者が注文内容を確認した後、元の作品・商品設定へ迷わず戻るためのread-only導線改善である。
