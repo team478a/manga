@@ -8,8 +8,7 @@ Phase 2候補には現行の保存契約がない。受入れ確認後に着手�
 
 ## 2. 監査基準
 
-- Base: `feature/manga-canvas-mvp` merge commit `342cdf12`
-- Latest base sync: PR #606 merge commit `b1645081`を通常mergeし、Marketplace UI監査とCloud売上サマリーを両立した。
+- Base: `feature/manga-canvas-mvp` merge commit `b1645081`
 - Marketplace UI実装: PR #602、merge commit `8882c15b`
 - 引き継ぎ更新: PR #607、merge commit `342cdf12`
 - 現行schemaのMarketplace主要テーブル: `profiles`、`works`、`digital_products`、`orders`、`cloud_work_publications`、`cloud_work_publication_pages`
