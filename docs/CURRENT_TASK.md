@@ -52,6 +52,19 @@
 - 次: UI-1のレビュー後、Phase UI-2としてMarketplace HomeのHero、注目作品、新着作品、ジャンル、試し読み作品、Creator CTAを既存データ契約の範囲で実装する。注目作品の選定契約がないため、人気・ランキング・レコメンドを推測実装しない。
 ---
 
+## 2026-10-02 Cloud売上管理の注文日時・状態案内
+
+- 状態: `IMPLEMENTED / LOCAL_ALL_GATES_PASSED / PRODUCTION_UNCHANGED`
+- Branch: `codex/cloud-sales-order-timeline-20261002`
+- Base: `5c775aeb2ede4768a554f5bf5ee14aeee37f1015`（PR #598 merge commit）。
+- 売上管理の注文一覧へ日本時間の受付日時を追加し、既存の最新順で新旧注文を判別できるようにした。日時はmachine-readableな`time`要素にも原値を保持する。
+- 「受付済み」「支払い済み」「失敗・キャンセル・返金済み」の意味と受取予定額への扱いを一覧上部へ明記した。注文状態、金額、集計、並び順は変更していない。
+- DB、schema、migration、RPC、Provider、生成、export Job、Asset、credit、利用期限、作品、checkpoint、publication、商品、注文、決済、Productionデータは変更していない。
+- 検証: 集中16/16、Hub 1209/1209、deps error 0（既知warning 2）、全型検査、ESLint、migration／rollback静的92/92、Hub Production build、RC repository structure、`git diff --check`成功。外部設定はPENDING、手動E2EはREQUIRED。
+- 次: commit、push、Draft PR化し、全CI／Vercel成功で停止する。merge後もProductionの購入資格設定、URL送信、注文、決済は利用者操作または別の明示承認を必要とする。
+
+---
+
 ## 2026-10-02 Cloud購入案内後の注文・売上確認導線
 
 - 状態: `IMPLEMENTED / LOCAL_ALL_GATES_PASSED / PRODUCTION_UNCHANGED`
