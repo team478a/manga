@@ -1,5 +1,15 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Marketplace UIマージ後受入れ・Phase 2スコープ監査（2026-10-02）
+
+- Branch `codex/marketplace-phase2-scope-20261002`、Base `342cdf12`。Marketplace UI-1〜5後の残件とPhase 2候補を監査した。
+- 優先する次タスクは、公開Home・一覧・詳細・試し読みと認証済み本棚・Readerを実作品／既存購入で確認するread-only受入れ。Local環境は実データなし、最新Vercel deploymentはSSO保護のため`BLOCKED_EXTERNAL_ENVIRONMENT`。
+- お気に入り、Continue Reading、Creatorフォロー、レビュー／星評価、ランキング／急上昇、レコメンドに現行保存契約はない。最初の実装候補は「お気に入り（あとで読む）」だが、buyer-work一意関係、RLS、Server Action、migrationの別承認が必要。
+- Production、DB、作品、商品、publication、Checkout、Stripe、注文、決済、環境変数、UIコードは未変更。詳細は`docs/MARKETPLACE_POST_UI_ACCEPTANCE_AND_PHASE2_SCOPE_20261002.md`。
+- 次は認証済みread-only受入れまたは隔離Stagingの明示承認を待つ。Phase 2機能は同じ承認に含めず、独立して扱う。
+
+---
+
 ## 0.0 Marketplace UI-5 Responsive・Accessibility・状態設計（2026-10-02）
 
 - Branch `codex/marketplace-ui-resilience-20261002`。Marketplace UI-4 `00306af9`をstacked baseにし、PR #602は`feature/manga-canvas-mvp`へmerge commit `8882c15b`で反映済み。

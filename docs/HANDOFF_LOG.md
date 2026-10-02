@@ -1,5 +1,15 @@
 # MANGAI AI Handoff Log
 
+## 2026-10-02 Codex: Marketplace UIマージ後受入れ・Phase 2スコープ監査
+
+- Branch `codex/marketplace-phase2-scope-20261002`、Base `342cdf12`。Marketplace UI-1〜5の次工程を現行schema、Reader、購入、本棚、GitHub open Issueと照合した。
+- 次は実作品・認証済み本棚のread-only受入れ確認。LocalはSupabase資格情報と購入データがなく、最新Vercel Production deploymentはsuccessだが匿名HTTPはVercel SSOへ302転送されるため、目視は`BLOCKED_EXTERNAL_ENVIRONMENT`。
+- Phase 2候補には保存契約がない。受入れ後の最初の候補として、最小のbuyer-work関係に閉じる「お気に入り（あとで読む）」を推奨する。Continue Reading、フォロー、レビュー、ランキング、推薦は別Phaseとする。
+- Production、DB schema／migration、作品、商品、publication、Checkout、Stripe、注文、決済、環境変数、UIコードは変更していない。詳細は`docs/MARKETPLACE_POST_UI_ACCEPTANCE_AND_PHASE2_SCOPE_20261002.md`。
+- 次: 認証済みread-only受入れ、隔離Staging再作成、Phase 2-1実装はいずれも対象を明示した別承認を待つ。
+
+---
+
 ## 2026-10-02 Codex: Marketplace UI-5 Responsive・Accessibility・状態設計
 
 - Branch `codex/marketplace-ui-resilience-20261002`。Marketplace UI-4 commit `00306af9`上のstacked作業で、PR #602は`feature/manga-canvas-mvp`へmerge commit `8882c15b`で反映済み。
