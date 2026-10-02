@@ -122,6 +122,8 @@ test("注文は本番・テスト・受付済みで安全に絞り込める", as
   assert.match(page, /\{ value: "live", label: "本番" \}/);
   assert.match(page, /\{ value: "test", label: "テスト" \}/);
   assert.match(page, /\{ value: "pending", label: "受付済み" \}/);
+  assert.match(page, /\{ value: "paid", label: "支払い済み" \}/);
+  assert.match(page, /\{ value: "closed", label: "不成立・返金" \}/);
   assert.match(
     page,
     /if \(filter === "live"\) return order\.payment_mode === "live"/,
@@ -133,6 +135,14 @@ test("注文は本番・テスト・受付済みで安全に絞り込める", as
   assert.match(
     page,
     /if \(filter === "pending"\) return order\.status === "pending"/,
+  );
+  assert.match(
+    page,
+    /if \(filter === "paid"\) return order\.status === "paid"/,
+  );
+  assert.match(
+    page,
+    /if \(filter === "closed"\)[\s\S]*\["failed", "refunded", "canceled"\]\.includes\(order\.status\)/,
   );
   assert.match(page, /aria-label="注文の絞り込み"/);
   assert.match(page, /aria-current=\{isActive \? "page" : undefined\}/);
@@ -189,4 +199,29 @@ test("支払い済み本番注文の件数・販売金額・手数料・受取�
   assert.match(page, /<dt className="text-sm text-stone-600">手数料<\/dt>/);
   assert.match(page, /yen\(salesSummary\.creatorRevenue\)/);
   assert.match(page, /注文一覧の絞り込みにかかわらず/);
+});
+
+test("注文状態別件数はテストと本番を合算し売上集計と区別する", async () => {
+  const page = await read("src/app/dashboard/sales/page.tsx");
+
+  assert.match(page, /const orderStatusSummary = error[\s\S]*\? null/);
+  assert.match(
+    page,
+    /pending: orders\.filter\(\(order\) => order\.status === "pending"\)\.length/,
+  );
+  assert.match(
+    page,
+    /paid: orders\.filter\(\(order\) => order\.status === "paid"\)\.length/,
+  );
+  assert.match(
+    page,
+    /\["failed", "refunded", "canceled"\]\.includes\(order\.status\)/,
+  );
+  assert.match(page, /aria-label="注文状態別の件数"/);
+  assert.match(page, /状態別件数はテストと本番を合算します/);
+  assert.match(page, /売上内訳は支払い済みの本番注文だけが対象です/);
+  assert.match(page, /状態別件数を確認できません/);
+  assert.match(page, /\{orderStatusSummary\.pending\}件/);
+  assert.match(page, /\{orderStatusSummary\.paid\}件/);
+  assert.match(page, /\{orderStatusSummary\.closed\}件/);
 });
