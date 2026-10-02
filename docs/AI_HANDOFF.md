@@ -1,5 +1,15 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Cloud売上の注文状態サマリー（2026-10-02）
+
+- Branch `codex/cloud-sales-order-status-summary-20261002`、Base `9336ec056ff55c3859cf49f7dc17629b3c71fe2a`（PR #605 merge commit）。販売者がテスト販売後の注文状態を一覧走査せず確認するためのread-only表示改善である。
+- owner-scoped注文を受付済み、支払い済み、不成立・返金へ集計する。状態件数はテストと本番の両方、売上内訳は既存どおり`paid/live`だけで、画面上にも集計範囲の違いを明示する。
+- allowlistへ`paid`と`closed`を追加し、`closed`は`failed/refunded/canceled`だけを表示する。取得失敗時は状態別件数も「確認できません」とし、未知queryは全件表示へfail closedする。
+- Production、DB、schema、migration、RPC、Provider、export Job、Asset、credit、作品、checkpoint、publication、商品、注文、決済は変更していない。集中14/14、Hub 1215/1215、deps error 0（既知warning 2）、全型検査、ESLint、migration／rollback静的92/92、Hub Production build、RC repository structure、diff check成功。
+- 次はDraft PRの全CI／Vercel成功で停止する。merge後もProductionの作品・商品・注文・決済変更は別の明示承認または利用者の明示操作が必要。
+
+---
+
 ## 0.0 Cloud売上の本番売上内訳（2026-10-02）
 
 - Branch `codex/cloud-sales-revenue-breakdown-20261002`、Base `91ee5edbb214680b962c2b6526f287063db9b0a1`（PR #604 merge commit）。販売者が販売金額、手数料、受取予定額を区別するためのread-only表示改善である。

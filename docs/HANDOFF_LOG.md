@@ -1,5 +1,16 @@
 # MANGAI AI Handoff Log
 
+## 2026-10-02 Codex: Cloud売上の注文状態サマリー
+
+- Branch: `codex/cloud-sales-order-status-summary-20261002`。Base: `9336ec056ff55c3859cf49f7dc17629b3c71fe2a`（PR #605 merge commit）。
+- 売上管理へ受付済み、支払い済み、不成立・返金の状態別件数を追加し、テストと本番を合算する状態件数と、支払い済み本番だけの売上内訳を分けて案内した。
+- 一覧に支払い済みと不成立・返金の安全な絞り込みを追加した。読込失敗時は件数を0へ変換せず、状態別件数を確認不能として表示する。
+- Productionのページ状態、checkpoint、export Job、Storage、publication、作品、商品、注文、決済、Stripe、Provider、Asset、credit、利用期限、通知設定は変更していない。
+- 集中14/14、Hub 1215/1215、deps error 0（既知warning 2）、全型検査、ESLint、migration／rollback静的92/92、Hub Production build、RC repository structure、`git diff --check`成功。外部設定はPENDING、手動E2EはREQUIRED。
+- 次: commit、push、Draft PR、全CI／Vercel成功で停止する。Productionの作品・商品・注文・決済変更は明示承認または利用者の明示操作まで行わない。
+
+---
+
 ## 2026-10-02 Codex: Cloud売上の本番売上内訳
 
 - Branch: `codex/cloud-sales-revenue-breakdown-20261002`。Base: `91ee5edbb214680b962c2b6526f287063db9b0a1`（PR #604 merge commit）。
