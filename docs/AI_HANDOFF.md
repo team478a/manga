@@ -1,5 +1,15 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Cloud販売開始後の購入者URL案内（2026-10-02）
+
+- Branch `codex/cloud-marketplace-buyer-link-handoff-20261002`、Base `a761b6949ae6ae25c4b6ede50e3a97454462f5fe`（PR #596 merge commit）。販売開始後に指定購入者へ購入準備画面を案内しやすくする導線改善である。
+- 販売中の作品画面だけに共有・コピーbuttonを表示する。Web Share対応端末ではOS共有、未対応環境では`window.location.origin`から作った同一originの購入準備URLをclipboardへコピーし、成功・中止・失敗を画面内に返す。
+- 共有処理は購入資格付与、注文作成、決済開始、外部送信を自動実行しない。既存の管理者確認、指定購入者、期間、checkoutの再検証を維持する。
+- Production、DB、schema、migration、RPC、Provider、export Job、Asset、credit、作品、checkpoint、publication、商品、注文、決済は変更していない。集中14/14、Hub 1207/1207、deps error 0（既知warning 2）、全型検査、ESLint、migration／rollback静的92/92、Hub Production build、RC repository structure、diff check成功。
+- 次はDraft PRの全CI／Vercel成功で停止する。merge後もProductionの対象者設定、実送信、注文、決済は別の明示承認または利用者の明示操作が必要。
+
+---
+
 ## 0.0 Cloud販売下書き後の出品確認案内（2026-10-02）
 
 - Branch `codex/cloud-marketplace-draft-handoff-20261002`、Base `0f93a082f9c3e64904e5d91b4528b8c4c4afeb98`（PR #595 merge commit）。販売下書き作成後に次の明示操作である出品確認へ迷わず進める案内改善である。
