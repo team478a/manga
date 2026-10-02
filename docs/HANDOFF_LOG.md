@@ -9,6 +9,19 @@
 - Marketplace集中28/28、Hub 1209/1209、deps error 0（既知warning 2）、ESLint、Hub typecheck、packages build、Next.js Production build、browser Desktop／390px mobile、mobile navigation accessibility、diff check成功。全体typecheckはDesktop依存installがローカルディスク空き容量0で停止したため`LOCAL_BLOCKED_EXTERNAL_ENVIRONMENT`（Desktop差分なし）。Supabase未設定のローカル環境では安全なempty stateを目視確認した。
 - 次はUI-1レビュー後にPhase UI-2 Marketplace Homeへ進む。注目・人気・ランキング相当の新契約をUIだけで作らない。
 
+---
+
+## 2026-10-02 Codex: Cloud販売下書き後の出品確認案内
+
+- Branch: `codex/cloud-marketplace-draft-handoff-20261002`。Base: `0f93a082f9c3e64904e5d91b4528b8c4c4afeb98`（PR #595 merge commit）。
+- 販売用下書き作成後は同じ作品画面の販売準備欄へ直接戻り、内容確認後の出品開始を案内する。出品開始・再開、販売停止後も同じ欄で最新状態を確認できる。
+- 販売下書きから公開・販売を自動実行する処理は追加していない。既存の明示確認、完成条件、owner境界、購入済み利用権の維持を保持する。
+- Productionのページ状態、checkpoint、export Job、Storage、publication、作品、商品、注文、決済、Stripe、Provider、Asset、credit、利用期限、通知設定は変更していない。
+- 集中15/15、Hub 1207/1207、deps error 0（既知warning 2）、全型検査、ESLint、migration／rollback静的92/92、Hub Production build、RC repository structure、`git diff --check`成功。外部設定はPENDING、手動E2EはREQUIRED。
+- 次: commit、push、Draft PR、全CI／Vercel成功で停止する。Productionの販売操作は明示承認または利用者の明示操作まで行わない。
+
+---
+
 ## 2026-10-02 Codex: Cloud完成PDFから販売準備への案内
 
 - Branch: `codex/cloud-export-to-marketplace-handoff-20261002`。Base: `ee641e471f9c96265cb633dc0811550fb422f975`（PR #594 merge commit）。

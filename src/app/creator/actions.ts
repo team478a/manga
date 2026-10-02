@@ -341,7 +341,7 @@ export async function syncCloudMarketplaceDraftAction(
   revalidatePath("/dashboard/works");
   revalidatePath("/dashboard/products");
   redirect(
-    `/creator/${projectId}?message=${encodeURIComponent("販売用の下書きを更新しました")}&productId=${result.productId}`,
+    `/creator/${projectId}?message=${encodeURIComponent("販売用の下書きを更新しました。内容を確認して出品を開始してください")}&productId=${result.productId}#marketplace-listing`,
   );
 }
 
@@ -561,7 +561,7 @@ export async function publishCloudMarketplaceListingAction(
   } catch (error) {
     redirect(`/creator/${parsed.data.projectId}?error=${encodeURIComponent(domainMessage(error, "出品を開始・再開できませんでした。完成版・販売ファイル・価格を確認してください。"))}`);
   }
-  redirect(`/creator/${parsed.data.projectId}?message=${encodeURIComponent("作品公開と商品販売を開始・再開しました")}`);
+  redirect(`/creator/${parsed.data.projectId}?message=${encodeURIComponent("作品公開と商品販売を開始・再開しました")}#marketplace-listing`);
 }
 
 export async function withdrawCloudMarketplaceListingAction(
@@ -586,7 +586,7 @@ export async function withdrawCloudMarketplaceListingAction(
   } catch (error) {
     redirect(`/creator/${parsed.data.projectId}?error=${encodeURIComponent(domainMessage(error, "販売を停止できませんでした。作品・商品状態を確認してください。"))}`);
   }
-  redirect(`/creator/${parsed.data.projectId}?message=${encodeURIComponent("新規販売と一般公開を停止しました。購入済みの利用権は維持されます。")}`);
+  redirect(`/creator/${parsed.data.projectId}?message=${encodeURIComponent("新規販売と一般公開を停止しました。購入済みの利用権は維持されます。")}#marketplace-listing`);
 }
 
 export async function restoreCloudProjectCheckpointAction(projectId: string, checkpointId: string, formData: FormData) {

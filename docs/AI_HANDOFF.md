@@ -8,6 +8,18 @@
 - Marketplace集中28/28、Hub 1209/1209、deps error 0（既知warning 2）、ESLint、Hub typecheck、packages build、Next.js Production build、browser responsive／accessibility確認、diff check成功。全体typecheckはDesktop依存installがローカルディスク空き容量0で停止したため`LOCAL_BLOCKED_EXTERNAL_ENVIRONMENT`（Desktop差分なし）。
 - 次はUI-1レビュー後にMarketplace HomeのPhase UI-2へ進む。注目作品の選定契約がないため、ランキングやレコメンドとして推測実装しない。
 
+---
+
+## 0.0 Cloud販売下書き後の出品確認案内（2026-10-02）
+
+- Branch `codex/cloud-marketplace-draft-handoff-20261002`、Base `0f93a082f9c3e64904e5d91b4528b8c4c4afeb98`（PR #595 merge commit）。販売下書き作成後に次の明示操作である出品確認へ迷わず進める案内改善である。
+- 販売下書き作成成功後は`marketplace-listing` sectionへ戻し、「内容を確認して出品を開始してください」と表示する。出品開始・再開、販売停止の成功後も同じ欄へ戻して最新状態を確認できる。
+- 下書き作成から公開・商品active化を自動実行しない。既存の完成条件、owner境界、出品・停止の明示確認、購入済み利用権の維持を変更しない。
+- Production、DB、schema、migration、RPC、Provider、export Job、Asset、credit、作品、checkpoint、publication、商品、注文、決済は変更していない。集中15/15、Hub 1207/1207、deps error 0（既知warning 2）、全型検査、ESLint、migration／rollback静的92/92、Hub Production build、RC repository structure、diff check成功。
+- 次はDraft PRの全CI／Vercel成功で停止する。merge後もProductionでの販売操作は別の明示承認または利用者の明示操作が必要。
+
+---
+
 ## 0.0 Cloud完成PDFから販売準備への案内（2026-10-02）
 
 - Branch `codex/cloud-export-to-marketplace-handoff-20261002`、Base `ee641e471f9c96265cb633dc0811550fb422f975`（PR #594 merge commit）。完成PDFからCloud販売準備へ迷わず進める案内改善である。
