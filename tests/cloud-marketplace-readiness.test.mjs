@@ -166,14 +166,24 @@ test("出品開始・停止後も販売準備欄で最新状態を確認でき�
 });
 
 test("販売設定完了後は注文を作らず公開・購入準備画面を確認できる", async () => {
-  const page = await read("src/app/creator/[projectId]/page.tsx");
+  const [page, buyerLinkActions] = await Promise.all([
+    read("src/app/creator/[projectId]/page.tsx"),
+    read("src/app/creator/[projectId]/MarketplaceBuyerLinkActions.tsx"),
+  ]);
 
   assert.match(page, /marketplaceSalesGuidance\?\.ready && marketplaceDraft\.work/);
   assert.match(page, /画面を開くだけでは注文・決済は発生しません/);
+  assert.match(page, /指定購入者へ購入準備URLを案内/);
+  assert.match(page, /リンクを共有するだけでは購入資格は付与されず、注文・決済も発生しません/);
+  assert.match(page, /checkoutPath=\{`\/checkout\/\$\{marketplaceDraft\.product\.id\}`\}/);
   assert.match(page, /公開作品ページを確認/);
   assert.match(page, /購入準備画面を確認/);
   assert.match(page, /注文・売上を確認/);
   assert.match(page, /\/works\/\$\{marketplaceDraft\.work\.id\}/);
   assert.match(page, /\/checkout\/\$\{marketplaceDraft\.product\.id\}/);
   assert.match(page, /\/dashboard\/sales/);
+  assert.match(buyerLinkActions, /navigator\.share/);
+  assert.match(buyerLinkActions, /navigator\.clipboard\?\.writeText/);
+  assert.match(buyerLinkActions, /new URL\(checkoutPath, window\.location\.origin\)/);
+  assert.doesNotMatch(buyerLinkActions, /create-session|orders|決済を開始/);
 });

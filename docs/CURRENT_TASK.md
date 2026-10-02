@@ -26,6 +26,19 @@
 
 ---
 
+## 2026-10-02 Cloud販売開始後の購入者URL案内
+
+- 状態: `IMPLEMENTED / LOCAL_ALL_GATES_PASSED / PRODUCTION_UNCHANGED`
+- Branch: `codex/cloud-marketplace-buyer-link-handoff-20261002`
+- Base: `a761b6949ae6ae25c4b6ede50e3a97454462f5fe`（PR #596 merge commit）。
+- 販売開始済みの作品画面に、指定購入者へ購入準備URLを共有・コピーする明示buttonを追加した。スマートフォンではOSの共有画面を使用し、未対応環境では同一originの購入準備URLをclipboardへコピーする。
+- 共有だけでは購入資格を付与せず、注文・決済も作成しないことを画面に明記した。販売中の場合だけ表示し、既存の管理者による対象者・期間確認、購入準備画面の再検証、指定購入者境界を維持する。
+- DB、schema、migration、RPC、Provider、生成、export Job、Asset、credit、利用期限、作品、checkpoint、publication、商品、注文、決済、Productionデータは変更していない。
+- 検証: 集中14/14、Hub 1207/1207、deps error 0（既知warning 2）、全型検査、ESLint、migration／rollback静的92/92、Hub Production build、RC repository structure、`git diff --check`成功。外部設定はPENDING、手動E2EはREQUIRED。
+- 次: commit、push、Draft PR化し、全CI／Vercel成功で停止する。merge後もProductionの購入資格設定、URL送信、注文、決済は利用者操作または別の明示承認を必要とする。
+
+---
+
 ## 2026-10-02 Cloud販売下書き後の出品確認案内
 
 - 状態: `IMPLEMENTED / LOCAL_ALL_GATES_PASSED / PRODUCTION_UNCHANGED`
