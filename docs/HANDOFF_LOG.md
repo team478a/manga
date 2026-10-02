@@ -11,6 +11,60 @@
 
 ---
 
+## 2026-10-02 Codex: Marketplace UI-5 Responsive・Accessibility・状態設計
+
+- Branch `codex/marketplace-ui-resilience-20261002`。Marketplace UI-4 commit `00306af9`上のstacked作業で、PR #602は`feature/manga-canvas-mvp`へmerge commit `8882c15b`で反映済み。
+- Home、作品一覧、作品詳細、本棚へ共通loading skeletonを追加し、作品一覧・詳細・本棚にはretry可能なerror boundary、作品詳細には専用not-foundを追加した。query失敗と正常な空状態を分離してfail closedにした。
+- 本文スキップリンク、keyboard focus ring、`prefers-reduced-motion`対応を追加した。既存responsive gridとmobile bottom navigationを維持し、Desktop／390x844 mobileでHome、作品一覧、error state、skip-link focusを目視確認した。
+- Production作品、商品、publication、Checkout、Stripe、注文、決済、環境変数、DB migrationは変更していない。Phase 2機能も追加していない。
+- 集中29/29、最新基準統合後のHub 1236/1236、Hub typecheck、ESLint、deps error 0（既知warning 2）、packages／Next Production build、diff check成功。Supabase未設定のため実作品表紙と認証済み本棚データの目視は未実施。
+- PR #602は最終同期後にCore quality、Migration roundtrip、Desktop Windows、Vercel Previewがすべて成功し、2026-10-02にmerge済み。Marketplace UI-1〜5は完了。Production変更とPhase 2機能は別の明示承認が必要。
+
+---
+
+## 2026-10-02 Codex: Marketplace UI-4 本棚
+
+- Branch `codex/marketplace-bookshelf-20261002`。Marketplace UI-3 commit `b1cb487b`上のstacked作業で、最新基準`5c775aeb`は通常mergeで取り込んだ。
+- `/dashboard/purchases`を表紙、作品タイトル、作者、漫画を読む、Download中心の本棚UIへ変更した。購入日・商品・価格、テスト購入、返金済み、ダウンロード回数も補助情報として表示する。
+- 購入者本人の注文だけを取得するrepository境界、paid／refunded、販売停止後のReader権限、5分間の署名Download URLを維持した。表紙と作者は既存relationの最小列追加だけで取得し、新しいAPI・DB契約は追加していない。
+- 読込失敗、空本棚、返金済み、作品情報欠落を分離した。Continue Readingや評価・推薦機能は追加していない。Production作品、商品、publication、Checkout、Stripe、注文、決済、環境変数、DB migrationは変更していない。
+- 集中29/29、Hub 1225/1225、Hub typecheck、ESLint、deps error 0（既知warning 2）、packages build、Next Production build、diff check成功。認証済み実データの目視はSupabase未設定のため未実施。
+- 次: UI-4 review後、Phase UI-5の横断responsive／accessibility／状態監査へ進む。
+
+---
+
+## 2026-10-02 Codex: Marketplace UI-3 作品詳細
+
+- Branch `codex/marketplace-work-detail-20261002`。Marketplace UI-2 commit `af100910`上のstacked作業で、最新基準`4344c4f3`は通常mergeで取り込んだ。
+- `/works/[id]`を縦長表紙、作者、タグ、あらすじ、試し読み、価格、購入CTA、Creator section中心の漫画書店型UIへ変更した。固定公開版はReader、旧形式のsample画像はページ内試し読みへ案内する。
+- active商品のみを価格・購入欄へ表示し、既存のCheckout enable、payment mode、listing canary、指定購入者判定を維持した。お気に入り、フォロー、レビュー、星評価、ランキング、急上昇、レコメンド、Continue Readingは追加していない。
+- Production作品公開、商品active化、release checkpoint、publication fixation、Checkout enable、Stripe、実決済、環境変数、DB migrationは変更していない。
+- 集中33/33、Hub 1220/1220、Hub typecheck、ESLint、deps error 0（既知warning 2）、packages build、Next Production build、diff check成功。実データの目視はSupabase未設定のため未実施し、responsive構造と契約は回帰テストで確認した。
+- 次: UI-3 review後、Phase UI-4本棚へ進む。
+
+---
+
+## 2026-10-02 Codex: Marketplace UI-2 Home
+
+- Branch `codex/marketplace-home-20261002`。Marketplace UI-1 commit `fc091143d`上のstacked作業で、最新基準`a761b694`は通常mergeで取り込んだ。
+- `/`を漫画書店Homeへ変更し、Hero、注目、新着、ジャンル・タグ、試し読み、Creator CTAを追加した。UI-1のHeader、mobile navigation、`MarketplaceWorkCard`を再利用し、棚を`MarketplaceWorkShelf`として共通化した。
+- 注目作品はactive商品を持つ作品の新着順であり、人気・ランキング・急上昇・レコメンドではない。試し読み対象も既存sample画像または固定公開版Reader導線を持つ作品だけに限定した。お気に入り、フォロー、レビュー、星評価、Continue Readingは追加していない。
+- Production作品公開、商品active化、release checkpoint、publication fixation、Checkout enable、Stripe、実決済、環境変数、DB migrationは変更していない。
+- Marketplace集中9/9、Hub 1216/1216、Hub typecheck、ESLint、deps error 0（既知warning 2）、packages build、Next Production build、Desktop／390px mobile目視、console error／warning 0、accessibility tree、diff check成功。実データの目視はSupabase未設定のため未実施。
+- 次: UI-2 review後、Phase UI-3作品詳細へ進む。
+
+---
+
+## 2026-10-02 Codex: Marketplace UI-1 Foundation
+
+- Branch `codex/marketplace-ui-foundation-20261002`、Base `0f93a082f9c3e64904e5d91b4528b8c4c4afeb98`（PR #595 merge commit）。Marketplaceの購入者向け表示基盤を漫画書店型へ更新した。
+- `Header`は認証取得adapterとして維持し、検索付き`MarketplaceHeader`へ表示を委譲した。購入者向けrouteだけにホーム／探す／本棚／マイページのmobile bottom navigationを表示する。
+- `/works`は既存queryとURL parameterを維持したまま、縦長`2:3`表紙、スマホ2列、Desktop 4〜5列、作者、価格、販売状態中心の`MarketplaceWorkCard`へ移行した。検索、既存tags、販売中filterは専用componentへ分離した。
+- Production、DB、migration、RPC、Storage、Checkout、Stripe、publication、商品・作品状態、注文、決済、Provider、Job、credit、利用者データは変更していない。Phase 2機能は追加していない。
+- Marketplace集中28/28、Hub 1209/1209、deps error 0（既知warning 2）、ESLint、Hub typecheck、packages build、Next.js Production build、browser Desktop／390px mobile、mobile navigation accessibility、diff check成功。全体typecheckはDesktop依存installがローカルディスク空き容量0で停止したため`LOCAL_BLOCKED_EXTERNAL_ENVIRONMENT`（Desktop差分なし）。Supabase未設定のローカル環境では安全なempty stateを目視確認した。
+- 次はUI-1レビュー後にPhase UI-2 Marketplace Homeへ進む。注目・人気・ランキング相当の新契約をUIだけで作らない。
+---
+
 ## 2026-10-02 Codex: Cloud売上の本番売上内訳
 
 - Branch: `codex/cloud-sales-revenue-breakdown-20261002`。Base: `91ee5edbb214680b962c2b6526f287063db9b0a1`（PR #604 merge commit）。

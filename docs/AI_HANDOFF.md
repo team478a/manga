@@ -10,6 +10,56 @@
 
 ---
 
+## 0.0 Marketplace UI-5 Responsive・Accessibility・状態設計（2026-10-02）
+
+- Branch `codex/marketplace-ui-resilience-20261002`。Marketplace UI-4 `00306af9`をstacked baseにし、PR #602は`feature/manga-canvas-mvp`へmerge commit `8882c15b`で反映済み。
+- Marketplace Home、作品一覧、作品詳細、本棚へ共通のaccessible loading stateを追加した。作品一覧・詳細・本棚はretry可能なerror boundary、作品詳細は専用not-foundを持ち、query失敗を正常な空状態や商品なしと混同しない。
+- 本文スキップリンク、keyboard focus ring、reduced-motion対応を追加した。既存のスマホ／Desktop responsive gridとmobile bottom navigationは維持した。
+- Production、作品・商品状態、publication、Checkout、Stripe、注文、決済、Storage、環境変数、migrationは変更していない。未契約のPhase 2機能も追加していない。
+- Marketplace集中29/29、最新基準統合後のHub 1236/1236、Hub typecheck、ESLint、deps、packages／Next Production build、diff check成功。Desktop／390px browserでHome、作品一覧、error state、mobile navigation、skip-link focusを確認した。Supabase未設定のため実データ表示は未確認。
+- Marketplace UI-1〜5は完了。PR #602は最終同期後にCore quality、Migration roundtrip、Desktop Windows、Vercel Previewがすべて成功し、2026-10-02にmerge commit `8882c15b`で反映済み。Production変更やPhase 2着手ではない。
+
+---
+
+## 0.0 Marketplace UI-4 本棚（2026-10-02）
+
+- Branch `codex/marketplace-bookshelf-20261002`。Marketplace UI-3 `b1cb487b`をstacked baseにし、最新基準`5c775aeb`はmerge commit `8e3c3a1c`で取り込んだ。
+- `/dashboard/purchases`を本棚型へ更新した。購入作品ごとに縦長表紙、作品タイトル、作者、購入情報、Reader CTA、Download CTAを表示し、スマホ1列／Desktop 2列にした。空本棚は作品検索へ案内する。
+- 購入履歴repositoryは既存のbuyer profile絞り込みとpaid／refunded契約を維持し、既存relationから`image_url`と`display_name`だけを追加取得する。販売停止済み作品のReader権限、Download route、5分署名URL、error feedbackは変更していない。
+- Production、作品・商品状態、publication、Checkout、Stripe、注文、決済、Storage、環境変数、migrationは変更していない。集中29/29、Hub 1225/1225、Hub typecheck、ESLint、deps、packages／Next Production build、diff check成功。Supabase未設定のため認証済み実データの目視確認は未実施。
+- 次はUI-5。Marketplace全体のresponsive、accessibility、empty／error／loading stateを監査し、不足分だけを補う。
+
+---
+
+## 0.0 Marketplace UI-3 作品詳細（2026-10-02）
+
+- Branch `codex/marketplace-work-detail-20261002`。Marketplace UI-2 `af100910`をstacked baseにし、最新基準`4344c4f3`はmerge commit `add44d45`で取り込んだ。
+- `/works/[id]`を漫画書店型へ更新した。縦長2:3表紙、作者、既存タグ、あらすじを上部にまとめ、固定公開版Readerと既存sample画像を購入前の試し読みとして強調した。active商品の価格と購入CTA、表示名だけを使うCreator sectionも追加した。
+- 公開一般作品query、作者表示名RPC、固定publication Reader、active商品、Checkout mode／canary、指定購入者判定は維持した。購入可能判定を緩和せず、未契約のCreatorプロフィール・フォロー・評価等は作っていない。
+- Production、作品・商品状態、publication、Checkout、Stripe、注文、決済、Storage、環境変数、migrationは変更していない。集中33/33、Hub 1220/1220、Hub typecheck、ESLint、deps、packages／Next Production build、diff check成功。Supabase未設定のため実作品データの目視確認は未実施。
+- 次はUI-4本棚。`/dashboard/purchases`を表紙、タイトル、作者、読む、Download中心へ整え、既存の購入権限とDownload契約を維持する。
+
+---
+
+## 0.0 Marketplace UI-2 Home（2026-10-02）
+
+- Branch `codex/marketplace-home-20261002`。Marketplace UI-1 `fc091143d`をstacked baseにし、最新基準`a761b694`はmerge commit `f4af983e`で取り込んだ。
+- `/`を「インディーズ漫画のデジタル書店」のHomeへ更新した。Hero、販売中作品の新着紹介、新着作品、既存tagsによるジャンル導線、既存sample／固定公開版の読書導線がある試し読み作品、Creator CTAを実装した。棚は`MarketplaceWorkShelf`、選定規則は`marketplace-home.ts`へ分離した。
+- 「注目」は人気、売上、閲覧数、ランキング、レコメンドではない。active商品を持つ作品を`created_at`降順で最大5件紹介し、根拠を画面上に明示する。新しいAPI、DB列、集計、管理UIは追加していない。
+- Production、作品・商品状態、publication、Checkout、Stripe、注文、決済、Storage、環境変数、migrationは変更していない。Marketplace集中9/9、Hub 1216/1216、Hub typecheck、ESLint、deps、packages／Next Production build、Desktop／390px browser、accessibility tree、console、diff check成功。
+- 次はUI-3作品詳細。既存の作者RPC、sample画像、固定公開版Reader、active商品、canary Checkoutを維持したまま書店型へ整える。
+
+---
+
+## 0.0 Marketplace UI-1 Foundation（2026-10-02）
+
+- Branch `codex/marketplace-ui-foundation-20261002`、Base `0f93a082f9c3e64904e5d91b4528b8c4c4afeb98`（PR #595 merge commit）。購入者向けMarketplaceの表示基盤を「インディーズ漫画のデジタル書店」へ更新した。
+- 検索付き書店Header、購入者route限定のmobile bottom navigation、縦長表紙の`MarketplaceWorkCard`、既存`q`／`tag`／`sale`契約を使う検索Filter、スマホ2列／Desktop 4〜5列Gridを追加した。
+- 公開一般作品query、作者表示RPC、active商品価格、Checkout mode／canary、Publication、購入履歴・Download契約は維持した。Production、DB、migration、Stripe、環境変数、作品・商品状態、実決済は変更していない。Phase 2機能は未追加。
+- Marketplace集中28/28、Hub 1209/1209、deps error 0（既知warning 2）、ESLint、Hub typecheck、packages build、Next.js Production build、browser responsive／accessibility確認、diff check成功。全体typecheckはDesktop依存installがローカルディスク空き容量0で停止したため`LOCAL_BLOCKED_EXTERNAL_ENVIRONMENT`（Desktop差分なし）。
+- 次はUI-1レビュー後にMarketplace HomeのPhase UI-2へ進む。注目作品の選定契約がないため、ランキングやレコメンドとして推測実装しない。
+---
+
 ## 0.0 Cloud売上の本番売上内訳（2026-10-02）
 
 - Branch `codex/cloud-sales-revenue-breakdown-20261002`、Base `91ee5edbb214680b962c2b6526f287063db9b0a1`（PR #604 merge commit）。販売者が販売金額、手数料、受取予定額を区別するためのread-only表示改善である。
