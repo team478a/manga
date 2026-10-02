@@ -1,5 +1,17 @@
 # MANGAI Current Task
 
+## 2026-10-02 Marketplaceお気に入り Production UI空状態受入れ
+
+- 状態: `PRODUCTION_EMPTY_STATE_PASSED / AUTHENTICATED_UI_VERIFIED / MUTATION_E2E_NOT_RUN / PRODUCTION_DATA_UNCHANGED`
+- Branch: `codex/marketplace-favorites-production-ui-acceptance-20261002`
+- 責任者提供のProductionスクリーンショットで、`https://app.mang-ai.com/dashboard/favorites`を利用者`tanaka`のログイン状態で確認した。
+- Headerの「あとで読む」導線、ページ見出し、購入と分離した説明、空状態「あとで読むはまだ空です。」、Marketplaceへ戻る「漫画を探す」CTAが表示され、migration未適用エラーや権限エラーは表示されていない。
+- DB postflightのrow 0件とUI空状態が一致している。お気に入り追加・解除、作品カード表示、重複追加、再解除、非公開化後の非表示は実作品がないため未確認で、合格扱いにしない。
+- お気に入りrow、作品、商品、publication、注文、決済、Provider、credit、利用期限は変更していない。
+- 次: read-only受入れ記録をDraft PRにし、全CI／Vercel成功で停止する。実操作E2Eは公開一般作品と責任者のmutation承認が揃ってから実施する。
+
+---
+
 ## 2026-10-02 Marketplaceお気に入り Production権限hardening
 
 - 状態: `PRODUCTION_001_APPLIED / OVERGRANT_DETECTED / HOTFIX_MERGED / PRODUCTION_002_APPLIED / POSTFLIGHT_PASSED`
@@ -13,7 +25,7 @@
 - postflightでauthenticatedはSELECT／INSERT／DELETEのみ、service_roleはCRUDのみ、public／anonは権限なしを確認した。余分なUPDATE／TRUNCATE／REFERENCES／TRIGGERは除去済み。table、RLS、一意制約、index、owner限定3 policy、row 0件を維持している。
 - 作品、商品、publication、注文、決済、Provider、credit、利用期限、お気に入りrowは変更していない。
 - 詳細: `docs/MARKETPLACE_FAVORITES_PRODUCTION_PRIVILEGE_HARDENING_20261002.md`
-- 次: Production適用記録をcommit／push／Draft PRにし、全CI／Vercel成功で停止する。
+- Production適用記録PR #613は全CI／Vercel成功後、merge commit `e5ed554f5d3abec1fabd9ef7dc5342d762daec78`でmerge済み。
 
 ---
 
@@ -28,7 +40,7 @@
 - 集中31/31、Hub全1240/1240、migration／rollback静的93/93、Hub typecheck、ESLint、依存境界error 0（既知warning 2）、Production build、`git diff --check`が成功した。
 - Productionへ`202610020001`と権限hardening `202610020002`を各1回適用済み。お気に入りrow、作品、商品、注文、決済、Provider、creditは変更していない。
 - 詳細: `docs/MARKETPLACE_FAVORITES_PHASE2_20261002.md`
-- 次: Production適用記録PRの全CI／Vercel成功後、Marketplaceお気に入りのProduction UI受入れへ進める。
+- 次: Production UI空状態は確認済み。実作品を使う追加・解除E2Eは別承認事項として残す。
 
 ---
 

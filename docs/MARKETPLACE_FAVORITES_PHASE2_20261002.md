@@ -33,14 +33,15 @@
 - レコメンド、閲覧・行動追跡、Continue Reading
 - 成人向け作品、購入権限、Reader、Checkout、注文、決済の変更
 
-## 5. 配備と受入れ順序
+## 5. 配備と受入れ
 
-1. 本PRのコード、forward／rollback、manifest、schema、テストをmergeする。
-2. 責任者の別の明示承認後、Productionへ`202610020001_marketplace_favorites`を1回だけ適用する。
-3. 適用後に、ログアウト状態、ログイン状態、追加、重複追加、解除、再解除、一覧、非公開作品の非表示をread-only中心に確認する。
-4. 問題時は新規操作を停止し、rollback適用の可否を責任者判断とする。自動的に保存データを削除しない。
+1. コード、forward／rollback、manifest、schema、テストはPR #611でmerge済み。
+2. 責任者の明示承認後、Productionへ`202610020001_marketplace_favorites`を1回適用済み。
+3. Production既定付与の過剰権限はPR #612と`202610020002_marketplace_favorites_privilege_hardening`で修復済み。
+4. 認証済み空状態はProductionスクリーンショットで合格。追加、重複追加、解除、再解除、一覧カード、非公開作品の非表示は未実施。
+5. 問題時は新規操作を停止し、rollback適用の可否を責任者判断とする。自動的に保存データを削除しない。
 
-本PRではProduction migration、Productionデータ、作品公開状態、商品、注文、決済、Provider、creditを変更しない。
+Production migration以外のデータ、作品公開状態、商品、注文、決済、Provider、creditは変更していない。
 
 ## 6. 検証
 
@@ -53,3 +54,16 @@
 - `git diff --check`成功
 
 Production migration適用後の実データ受入れは、本PRのローカル検証とは分離して記録する。
+
+## 7. Production UI空状態受入れ
+
+2026-10-02、責任者提供のスクリーンショットで`https://app.mang-ai.com/dashboard/favorites`を利用者`tanaka`のログイン状態で確認した。
+
+- Headerの「あとで読む」導線: 表示
+- ページ見出しと購入から分離した説明: 表示
+- 空状態「あとで読むはまだ空です。」: 表示
+- Marketplaceへ戻る「漫画を探す」CTA: 表示
+- migration未適用／権限エラー: 表示なし
+- DB postflight row 0件との整合: 一致
+
+公開一般作品がないため、追加・解除・作品カード・重複追加・再解除・非公開化後の非表示は`NOT_RUN`。実操作E2Eは責任者の別承認と既存実作品が必要であり、この受入れではProductionデータを変更していない。
