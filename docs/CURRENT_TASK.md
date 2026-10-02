@@ -1,5 +1,18 @@
 # MANGAI Current Task
 
+## 2026-10-02 Marketplace UI-3 作品詳細
+
+- 状態: `IMPLEMENTED / LOCAL_RELEVANT_GATES_PASSED / PRODUCTION_UNCHANGED`
+- Branch: `codex/marketplace-work-detail-20261002`
+- Base: Marketplace UI-2 `af100910`をstacked baseとし、最新`feature/manga-canvas-mvp`の`4344c4f3`をmerge commit `add44d45`で取り込み済み。
+- `/works/[id]`を漫画書店型の作品詳細へ変更し、縦長2:3表紙、作者、既存タグ導線、あらすじ、固定公開版Reader／既存sample画像の試し読み、価格、購入CTA、Creator sectionを追加した。スマホは1列、Desktopは表紙と作品情報の2列構成にする。
+- 既存の公開一般作品query、安全な作者表示名RPC、active商品、固定publication Reader、Checkout mode／Production canary、指定購入者判定を維持した。Creator sectionは表示名だけを使用し、プロフィール・フォロー等の未契約導線は追加していない。
+- Production作品公開、商品active化、release checkpoint、publication fixation、Checkout enable、Stripe、実決済、環境変数、DB schema／migrationは変更していない。お気に入り、フォロー、レビュー、星評価、ランキング、急上昇、レコメンド、Continue Readingも追加していない。
+- 検証: Marketplace／Checkout／Publication集中33/33、Hub 1220/1220、Hub typecheck、ESLint、deps error 0（既知warning 2）、packages build、Next.js Production build、`git diff --check`成功。ローカルSupabase資格情報がないため実作品データを使った目視確認は未実施で、表紙比率、responsive構造、試し読み・購入契約は静的回帰テストで固定した。
+- 次: UI-3のレビュー後、Phase UI-4として`/dashboard/purchases`を表紙、タイトル、作者、読む、Download中心の本棚UIへ変更する。購入権限、Reader、Download契約は維持する。
+
+---
+
 ## 2026-10-02 Marketplace UI-2 Home
 
 - 状態: `IMPLEMENTED / LOCAL_RELEVANT_GATES_PASSED / PRODUCTION_UNCHANGED`

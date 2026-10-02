@@ -1,5 +1,15 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Marketplace UI-3 作品詳細（2026-10-02）
+
+- Branch `codex/marketplace-work-detail-20261002`。Marketplace UI-2 `af100910`をstacked baseにし、最新基準`4344c4f3`はmerge commit `add44d45`で取り込んだ。
+- `/works/[id]`を漫画書店型へ更新した。縦長2:3表紙、作者、既存タグ、あらすじを上部にまとめ、固定公開版Readerと既存sample画像を購入前の試し読みとして強調した。active商品の価格と購入CTA、表示名だけを使うCreator sectionも追加した。
+- 公開一般作品query、作者表示名RPC、固定publication Reader、active商品、Checkout mode／canary、指定購入者判定は維持した。購入可能判定を緩和せず、未契約のCreatorプロフィール・フォロー・評価等は作っていない。
+- Production、作品・商品状態、publication、Checkout、Stripe、注文、決済、Storage、環境変数、migrationは変更していない。集中33/33、Hub 1220/1220、Hub typecheck、ESLint、deps、packages／Next Production build、diff check成功。Supabase未設定のため実作品データの目視確認は未実施。
+- 次はUI-4本棚。`/dashboard/purchases`を表紙、タイトル、作者、読む、Download中心へ整え、既存の購入権限とDownload契約を維持する。
+
+---
+
 ## 0.0 Marketplace UI-2 Home（2026-10-02）
 
 - Branch `codex/marketplace-home-20261002`。Marketplace UI-1 `fc091143d`をstacked baseにし、最新基準`a761b694`はmerge commit `f4af983e`で取り込んだ。
