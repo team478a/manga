@@ -145,3 +145,20 @@ test("注文は本番・テスト・受付済みで安全に絞り込める", as
     page.indexOf("const total = error") < page.indexOf("filteredOrders.map"),
   );
 });
+
+test("受取予定額は参考集計で振込・精算未提供と明示する", async () => {
+  const page = await read("src/app/dashboard/sales/page.tsx");
+
+  assert.match(page, /クリエイター受取予定額（参考）/);
+  assert.match(page, /支払い済みの本番注文だけを合計した参考値です/);
+  assert.match(page, /MANGAIからの振込・精算確定は利用できません/);
+  assert.match(page, /テスト購入は受取予定額に含みません/);
+  assert.match(page, /実際の請求・売上・振込も発生しません/);
+  assert.match(page, /role="note"/);
+  assert.match(page, /href="\/dashboard\/monitor\/guide#internal-test-sale"/);
+  assert.match(page, /限定テスト販売と収益管理の案内/);
+  assert.match(
+    page,
+    /order\.status === "paid" && order\.payment_mode === "live"/,
+  );
+});

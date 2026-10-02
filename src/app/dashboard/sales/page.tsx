@@ -107,13 +107,27 @@ export default async function SalesPage({
         </Link>
       </div>
       <div className="panel mt-6">
-        <p className="text-lg text-stone-600">クリエイター受取予定額</p>
+        <p className="text-lg text-stone-600">クリエイター受取予定額（参考）</p>
         <p className="mt-2 text-4xl font-bold">
           {total === null ? "確認できません" : yen(total)}
         </p>
-        <p className="mt-3 text-sm text-stone-600">
-          テスト購入は受取予定額に含みません。
-        </p>
+        <div
+          className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm leading-relaxed text-amber-950"
+          role="note"
+        >
+          <p>
+            支払い済みの本番注文だけを合計した参考値です。現在、MANGAIからの振込・精算確定は利用できません。
+          </p>
+          <p className="mt-2">
+            テスト購入は受取予定額に含みません。実際の請求・売上・振込も発生しません。
+          </p>
+          <Link
+            className="mt-3 inline-block font-semibold underline"
+            href="/dashboard/monitor/guide#internal-test-sale"
+          >
+            限定テスト販売と収益管理の案内
+          </Link>
+        </div>
       </div>
       {pageError ? (
         <InlineErrorMessage role="alert">{pageError}</InlineErrorMessage>

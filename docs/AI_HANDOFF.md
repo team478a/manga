@@ -50,6 +50,16 @@
 - 次はUI-1レビュー後にMarketplace HomeのPhase UI-2へ進む。注目作品の選定契約がないため、ランキングやレコメンドとして推測実装しない。
 ---
 
+## 0.0 Cloud売上の振込・精算境界案内（2026-10-02）
+
+- Branch `codex/cloud-sales-payout-boundary-20261002`、Base `067fa2ec9969eda48a5700e92c26c40f8644ea73`（PR #603 merge commit）。販売者が参考集計を振込可能額や精算確定額と誤認しないためのread-only表示改善である。
+- 「クリエイター受取予定額（参考）」として、liveかつpaidの注文だけを集計する既存条件と、MANGAIからの振込・精算確定が現在利用できないことを表示する。
+- テスト購入は受取予定額に含めず、実際の請求・売上・振込が発生しないことを明示し、限定テスト販売と収益管理の案内へリンクする。
+- Production、DB、schema、migration、RPC、Provider、export Job、Asset、credit、作品、checkpoint、publication、商品、注文、決済は変更していない。集中12/12、Hub 1213/1213、deps error 0（既知warning 2）、全型検査、ESLint、migration／rollback静的92/92、Hub Production build、RC repository structure、diff check成功。
+- 次はDraft PRの全CI／Vercel成功で停止する。merge後もProductionの作品・商品・注文・決済変更は別の明示承認または利用者の明示操作が必要。
+
+---
+
 ## 0.0 Cloud売上注文の安全な絞り込み（2026-10-02）
 
 - Branch `codex/cloud-sales-order-filters-20261002`、Base `6aa04463170ce6b41f232eb4e41bd58c81038e5a`（PR #601 merge commit）。販売者がテスト販売と本番販売、決済確認待ちを区別するためのread-only表示改善である。
