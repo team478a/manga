@@ -25,11 +25,23 @@
 
 rollbackでも危険な既定権限を再付与せず、前migrationが意図した最小権限を維持する。全rollbackでは続く`202610020001` rollbackがtableを削除する。
 
-## 4. Production境界
+## 4. Production適用
 
-このHotfix PRではProductionへ`202610020002`を適用しない。merge後にchecksumを固定し、責任者の別の明示承認を受けて1回適用する。適用後は権限、RLS、policy、一意制約、row countをread-onlyで再確認する。
+Hotfix PR #612をmerge commit `9d8191389489bfc1b89ba8f45fcb69a2da11baaf`でmergeした後、責任者がforward SHA-256 `06c90f210ded5410b2f3be319599510a01ceb1ddb1e8f4e6c4e752c770edc7ad`を指定してProductionへの1回適用を承認した。local checksum一致を再確認し、`202610020002`を1回適用した。
 
-お気に入りrowは現在0件。作品、商品、publication、注文、決済、Provider、credit、利用期限は変更していない。
+適用後のread-only postflight結果:
+
+- authenticated: SELECT／INSERT／DELETEのみ
+- service_role: SELECT／INSERT／UPDATE／DELETEのみ
+- public／anon: table権限なし
+- authenticatedのUPDATE／TRUNCATE／REFERENCES／TRIGGER: すべてなし
+- service_roleのTRUNCATE／REFERENCES／TRIGGER: すべてなし
+- RLS: 有効
+- owner限定policy: 3件を維持
+- 一意制約とindex: 維持
+- お気に入りrow: 0件
+
+作品、商品、publication、注文、決済、Provider、credit、利用期限は変更していない。Supabase CLIのProduction linkはpostflight後に解除した。
 
 ## 5. ローカル検証
 
