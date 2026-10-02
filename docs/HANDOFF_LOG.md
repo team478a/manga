@@ -1,5 +1,16 @@
 # MANGAI AI Handoff Log
 
+## 2026-10-02 Codex: Marketplace UI-2 Home
+
+- Branch `codex/marketplace-home-20261002`。Marketplace UI-1 commit `fc091143d`上のstacked作業で、最新基準`a761b694`は通常mergeで取り込んだ。
+- `/`を漫画書店Homeへ変更し、Hero、注目、新着、ジャンル・タグ、試し読み、Creator CTAを追加した。UI-1のHeader、mobile navigation、`MarketplaceWorkCard`を再利用し、棚を`MarketplaceWorkShelf`として共通化した。
+- 注目作品はactive商品を持つ作品の新着順であり、人気・ランキング・急上昇・レコメンドではない。試し読み対象も既存sample画像または固定公開版Reader導線を持つ作品だけに限定した。お気に入り、フォロー、レビュー、星評価、Continue Readingは追加していない。
+- Production作品公開、商品active化、release checkpoint、publication fixation、Checkout enable、Stripe、実決済、環境変数、DB migrationは変更していない。
+- Marketplace集中9/9、Hub 1216/1216、Hub typecheck、ESLint、deps error 0（既知warning 2）、packages build、Next Production build、Desktop／390px mobile目視、console error／warning 0、accessibility tree、diff check成功。実データの目視はSupabase未設定のため未実施。
+- 次: UI-2 review後、Phase UI-3作品詳細へ進む。
+
+---
+
 ## 2026-10-02 Codex: Marketplace UI-1 Foundation
 
 - Branch `codex/marketplace-ui-foundation-20261002`、Base `0f93a082f9c3e64904e5d91b4528b8c4c4afeb98`（PR #595 merge commit）。Marketplaceの購入者向け表示基盤を漫画書店型へ更新した。

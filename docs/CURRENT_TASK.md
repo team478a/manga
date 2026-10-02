@@ -1,5 +1,18 @@
 # MANGAI Current Task
 
+## 2026-10-02 Marketplace UI-2 Home
+
+- 状態: `IMPLEMENTED / LOCAL_RELEVANT_GATES_PASSED / PRODUCTION_UNCHANGED`
+- Branch: `codex/marketplace-home-20261002`
+- Base: Marketplace UI-1 `fc091143d`をstacked baseとし、最新`feature/manga-canvas-mvp`の`a761b694`をmerge commit `f4af983e`で取り込み済み。
+- `/`をCreator向け説明ページから漫画書店Homeへ変更し、書店Hero、注目作品、新着作品、ジャンル・タグ、試し読み作品、Creator CTAを追加した。共通棚は`MarketplaceWorkShelf`としてUI-1の`MarketplaceWorkCard`を再利用する。
+- 注目作品は人気・ランキング・レコメンドを推測せず、既存active商品を持つ作品を新着順で最大5件表示する。画面にも「販売中の作品から、新しく公開された順」と明示する。新着、タグ、試し読みも既存`works`、`digital_products`、作者表示RPC、`sample_image_urls`、`current_publication_id`だけから決定する。
+- Supabase未設定または公開作品0件では、書店HeroとCreator CTAを維持し、作品準備中の安全な表示にする。Production作品、商品active化、release checkpoint、publication、Checkout enable、Stripe、環境変数、DB schema／migration、注文、決済は変更していない。Phase 2機能も追加していない。
+- 検証: Marketplace集中9/9、Hub 1216/1216、Hub typecheck、ESLint、deps error 0（既知warning 2）、packages build、Next.js Production build、`git diff --check`成功。localhostでDesktopと390x844 mobileを目視し、console error／warning 0、見出し階層と主要linkのaccessibility treeを確認した。ローカルSupabase資格情報がないため実作品表紙・棚の目視は未実施し、選定と2〜5列Gridは回帰テストで固定した。
+- 次: UI-2のレビュー後、Phase UI-3として作品詳細を縦長表紙、作者、タグ、あらすじ、試し読み、価格、購入CTA、Creator section中心の書店型UIへ変更する。Checkout／Publication契約は維持する。
+
+---
+
 ## 2026-10-02 Marketplace UI-1 Foundation
 
 - Branch: `codex/marketplace-ui-foundation-20261002`
