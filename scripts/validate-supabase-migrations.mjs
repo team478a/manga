@@ -191,6 +191,7 @@ for (const required of [
   "select_cloud_work_publication",
   "publish_cloud_marketplace_listing",
   "withdraw_cloud_marketplace_listing",
+  "marketplace_favorites",
 ])
   assert.ok(schema.includes(required), `schema.sql is missing ${required}`);
 

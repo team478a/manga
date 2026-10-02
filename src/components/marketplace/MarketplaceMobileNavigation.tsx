@@ -17,13 +17,16 @@ function isMarketplaceRoute(pathname: string) {
     pathname === "/works" ||
     /^\/works\/[^/]+$/.test(pathname) ||
     pathname === "/dashboard" ||
-    pathname === "/dashboard/purchases"
+    pathname === "/dashboard/purchases" ||
+    pathname === "/dashboard/favorites"
   );
 }
 
 function isCurrentRoute(pathname: string, href: string) {
   if (href === "/") return pathname === "/";
   if (href === "/works") return pathname.startsWith("/works");
+  if (href === "/dashboard")
+    return pathname === "/dashboard" || pathname === "/dashboard/favorites";
   return pathname === href;
 }
 

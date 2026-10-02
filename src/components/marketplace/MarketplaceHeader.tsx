@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { BookOpen, LogIn, LogOut, Search } from "lucide-react";
+import { BookOpen, Heart, LogIn, LogOut, Search } from "lucide-react";
 import { signOut } from "@/app/actions";
 import { PendingSubmitButton } from "@/components/PendingSubmitButton";
 import { MarketplaceMobileNavigation } from "@/components/marketplace/MarketplaceMobileNavigation";
@@ -64,6 +64,14 @@ export function MarketplaceHeader({
             >
               本棚
             </Link>
+            {profile ? (
+              <Link
+                className="marketplace-header-link"
+                href="/dashboard/favorites"
+              >
+                あとで読む
+              </Link>
+            ) : null}
             {canCreate ? (
               <Link className="marketplace-header-link" href="/creator">
                 漫画を作る
@@ -115,6 +123,15 @@ export function MarketplaceHeader({
             >
               <BookOpen aria-hidden="true" className="h-5 w-5" />
             </Link>
+            {profile ? (
+              <Link
+                aria-label="あとで読むを開く"
+                className="inline-flex h-11 w-11 items-center justify-center rounded-full text-stone-700 transition hover:bg-violet-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
+                href="/dashboard/favorites"
+              >
+                <Heart aria-hidden="true" className="h-5 w-5" />
+              </Link>
+            ) : null}
           </div>
         </div>
       </header>

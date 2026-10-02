@@ -8,7 +8,9 @@ import {
   ShoppingBag,
 } from "lucide-react";
 import { MarketplaceCover } from "@/components/marketplace/MarketplaceCover";
+import { MarketplaceFavoriteButton } from "@/components/marketplace/MarketplaceFavoriteButton";
 import { yen } from "@/lib/format";
+import { loadMarketplaceFavoriteSnapshot } from "@/lib/marketplace-favorites";
 import {
   isMarketplaceCanaryCheckoutListing,
   isMarketplaceCanaryCheckoutTarget,
@@ -24,10 +26,16 @@ import type { DigitalProduct, Work } from "@/lib/types";
 
 export default async function WorkDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{
+    favorite_error?: string;
+    favorite_message?: string;
+  }>;
 }) {
   const { id } = await params;
+  const query = await searchParams;
   const supabase = await createClient();
   const { data: work, error: workError } = await supabase
     .from("works")
@@ -72,6 +80,12 @@ export default async function WorkDetailPage({
   const hasPreview = Boolean(
     work.current_publication_id || work.sample_image_urls?.length,
   );
+  const favoriteSnapshot = await loadMarketplaceFavoriteSnapshot([work.id]);
+  const favoriteControl = {
+    availability: favoriteSnapshot.availability,
+    isFavorite: favoriteSnapshot.workIds.has(work.id),
+    returnTo: `/works/${work.id}`,
+  };
 
   return (
     <main className="marketplace-page">
@@ -105,6 +119,25 @@ export default async function WorkDetailPage({
             <p className="mt-4 text-base font-bold text-stone-600 sm:text-lg">
               クリエイター：{creatorName}
             </p>
+
+            <div className="mt-5">
+              <MarketplaceFavoriteButton
+                control={favoriteControl}
+                variant="full"
+                workId={work.id}
+              />
+            </div>
+
+            {query.favorite_error ? (
+              <p className="mt-4 rounded-lg bg-red-50 p-4 text-sm text-red-700" role="alert">
+                {query.favorite_error}
+              </p>
+            ) : null}
+            {query.favorite_message ? (
+              <p className="mt-4 rounded-lg bg-emerald-50 p-4 text-sm text-emerald-800" role="status">
+                {query.favorite_message}
+              </p>
+            ) : null}
 
             {work.tags?.length ? (
               <div className="mt-5 flex flex-wrap gap-2">

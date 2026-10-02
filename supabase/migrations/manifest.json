@@ -552,7 +552,13 @@
       "description": "公開中の一般作品に限定して安全なクリエイター表示名を提供",
       "forwardSha256": "bdf4525991da2a180604be80b80d077e481919fd2c0eb4dfa9f5851cd4415d8f",
       "rollbackSha256": "26807137a23f29b286dd60fcdbcb768909d2889b07fd2a6ba3525d876e4e1007"
+    },
+    {
+      "id": "202610020001_marketplace_favorites",
+      "description": "公開一般作品を購入権限と分離してあとで読むへ保存",
+      "forwardSha256": "8868fac7836c09fb54b8da0446de6d847816a726562e23acf5d79a1970381d0f",
+      "rollbackSha256": "29edf154b8a90a652cf99223e7377479d4a794f07e8377c1efdb096cdeaad853"
     }
   ],
-  "schemaSha256": "5675046a8ef0798ee229eefbf979a0831d94f54ed0f4cd24a93df24524e373db"
+  "schemaSha256": "feb149bd58582f2f5254afdd7775447dc79fa100ed9b55ea85c879aeda81ab04"
 }

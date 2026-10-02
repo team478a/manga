@@ -1,5 +1,20 @@
 # MANGAI Current Task
 
+## 2026-10-02 Marketplace Phase 2-1 お気に入り（あとで読む）
+
+- 状態: `IMPLEMENTED / LOCAL_FOCUSED_TESTS_PASSED / PRODUCTION_MIGRATION_NOT_APPLIED / PRODUCTION_UNCHANGED`
+- Branch: `codex/marketplace-favorites-phase2-20261002`
+- 公開一般作品を本人の`あとで読む`へ保存する最小機能を実装した。Home、作品一覧、作品詳細で同じ追加・解除操作を使い、認証済み利用者は`/dashboard/favorites`で保存順に確認できる。
+- `marketplace_favorites`はbuyer-work一意、本人限定RLS、公開一般作品だけのINSERT、authenticatedのSELECT／INSERT／DELETEだけを許可する。重複追加と再解除は冪等に扱う。
+- お気に入りは本棚・購入・Reader・Checkoutと分離した。件数公開、ランキング、通知、フォロー、レビュー、推薦、行動追跡、成人向け作品は対象外。
+- migration未適用時はMarketplace本体を壊さず操作を隠し、専用一覧はfail closedで再試行を案内する。loading／error／emptyを分離した。
+- 集中31/31、Hub全1240/1240、migration／rollback静的93/93、Hub typecheck、ESLint、依存境界error 0（既知warning 2）、Production build、`git diff --check`が成功した。
+- Production migration、Productionデータ、作品、商品、注文、決済、Provider、creditは変更していない。
+- 詳細: `docs/MARKETPLACE_FAVORITES_PHASE2_20261002.md`
+- 次: 全ローカルgate成功後にcommit／push／Draft PRを作成し、全CI／Vercel成功で停止する。Production migration適用はmerge後の別の明示承認を必要とする。
+
+---
+
 ## 2026-10-02 Marketplace Production空状態read-only受入れ
 
 - 状態: `PRODUCTION_CONNECTED / EMPTY_STATE_VERIFIED / REAL_DATA_ACCEPTANCE_BLOCKED / PHASE2_NO_GO / PRODUCTION_UNCHANGED`

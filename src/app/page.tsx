@@ -7,6 +7,7 @@ import { MarketplaceWorkShelf } from "@/components/marketplace/MarketplaceWorkSh
 import { inspectMarketplaceCheckoutMode } from "@/lib/checkout-mode";
 import { hasSupabaseEnv } from "@/lib/env";
 import { yen } from "@/lib/format";
+import { loadMarketplaceFavoriteSnapshot } from "@/lib/marketplace-favorites";
 import {
   summarizeMarketplaceCatalogSale,
   type MarketplaceCatalogSale,
@@ -26,6 +27,11 @@ async function loadMarketplaceHome() {
     return {
       works: [] as MarketplaceHomeWork[],
       creatorByWork: new Map<string, string>(),
+      favoriteSnapshot: {
+        availability: "unavailable" as const,
+        rows: [],
+        workIds: new Set<string>(),
+      },
       loadFailed: false,
     };
   }
@@ -54,12 +60,16 @@ async function loadMarketplaceHome() {
   return {
     works,
     creatorByWork: mapPublicWorkCreatorAttributions(creatorRows),
+    favoriteSnapshot: await loadMarketplaceFavoriteSnapshot(
+      works.map((work) => work.id),
+    ),
     loadFailed: Boolean(error),
   };
 }
 
 async function MarketplaceHomeContent() {
-  const { works, creatorByWork, loadFailed } = await loadMarketplaceHome();
+  const { works, creatorByWork, favoriteSnapshot, loadFailed } =
+    await loadMarketplaceHome();
   const sections = selectMarketplaceHomeSections(works);
   const checkout = inspectMarketplaceCheckoutMode();
   const saleByWork = new Map<string, MarketplaceCatalogSale | null>(
@@ -174,6 +184,7 @@ async function MarketplaceHomeContent() {
         <MarketplaceWorkShelf
           creatorByWork={creatorByWork}
           description="販売中の作品から、新しく公開された順にご紹介します。"
+          favoriteSnapshot={favoriteSnapshot}
           saleByWork={saleByWork}
           title="販売中の新着"
           works={sections.highlighted}
@@ -182,6 +193,7 @@ async function MarketplaceHomeContent() {
         <MarketplaceWorkShelf
           creatorByWork={creatorByWork}
           description="MANGAIに届いたばかりのインディーズ漫画です。"
+          favoriteSnapshot={favoriteSnapshot}
           saleByWork={saleByWork}
           title="新着作品"
           works={sections.newest}
@@ -215,6 +227,7 @@ async function MarketplaceHomeContent() {
         <MarketplaceWorkShelf
           creatorByWork={creatorByWork}
           description="サンプルまたは公開版を、購入前に読むことができる作品です。"
+          favoriteSnapshot={favoriteSnapshot}
           linkHref="/works"
           linkLabel="もっと探す"
           saleByWork={saleByWork}

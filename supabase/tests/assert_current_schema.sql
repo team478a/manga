@@ -576,3 +576,18 @@ do $$ begin
     raise exception 'Current schema monitor quality review adjudication objects missing or exposed';
   end if;
 end $$;
+
+do $$ begin
+  if to_regclass('public.marketplace_favorites') is null
+     or not exists (
+       select 1 from pg_class c join pg_namespace n on n.oid=c.relnamespace
+       where n.nspname='public'
+         and c.relname='marketplace_favorites'
+         and c.relrowsecurity
+     )
+     or not has_table_privilege('authenticated','public.marketplace_favorites','select,insert,delete')
+     or has_table_privilege('authenticated','public.marketplace_favorites','update')
+     or has_table_privilege('anon','public.marketplace_favorites','select') then
+    raise exception 'Current schema marketplace favorite contract missing or exposed';
+  end if;
+end $$;

@@ -1,5 +1,17 @@
 # MANGAI AI Handoff Log
 
+## 2026-10-02 Codex: Marketplace Phase 2-1 お気に入り（あとで読む）
+
+- Branch: `codex/marketplace-favorites-phase2-20261002`。Phase 2最初の独立機能として、購入前の公開一般作品を本人の`あとで読む`へ追加・解除・一覧表示できるようにした。
+- Home、作品一覧、作品詳細の共通ハート、認証済み専用一覧`/dashboard/favorites`、ログイン復帰、成功・失敗feedback、loading／error／emptyを実装した。
+- Migration `202610020001_marketplace_favorites`はbuyer-work一意、本人限定RLS、公開一般作品だけのINSERT、authenticatedのSELECT／INSERT／DELETEだけを許可する。forward／rollback、canonical schema、manifest、checksum、SQL assertionを同期した。
+- 重複追加と再解除を冪等にし、migration未適用時は既存Marketplaceを壊さずfail closedにする。本棚、Reader、Checkout、注文、決済からは分離した。
+- ランキング、件数公開、通知、フォロー、レビュー、推薦、行動追跡、成人向け作品は追加していない。
+- 集中31/31、Hub全1240/1240、migration／rollback静的93/93、Hub typecheck、ESLint、依存境界error 0（既知warning 2）、Production build、diff checkが成功した。次はcommit／push／Draft PRを作成し、全CI／Vercel成功で停止する。
+- Production migration、Productionデータ、作品、商品、注文、決済、Provider、creditは変更していない。Production適用はmerge後の別承認事項。
+
+---
+
 ## 2026-10-02 Codex: Marketplace Production空状態read-only受入れ
 
 - Branch: `codex/marketplace-acceptance-blocker-20261002`、Draft PR #609。PR #610はmerge commit `f7201c45`で本branchへ統合済み。

@@ -1284,6 +1284,34 @@ do $$ begin
 end $$;
 
 do $$ begin
+  if to_regclass('public.marketplace_favorites') is null
+     or not exists (
+       select 1 from pg_constraint
+       where conrelid='public.marketplace_favorites'::regclass
+         and conname='marketplace_favorites_profile_work_key'
+     )
+     or not exists (
+       select 1 from pg_class c join pg_namespace n on n.oid=c.relnamespace
+       where n.nspname='public'
+         and c.relname='marketplace_favorites'
+         and c.relrowsecurity
+     )
+     or not has_table_privilege('authenticated','public.marketplace_favorites','select,insert,delete')
+     or has_table_privilege('authenticated','public.marketplace_favorites','update')
+     or has_table_privilege('anon','public.marketplace_favorites','select')
+     or not exists (
+       select 1 from pg_policies
+       where schemaname='public'
+         and tablename='marketplace_favorites'
+         and policyname='marketplace_favorites_owner_insert'
+         and with_check like '%is_public%'
+         and with_check like '%content_class%'
+     ) then
+    raise exception 'Marketplace favorite contract missing or exposed';
+  end if;
+end $$;
+
+do $$ begin
   if position(
        'cardinality(requested_page_ids) = 2' in
        pg_get_constraintdef(
