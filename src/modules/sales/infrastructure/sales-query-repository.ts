@@ -10,8 +10,9 @@ export type SalesOrderRecord = {
   payment_mode: "test" | "live";
   created_at: string;
   digital_products: {
+    id: string;
     title: string;
-    works: { title: string } | null;
+    works: { id: string; title: string } | null;
   } | null;
 };
 
@@ -20,7 +21,7 @@ export async function listSalesOrdersForCreator(profileId: string) {
   return supabase
     .from("orders")
     .select(
-      "id,buyer_email,amount,platform_fee,creator_revenue,status,payment_mode,created_at,digital_products:product_id(title,works:work_id(title))",
+      "id,buyer_email,amount,platform_fee,creator_revenue,status,payment_mode,created_at,digital_products:product_id(id,title,works:work_id(id,title))",
     )
     .eq("creator_id", profileId)
     .order("created_at", { ascending: false })
