@@ -396,6 +396,8 @@ test("previewとserver guardは保存済みCanvas、object-contain、owner RLS�
   assert.match(preview, /sm:grid-cols-8/);
   assert.match(service, /cloud_canvas_snapshots/);
   assert.match(service, /採用済みStoryboardの必須セリフを確認できませんでした/);
+  assert.match(service, /if \(!materialization\.data\) return new Map<number, RequiredPageDialogue\[\]>\(\)/);
+  assert.match(service, /if \(materialization\.error\)\s+throw new DomainError/);
   assert.match(service, /\.eq\("project_id", projectId\)/);
   assert.match(service, /storage\.from\("cloud-assets"\)\.download/);
   assert.match(service, /cloud_manga_quality_logs/);

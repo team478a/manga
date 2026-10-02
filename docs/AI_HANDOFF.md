@@ -1,5 +1,14 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Cloud手動作品の完成判定修正（2026-10-02）
+
+- Branch `codex/cloud-manual-project-completion-20261002`で、手動作成または一般向けDesktop importのCloud作品が、AIネーム対応行なしを理由に完成判定で停止する問題を修正した。
+- `cloud_story_storyboard_projects`の対応行がない場合は必須セリフ0件として扱う。照会エラー、対応行がある作品のStoryboard欠落・形式不正はfail closedを維持する。画像、Canvas保存、PNG、手動確認、全ページ確定、完成版checkpoint条件は変更しない。
+- 責任者はProduction `test`に、既存画像を再利用した非公開2ページE2E専用作品を作り、完成版checkpointとpaused商品まで準備することを承認済み。公開、販売開始、決済、Provider、creditは対象外。実操作はmerge・Production反映後に正規UIで行い、DB直接投入は行わない。
+- 集中19/19、Hub全1243/1243、全typecheck、対象ESLint、Production build、diff check成功。詳細は`docs/CLOUD_MANUAL_PROJECT_COMPLETION_FIX_20261002.md`。
+
+---
+
 ## 0.0 Marketplace 続きから読む Production migration受入れ（2026-10-02）
 
 - 責任者承認済み`202610020003_marketplace_reading_progress`をProduction Project `vmdsyxykcrgxcdbrwlkv`へ1回適用した。原本SHA-256は承認値`34c5c316060910aa7531ad4ac50d11b144b9a51714d1c558740e75010d7d959a`と一致した。
@@ -157,6 +166,7 @@
 - 公開一般作品query、作者表示RPC、active商品価格、Checkout mode／canary、Publication、購入履歴・Download契約は維持した。Production、DB、migration、Stripe、環境変数、作品・商品状態、実決済は変更していない。Phase 2機能は未追加。
 - Marketplace集中28/28、Hub 1209/1209、deps error 0（既知warning 2）、ESLint、Hub typecheck、packages build、Next.js Production build、browser responsive／accessibility確認、diff check成功。全体typecheckはDesktop依存installがローカルディスク空き容量0で停止したため`LOCAL_BLOCKED_EXTERNAL_ENVIRONMENT`（Desktop差分なし）。
 - 次はUI-1レビュー後にMarketplace HomeのPhase UI-2へ進む。注目作品の選定契約がないため、ランキングやレコメンドとして推測実装しない。
+
 ---
 
 ## 0.0 Cloud売上の本番売上内訳（2026-10-02）

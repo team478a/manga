@@ -88,7 +88,14 @@ async function loadRequiredDialogues(
     .select("storyboard_version_id")
     .eq("project_id", projectId)
     .maybeSingle();
-  if (materialization.error || !materialization.data)
+  if (materialization.error)
+    throw new DomainError(
+      "INTERNAL_ERROR",
+      "採用済みStoryboardの必須セリフを確認できませんでした。",
+      { cause: materialization.error },
+    );
+  if (!materialization.data) return new Map<number, RequiredPageDialogue[]>();
+  if (!materialization.data.storyboard_version_id)
     throw new ValidationError("採用済みStoryboardの必須セリフを確認できませんでした。");
   const storyboardResult = await supabase
     .from("cloud_story_storyboard_versions")
