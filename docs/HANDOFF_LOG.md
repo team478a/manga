@@ -30,6 +30,16 @@
 - Production、DB、migration、RPC、Storage、Checkout、Stripe、publication、商品・作品状態、注文、決済、Provider、Job、credit、利用者データは変更していない。Phase 2機能は追加していない。
 - Marketplace集中28/28、Hub 1209/1209、deps error 0（既知warning 2）、ESLint、Hub typecheck、packages build、Next.js Production build、browser Desktop／390px mobile、mobile navigation accessibility、diff check成功。全体typecheckはDesktop依存installがローカルディスク空き容量0で停止したため`LOCAL_BLOCKED_EXTERNAL_ENVIRONMENT`（Desktop差分なし）。Supabase未設定のローカル環境では安全なempty stateを目視確認した。
 - 次はUI-1レビュー後にPhase UI-2 Marketplace Homeへ進む。注目・人気・ランキング相当の新契約をUIだけで作らない。
+---
+
+## 2026-10-02 Codex: Cloud購入案内後の注文・売上確認導線
+
+- Branch: `codex/cloud-sales-empty-state-handoff-20261002`。Base: `4344c4f3833a8422a43101af39acfb67918ffef3`（PR #597 merge commit）。
+- 売上管理で、指定購入者の購入完了後に注文が表示されること、手動再読み込みが必要なことを明示した。注文0件でも販売中作品とテスト販売手順へ戻れる。
+- 既存のcreator owner絞り込み、live受取予定額からのtest注文除外、読込失敗時のfail-closedを維持した。自動polling、注文・決済作成は追加していない。
+- Productionのページ状態、checkpoint、export Job、Storage、publication、作品、商品、注文、決済、Stripe、Provider、Asset、credit、利用期限、通知設定は変更していない。
+- 集中13/13、Hub 1208/1208、deps error 0（既知warning 2）、全型検査、ESLint、migration／rollback静的92/92、Hub Production build、RC repository structure、`git diff --check`成功。外部設定はPENDING、手動E2EはREQUIRED。
+- 次: commit、push、Draft PR、全CI／Vercel成功で停止する。Productionの購入資格設定、URL実送信、注文、決済は明示承認または利用者の明示操作まで行わない。
 
 ---
 

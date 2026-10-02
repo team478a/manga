@@ -36,6 +36,18 @@
 - Production作品、商品active化、release checkpoint、publication、Checkout enable、Stripe、環境変数、DB schema／migration、実決済は変更していない。お気に入り、フォロー、レビュー、星評価、ランキング、急上昇、レコメンド、Continue Readingも追加していない。
 - 検証: Marketplace集中28/28、Hub 1209/1209、deps error 0（既知warning 2）、ESLint、Hub typecheck、packages build、Next.js Production build、ブラウザDesktop／390px mobile表示、mobile navigation accessibility tree、diff check成功。全体typecheckはHub成功後、Desktop依存の追加installがローカルディスク空き容量0で停止したため`LOCAL_BLOCKED_EXTERNAL_ENVIRONMENT`。今回Desktopコードは変更していない。ローカルにSupabase資格情報がないため実作品データの目視は未実施し、Grid列数・表紙比率は静的回帰テストで固定した。
 - 次: UI-1のレビュー後、Phase UI-2としてMarketplace HomeのHero、注目作品、新着作品、ジャンル、試し読み作品、Creator CTAを既存データ契約の範囲で実装する。注目作品の選定契約がないため、人気・ランキング・レコメンドを推測実装しない。
+---
+
+## 2026-10-02 Cloud購入案内後の注文・売上確認導線
+
+- 状態: `IMPLEMENTED / LOCAL_ALL_GATES_PASSED / PRODUCTION_UNCHANGED`
+- Branch: `codex/cloud-sales-empty-state-handoff-20261002`
+- Base: `4344c4f3833a8422a43101af39acfb67918ffef3`（PR #597 merge commit）。
+- 売上管理にマイページへの戻り、手動再読み込み、購入完了後に注文が表示される説明を追加した。注文0件では販売中作品と限定テスト販売手順へ戻れるようにした。
+- 画面を開いたままでは自動更新されないことを明示し、購入者から完了連絡を受けた後に利用者が再読み込みする。自動polling、注文作成、決済開始は追加していない。
+- DB、schema、migration、RPC、Provider、生成、export Job、Asset、credit、利用期限、作品、checkpoint、publication、商品、注文、決済、Productionデータは変更していない。
+- 検証: 集中13/13、Hub 1208/1208、deps error 0（既知warning 2）、全型検査、ESLint、migration／rollback静的92/92、Hub Production build、RC repository structure、`git diff --check`成功。外部設定はPENDING、手動E2EはREQUIRED。
+- 次: commit、push、Draft PR化し、全CI／Vercel成功で停止する。merge後もProductionの購入資格設定、URL送信、注文、決済は利用者操作または別の明示承認を必要とする。
 
 ---
 

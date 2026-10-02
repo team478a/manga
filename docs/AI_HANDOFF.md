@@ -27,6 +27,15 @@
 - 公開一般作品query、作者表示RPC、active商品価格、Checkout mode／canary、Publication、購入履歴・Download契約は維持した。Production、DB、migration、Stripe、環境変数、作品・商品状態、実決済は変更していない。Phase 2機能は未追加。
 - Marketplace集中28/28、Hub 1209/1209、deps error 0（既知warning 2）、ESLint、Hub typecheck、packages build、Next.js Production build、browser responsive／accessibility確認、diff check成功。全体typecheckはDesktop依存installがローカルディスク空き容量0で停止したため`LOCAL_BLOCKED_EXTERNAL_ENVIRONMENT`（Desktop差分なし）。
 - 次はUI-1レビュー後にMarketplace HomeのPhase UI-2へ進む。注目作品の選定契約がないため、ランキングやレコメンドとして推測実装しない。
+---
+
+## 0.0 Cloud購入案内後の注文・売上確認導線（2026-10-02）
+
+- Branch `codex/cloud-sales-empty-state-handoff-20261002`、Base `4344c4f3833a8422a43101af39acfb67918ffef3`（PR #597 merge commit）。購入準備URLを案内した販売者が、注文反映を安全に確認できる導線改善である。
+- 売上管理の上部に購入完了後の反映説明と手動再読み込みを追加した。注文0件では、購入準備URL、指定購入者・期間、完了連絡後の再読み込みを案内し、販売中作品と限定テスト販売手順へ戻せる。
+- 自動polling、注文作成、決済開始、購入者への自動送信は行わない。読込失敗時に売上0円・注文0件と誤表示しない既存のfail-closedも維持する。
+- Production、DB、schema、migration、RPC、Provider、export Job、Asset、credit、作品、checkpoint、publication、商品、注文、決済は変更していない。集中13/13、Hub 1208/1208、deps error 0（既知warning 2）、全型検査、ESLint、migration／rollback静的92/92、Hub Production build、RC repository structure、diff check成功。
+- 次はDraft PRの全CI／Vercel成功で停止する。merge後もProductionの対象者設定、実送信、注文、決済は別の明示承認または利用者の明示操作が必要。
 
 ---
 
