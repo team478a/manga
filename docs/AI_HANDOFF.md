@@ -1,5 +1,15 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Marketplace Production空状態read-only受入れ（2026-10-02）
+
+- Draft PR #609のbranch `codex/marketplace-acceptance-blocker-20261002`で、ログイン済みChromeからProduction `https://app.mang-ai.com`へread-only接続した。利用者`tanaka`の認証は`/`、`/works`、`/dashboard/purchases`、`/dashboard/works`で維持された。
+- 書店Home、作品一覧、本棚、作品管理の正常な空状態を確認した。公開作品、購入履歴、所有作品が0件のため、実表紙、作品詳細、sample／購入済みReader、paid／test／refunded本棚カードは`BLOCKED_NO_ACCEPTANCE_DATA`。
+- MANGAI originのconsole error／warningは0件。MetaMask拡張由来の接続警告だけを製品外ノイズとして分離した。
+- 購入、Checkout、Download、公開状態、DB、Provider、creditは変更していない。Phase 2は`NO-GO`を維持し、受入れ用の既存実データが揃ってからread-only確認を再開する。
+- Marketplace／Checkout／Publication／購入query集中32/32、`git diff --check`成功。次はPR #609の全CI／Vercel成功で停止する。
+
+---
+
 ## 0.0 Marketplace UI監査差分調整（2026-10-02）
 
 - Branch `codex/marketplace-ui-adjustments-20261002`、Draft PR #610。監査Draft PR #609の`f117741f`上にstackし、P1/P2の表示差分だけを修正した。

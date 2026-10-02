@@ -1,22 +1,31 @@
 # Marketplace UI Acceptance Report
 
-## 0. Adjustment実装追記
+## 0. Production read-only実画面確認追記
+
+- 2026-10-02（JST）、責任者がログイン済みのChromeでProduction `https://app.mang-ai.com`へ接続し、認証迂回やデータ変更を行わずに実画面を確認した。
+- ログイン中の利用者は`tanaka`。`/`、`/works`、`/dashboard/purchases`、`/dashboard/works`へ遷移でき、認証状態も維持された。
+- Homeは書店Hero、検索・本棚導線、Creator CTAと「新しい物語を届ける準備中です」の正常な空状態を表示した。`/works`は検索・filterと`0 件の作品`／「公開作品はまだありません」、本棚は「本棚はまだ空です。」、作品管理は「作品はまだありません」を表示した。
+- 画面確認中にMANGAI originのconsole error／warningは検出しなかった。MetaMask拡張由来の接続失敗・listener警告だけを確認し、MANGAIの不具合には分類していない。
+- Production接続そのもののblockerは解消した。一方、公開作品、所有作品、購入履歴が0件のため、実表紙・作品詳細・sample Reader・購入済みReader・paid／test／refunded本棚カードは`BLOCKED_NO_ACCEPTANCE_DATA`のままである。
+- 購入、Checkout、Download、公開状態変更、DB mutation、Provider実行、credit消費は0件。Phase 2は実データ受入れ完了まで`NO-GO`を維持する。
+
+## 0.1 Adjustment実装追記
 
 - Draft PR #610（`codex/marketplace-ui-adjustments-20261002`）で、下記監査結果のP1-1〜P1-3とP2-1〜P2-5を静的に解消した。
 - 表紙4画面は共通`MarketplaceCover`の`object-contain` + neutral matteへ統一した。
 - Detailは試し読みを価格より前へ移し、既存owner／paid entitlementに基づいて「無料で試し読み」「漫画を読む」を分離した。
 - 選定根拠に合う棚名、44px chip、本棚語彙、購入不能時の説明も調整した。
-- P1-4の実作品、390 × 844／768／1280／1440、認証済み本棚、Reader、実画面a11yは引き続き`BLOCKED_EXTERNAL_ENVIRONMENT`。したがって総合判定とPhase 2の`NO-GO`は維持する。
+- Productionの認証済み空状態は実画面で確認済み。P1-4のうち実作品、実データ入り本棚、Reader、実コンテンツを使う4 viewport／a11yは`BLOCKED_NO_ACCEPTANCE_DATA`。したがってPhase 2の`NO-GO`は維持する。
 - 関連37/37、Hub 1237/1237、Hub typecheck、ESLint、deps、packages／Next Production build、RC repository structure、diff checkは成功した。RC外部設定はPENDING、手動E2EはREQUIREDである。
 - PR #610のCore quality、Migration roundtrip、Desktop Windows、Vercel Previewは全て成功した。
 
 ## 1. 判定
 
-- 総合判定: `CONDITIONAL / BLOCKED_EXTERNAL_ENVIRONMENT`
+- 総合判定: `CONDITIONAL / PRODUCTION_EMPTY_STATE_VERIFIED / BLOCKED_NO_ACCEPTANCE_DATA`
 - 実装状態: Marketplace UI-1〜5の静的構造と回帰テストは成立している。
-- 読者体験の受入れ状態: 未完了。実作品・認証済み本棚を表示できる環境へ到達できず、表紙トリミング、実データ密度、responsive崩れ、keyboard操作、contrastを実画面で最終確認できていない。
-- Phase 2移行判定: `NO-GO`。P1のUI調整方針を確定し、実データread-only受入れを完了してから判断する。
-- Production、DB、作品、商品、publication、Checkout、Stripe、注文、決済、環境変数、UIコードは変更していない。
+- 読者体験の受入れ状態: 一部完了。Productionへ認証済みで接続し、公開作品0件・購入0件・所有作品0件の正常な空状態を確認した。実作品と既存購入データがないため、実表紙、作品詳細、Reader、実データ密度、responsive、keyboard操作、contrastの最終確認は未完了。
+- Phase 2移行判定: `NO-GO`。実データread-only受入れを完了してから判断する。
+- この実画面確認によるProduction、DB、作品、商品、publication、Checkout、Stripe、注文、決済、環境変数の変更は0件。PR #610由来のUI調整は本PRへ取り込み済み。
 
 ## 2. 監査基準
 
@@ -30,8 +39,8 @@
 | Marketplace UI実装 | PR #602 `feat: Marketplaceを漫画書店型UIへ刷新`、merge `8882c15be1f57833fb800c07d3750f3bd193c66f` |
 | 次工程定義 | PR #608 `docs: Marketplace次工程とPhase 2境界を定義`、merge `ee7018fec559c5bf210e8615ea84d507554da70c` |
 | 今回の監査PR | Draft PR #609 |
-| 対象環境 | Source、集中テスト、GitHub CI、Vercel deploymentへの匿名HTTP |
-| 実画面環境 | Vercel SSO保護下。認証済みbrowser接続はrequest-header policy読込失敗 |
+| 対象環境 | Source、集中テスト、GitHub CI、Vercel deploymentへの匿名HTTP、Productionの認証済みChrome |
+| 実画面環境 | `https://app.mang-ai.com`へ`tanaka`でログイン済み。公開・購入・所有作品はいずれも0件 |
 
 ## 3. 確認範囲と証跡
 
@@ -43,8 +52,10 @@
 - `git diff --check`に成功した。
 - PR #609のCore quality、Migration roundtrip、Windows build、Vercel、Preview Commentsは全て成功している。
 - Vercel対象URLへの匿名HEADはVercel SSOへ`302`となることを再確認した。
+- Productionの認証済みChromeで`/`、`/works`、`/dashboard/purchases`、`/dashboard/works`の正常な空状態とログイン維持を確認した。
+- MANGAI originのconsole error／warningは0件。MetaMask拡張由来の警告は製品外ノイズとして分離した。
 
-### BLOCKED_EXTERNAL_ENVIRONMENT
+### BLOCKED_NO_ACCEPTANCE_DATA
 
 - 確認できなかったこと:
   - 実作品の表紙がHome、一覧、詳細、本棚で切れないこと。
@@ -55,17 +66,18 @@
 - 理由:
   - LocalにはSupabase資格情報と実作品・購入データがない。
   - Vercel deploymentはSSO保護され、匿名HTTPは`302`でVercel SSOへ転送される。
-  - 認証済みbrowser接続は再試行とsession reset後もrequest-header policy読込に失敗した。
+  - Productionの認証済みbrowser接続は成功したが、対象アカウントと公開Marketplaceに受入れ用の実作品・購入データがない。
 - 必要条件:
-  - Vercel SSOへ正規にログイン済みで操作可能なbrowser接続、またはProductionと分離された実データ相当の隔離Staging。
   - 縦横比が異なる実表紙を含む公開一般作品、固定publication/sample、active商品。
   - paid、test、refundedを含む既存の認証済み購入者アカウント。新規購入や実決済は不要。
 - コード上で確認できた範囲:
   - route、表示順、breakpoint、object-fit、状態分岐、権限サービス、ARIA、empty/error/loading契約。
 - 安全対応:
-  - 認証迂回、Productionデータ変更、購入、Download実行、Checkout、DB変更は行っていない。
+  - 認証迂回、Productionデータ変更、購入、Download実行、Checkout、DB変更、Provider実行、credit消費は行っていない。
 
 ## 4. 読者体験評価
+
+> この節から「9. モックとの差分」までは、PR #610によるAdjustment実装前の監査記録である。現在状態は「0.1 Adjustment実装追記」と「10. 現在のMarketplace完成度」を正本とする。
 
 ### Home
 
@@ -174,12 +186,12 @@
 
 ## 10. 現在のMarketplace完成度
 
-- 「ここで漫画を探せる」: 静的には達成。Home、検索、ジャンル、一覧、Headerの優先順位が書店型である。
-- 「読んでみたい」: 条件付き。表紙が全体表示される保証がなく、実作品での訴求力を確認できていない。
-- 「試し読みしてみよう」: 導線は強いが、Detailの情報順と状態別文言が未完成。
-- 技術的完成度: 高い。集中テスト22/22、既存CI成功、状態設計あり。
-- 読者体験の受入れ完成度: 未完了。P1修正候補と実データ実画面受入れが残る。
+- 「ここで漫画を探せる」: Productionの書店Home・検索・作品一覧の空状態まで確認済み。実作品を使う探索体験は未確認。
+- 「読んでみたい」: 共通coverで表紙全体を守る実装は完了した。実表紙が0件のため訴求力と余白の最終確認は未完了。
+- 「試し読みしてみよう」: Detailの情報順と状態別CTAは調整済み。sample／購入済みReaderの実データ遷移は未確認。
+- 技術的完成度: 高い。Adjustment後の関連37/37、Hub 1237/1237、既存CI／Vercel成功、状態設計あり。
+- 読者体験の受入れ完成度: 一部完了。Production接続と空状態は合格、実コンテンツ受入れは`BLOCKED_NO_ACCEPTANCE_DATA`。
 
 ## 11. 停止条件
 
-この報告では修正を実装しない。責任者がUI Gap ListとRecommended UI Adjustment Planを確認し、Marketplace UI Adjustment PRの開始範囲を承認するまで停止する。
+PR #610のAdjustment実装はPR #609へ統合済み。PR #609の文書更新後に全CI／Vercel成功で停止する。Phase 2は、既存の公開作品・購入データを使うread-only受入れが完了するまで開始しない。

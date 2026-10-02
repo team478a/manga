@@ -1,5 +1,16 @@
 # MANGAI AI Handoff Log
 
+## 2026-10-02 Codex: Marketplace Production空状態read-only受入れ
+
+- Branch: `codex/marketplace-acceptance-blocker-20261002`、Draft PR #609。PR #610はmerge commit `f7201c45`で本branchへ統合済み。
+- ログイン済みChromeからProduction `https://app.mang-ai.com`へ接続し、利用者`tanaka`で`/`、`/works`、`/dashboard/purchases`、`/dashboard/works`をread-only確認した。
+- Home、作品一覧、本棚、作品管理はいずれも正常な空状態を表示した。公開作品・購入履歴・所有作品が0件のため、実コンテンツ受入れは`BLOCKED_NO_ACCEPTANCE_DATA`として残した。
+- MANGAI originのconsole error／warningは0件。MetaMask拡張由来の警告は製品外ノイズ。購入、Checkout、Download、Productionデータ、DB、Provider、creditの変更は0件。
+- Marketplace／Checkout／Publication／購入query集中32/32、`git diff --check`成功。
+- 次: 文書差分を検証しPR #609へpushする。全CI／Vercel成功で停止し、実データread-only受入れ完了まではPhase 2を開始しない。
+
+---
+
 ## 2026-10-02 Codex: Marketplace UI監査差分調整
 
 - Branch: `codex/marketplace-ui-adjustments-20261002`、Draft PR #610。監査Draft PR #609 commit `f117741f`をstacked baseとして、承認された監査差分の修正だけを実施した。

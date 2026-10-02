@@ -1,5 +1,18 @@
 # MANGAI Current Task
 
+## 2026-10-02 Marketplace Production空状態read-only受入れ
+
+- 状態: `PRODUCTION_CONNECTED / EMPTY_STATE_VERIFIED / REAL_DATA_ACCEPTANCE_BLOCKED / PHASE2_NO_GO / PRODUCTION_UNCHANGED`
+- Branch: `codex/marketplace-acceptance-blocker-20261002`、Draft PR #609。PR #610のUI調整をmerge commit `f7201c45`で取り込み済み。
+- Productionへログイン済みChromeでread-only接続し、利用者`tanaka`の認証維持、Home、作品一覧、本棚、作品管理の正常な空状態を確認した。
+- 公開作品、購入履歴、所有作品は0件。実表紙、作品詳細、sample／購入済みReader、paid／test／refunded本棚カードは`BLOCKED_NO_ACCEPTANCE_DATA`であり、合格扱いにしない。
+- MANGAI originのconsole error／warningは0件。MetaMask拡張由来の警告だけを製品外ノイズとして分離した。
+- 購入、Checkout、Download、公開状態変更、DB mutation、Provider実行、credit消費は0件。
+- 検証: Marketplace／Checkout／Publication／購入query集中32/32、`git diff --check`成功。
+- 次: 文書差分を検証してPR #609へpushし、全CI／Vercel成功で停止する。Phase 2は実データread-only受入れ完了まで開始しない。
+
+---
+
 ## 2026-10-02 Marketplace UI監査差分調整
 
 - 状態: `IMPLEMENTED / STATIC_VERIFIED / REAL_DATA_ACCEPTANCE_BLOCKED / PHASE2_NO_GO / PRODUCTION_UNCHANGED`
