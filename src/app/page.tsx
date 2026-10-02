@@ -1,8 +1,8 @@
-import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, BookOpen, PenLine, Search } from "lucide-react";
 import { Suspense } from "react";
 import { MarketplaceLoadingState } from "@/components/marketplace/MarketplaceLoadingState";
+import { MarketplaceCover } from "@/components/marketplace/MarketplaceCover";
 import { MarketplaceWorkShelf } from "@/components/marketplace/MarketplaceWorkShelf";
 import { inspectMarketplaceCheckoutMode } from "@/lib/checkout-mode";
 import { hasSupabaseEnv } from "@/lib/env";
@@ -101,23 +101,16 @@ async function MarketplaceHomeContent() {
           {featured ? (
             <article className="mx-auto grid w-full max-w-xl grid-cols-[minmax(0,0.72fr)_minmax(0,1fr)] items-center gap-5 rounded-2xl border border-white/80 bg-white/85 p-4 shadow-xl shadow-violet-950/10 backdrop-blur sm:gap-7 sm:p-6">
               <Link
-                className="relative aspect-[2/3] overflow-hidden rounded-xl bg-stone-100 outline-none ring-offset-4 focus-visible:ring-2 focus-visible:ring-violet-500"
+                className="block rounded-xl outline-none ring-offset-4 focus-visible:ring-2 focus-visible:ring-violet-500"
                 href={`/works/${featured.id}`}
               >
-                {featured.image_url ? (
-                  <Image
-                    alt={`${featured.title}の表紙`}
-                    className="object-cover"
-                    fill
-                    priority
-                    sizes="(max-width: 1023px) 40vw, 22vw"
-                    src={featured.image_url}
-                  />
-                ) : (
-                  <span className="flex h-full items-center justify-center bg-gradient-to-br from-violet-100 to-stone-100 px-3 text-center text-sm font-bold text-violet-800">
-                    表紙準備中
-                  </span>
-                )}
+                <MarketplaceCover
+                  className="rounded-xl"
+                  imageUrl={featured.image_url}
+                  priority
+                  sizes="(max-width: 1023px) 40vw, 22vw"
+                  title={featured.title}
+                />
               </Link>
               <div className="min-w-0">
                 <p className="text-xs font-black tracking-widest text-violet-700">
@@ -182,7 +175,7 @@ async function MarketplaceHomeContent() {
           creatorByWork={creatorByWork}
           description="販売中の作品から、新しく公開された順にご紹介します。"
           saleByWork={saleByWork}
-          title="注目作品"
+          title="販売中の新着"
           works={sections.highlighted}
         />
 

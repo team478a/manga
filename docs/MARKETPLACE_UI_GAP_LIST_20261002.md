@@ -1,5 +1,17 @@
 # Marketplace UI Gap List
 
+## Adjustment後の状態
+
+| ID | 状態 | 根拠 |
+| --- | --- | --- |
+| P1-1 | 静的解消 | 4画面を共通`MarketplaceCover`の`object-contain`へ統一 |
+| P1-2 | 静的解消 | Detailの試し読みCTAを価格より前へ移動 |
+| P1-3 | 静的解消 | 既存owner／paid entitlementを共有し、CTA文言を状態別に分離 |
+| P1-4 | 未解消 | 正規認証済み実データ環境へ到達できず、実画面受入れが必要 |
+| P2-1〜P2-5 | 静的解消 | 棚名、CTA重複、44px chip、本棚語彙、canary説明を調整 |
+
+Phase 2候補であるP3は未着手。実データ受入れ完了までPhase 2は`NO-GO`を維持する。
+
 基準HEADは`feature/manga-canvas-mvp@ee7018fec559c5bf210e8615ea84d507554da70c`。実作品を表示する環境へ到達できないため、実画面固有の合否は`BLOCKED_EXTERNAL_ENVIRONMENT`である。
 
 ## P0

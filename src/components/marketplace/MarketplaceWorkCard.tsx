@@ -1,5 +1,5 @@
-import Image from "next/image";
 import Link from "next/link";
+import { MarketplaceCover } from "./MarketplaceCover";
 import { yen } from "@/lib/format";
 import type { MarketplaceCatalogSale } from "@/lib/marketplace-catalog";
 import type { Work } from "@/lib/types";
@@ -19,23 +19,13 @@ export function MarketplaceWorkCard({
         className="block rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-4"
         href={`/works/${work.id}`}
       >
-        <div className="relative aspect-[2/3] overflow-hidden rounded-lg border border-stone-200 bg-stone-100 shadow-sm transition duration-200 group-hover:-translate-y-1 group-hover:shadow-lg motion-reduce:transform-none motion-reduce:transition-none">
-          {work.image_url ? (
-            <Image
-              alt={`${work.title}の表紙`}
-              className="object-cover transition duration-300 group-hover:scale-[1.02] motion-reduce:transform-none motion-reduce:transition-none"
-              fill
-              sizes="(max-width: 639px) 50vw, (max-width: 1023px) 33vw, (max-width: 1279px) 25vw, 20vw"
-              src={work.image_url}
-            />
-          ) : (
-            <div className="flex h-full flex-col items-center justify-center bg-gradient-to-br from-violet-50 to-stone-100 px-3 text-center text-stone-500">
-              <span className="text-xs font-bold tracking-widest text-violet-700">
-                MANGAI
-              </span>
-              <span className="mt-3 text-sm font-semibold">表紙準備中</span>
-            </div>
-          )}
+        <div className="relative transition duration-200 group-hover:-translate-y-1 group-hover:shadow-lg motion-reduce:transform-none motion-reduce:transition-none">
+          <MarketplaceCover
+            className="shadow-sm"
+            imageUrl={work.image_url}
+            sizes="(max-width: 639px) 50vw, (max-width: 1023px) 33vw, (max-width: 1279px) 25vw, 20vw"
+            title={work.title}
+          />
           {sale ? (
             <span className="absolute bottom-2 left-2 rounded-full bg-white/95 px-2.5 py-1 text-[11px] font-bold text-violet-800 shadow-sm">
               {sale.label}

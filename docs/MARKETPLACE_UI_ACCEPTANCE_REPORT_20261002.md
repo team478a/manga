@@ -1,5 +1,15 @@
 # Marketplace UI Acceptance Report
 
+## 0. Adjustment実装追記
+
+- Draft PR #610（`codex/marketplace-ui-adjustments-20261002`）で、下記監査結果のP1-1〜P1-3とP2-1〜P2-5を静的に解消した。
+- 表紙4画面は共通`MarketplaceCover`の`object-contain` + neutral matteへ統一した。
+- Detailは試し読みを価格より前へ移し、既存owner／paid entitlementに基づいて「無料で試し読み」「漫画を読む」を分離した。
+- 選定根拠に合う棚名、44px chip、本棚語彙、購入不能時の説明も調整した。
+- P1-4の実作品、390 × 844／768／1280／1440、認証済み本棚、Reader、実画面a11yは引き続き`BLOCKED_EXTERNAL_ENVIRONMENT`。したがって総合判定とPhase 2の`NO-GO`は維持する。
+- 関連37/37、Hub 1237/1237、Hub typecheck、ESLint、deps、packages／Next Production build、RC repository structure、diff checkは成功した。RC外部設定はPENDING、手動E2EはREQUIREDである。
+- PR #610のCore quality、Migration roundtrip、Desktop Windows、Vercel Previewは全て成功した。
+
 ## 1. 判定
 
 - 総合判定: `CONDITIONAL / BLOCKED_EXTERNAL_ENVIRONMENT`

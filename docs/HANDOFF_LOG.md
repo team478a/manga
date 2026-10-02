@@ -1,5 +1,16 @@
 # MANGAI AI Handoff Log
 
+## 2026-10-02 Codex: Marketplace UI監査差分調整
+
+- Branch: `codex/marketplace-ui-adjustments-20261002`、Draft PR #610。監査Draft PR #609 commit `f117741f`をstacked baseとして、承認された監査差分の修正だけを実施した。
+- 共通coverを追加し、Home／Works／Detail／Bookshelfを`object-contain` + neutral matteへ統一した。Detailは試し読みを価格より前へ移し、Readerと同じowner／paid entitlementを共通helperから取得してCTAを状態別にした。
+- 「注目作品」を「販売中の新着」へ修正し、filter chip 44px、本棚語彙、canary対象外・準備中の説明を調整した。既存Reader権限、購入判定、Checkout policyは維持した。
+- 関連37/37、Hub 1237/1237、Hub typecheck、ESLint、deps error 0（既知warning 2）、packages／Next Production build、RC repository structure、`git diff --check`成功。RC外部設定はPENDING、手動E2EはREQUIRED。
+- 実データ・実画面受入れは外部環境blockerが残る。認証迂回、Production、DB、作品、商品、publication、Checkout enable、Stripe、注文、決済、環境変数、Phase 2機能の変更は0件。
+- PR #610のCore quality、Migration roundtrip、Desktop Windows、Vercel Previewは全て成功した。責任者レビューで停止し、実データread-only受入れ後にPhase 2可否を再判定する。
+
+---
+
 ## 2026-10-02 Codex: Marketplace実画面受入れ・UI差分監査
 
 - Branch: `codex/marketplace-acceptance-blocker-20261002`。Base: `feature/manga-canvas-mvp@ee7018fec559c5bf210e8615ea84d507554da70c`。Draft PR #609。

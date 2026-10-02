@@ -1,4 +1,3 @@
-import Image from "next/image";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -9,6 +8,7 @@ import {
   Search,
 } from "lucide-react";
 import { InlineErrorMessage } from "@/components/InlineErrorMessage";
+import { MarketplaceCover } from "@/components/marketplace/MarketplaceCover";
 import { requireProfile } from "@/lib/auth";
 import { yen } from "@/lib/format";
 import { purchaseDownloadFailureMessage } from "@/lib/purchase-download-feedback";
@@ -62,7 +62,7 @@ export default async function PurchasesPage({
           </div>
           {!error && purchases.length ? (
             <p className="mt-4 text-sm font-bold text-stone-500 sm:mt-0">
-              {purchases.length}冊の購入履歴
+              {purchases.length}冊の本
             </p>
           ) : null}
         </header>
@@ -109,25 +109,12 @@ export default async function PurchasesPage({
                     key={purchase.id}
                   >
                     <div className="grid grid-cols-[112px_minmax(0,1fr)] gap-4 p-4 sm:grid-cols-[132px_minmax(0,1fr)] sm:gap-5 sm:p-5">
-                      <div className="relative aspect-[2/3] overflow-hidden rounded-lg border border-stone-200 bg-stone-100 shadow-sm">
-                        {work?.image_url ? (
-                          <Image
-                            alt={`${work.title}の表紙`}
-                            className="object-cover"
-                            fill
-                            sizes="132px"
-                            src={work.image_url}
-                          />
-                        ) : (
-                          <div className="flex h-full flex-col items-center justify-center bg-gradient-to-br from-violet-50 to-stone-100 px-2 text-center text-stone-500">
-                            <LibraryBig
-                              aria-hidden="true"
-                              className="h-7 w-7 text-violet-400"
-                            />
-                            <span className="mt-2 text-xs font-bold">表紙準備中</span>
-                          </div>
-                        )}
-                      </div>
+                      <MarketplaceCover
+                        className="shadow-sm"
+                        imageUrl={work?.image_url}
+                        sizes="132px"
+                        title={work?.title ?? "作品"}
+                      />
 
                       <div className="min-w-0 py-1">
                         <div className="flex flex-wrap gap-2">
@@ -204,7 +191,7 @@ export default async function PurchasesPage({
                 <LibraryBig aria-hidden="true" className="h-7 w-7" />
               </div>
               <h2 className="mt-5 text-xl font-black text-stone-900">
-                購入履歴はありません。
+                本棚はまだ空です。
               </h2>
               <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-stone-600">
                 気になる漫画を探して、試し読みから始めてみましょう。

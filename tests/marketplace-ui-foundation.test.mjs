@@ -32,19 +32,23 @@ test("モバイル下部ナビは購入者向け4項目に限定しReaderを覆�
   assert.ok(navigation.includes('/^\\/works\\/[^/]+$/.test(pathname)'));
 });
 
-test("作品一覧はスマホ2列・PC4〜5列の縦長表紙Gridを使う", async () => {
-  const [page, card] = await Promise.all([
+test("作品一覧はスマホ2列・PC4〜5列で表紙全体を表示する", async () => {
+  const [page, card, cover] = await Promise.all([
     read("src/app/works/page.tsx"),
     read("src/components/marketplace/MarketplaceWorkCard.tsx"),
+    read("src/components/marketplace/MarketplaceCover.tsx"),
   ]);
 
   assert.match(page, /grid-cols-2/);
   assert.match(page, /lg:grid-cols-4/);
   assert.match(page, /xl:grid-cols-5/);
   assert.match(page, /<MarketplaceWorkCard/);
-  assert.match(card, /aspect-\[2\/3\]/);
-  assert.match(card, /alt=\{`\$\{work\.title\}の表紙`\}/);
+  assert.match(card, /<MarketplaceCover/);
   assert.match(card, /focus-visible:ring-2/);
+  assert.match(cover, /aspect-\[2\/3\]/);
+  assert.match(cover, /alt=\{`\$\{title\}の表紙`\}/);
+  assert.match(cover, /object-contain/);
+  assert.doesNotMatch(cover, /object-cover/);
 });
 
 test("検索フィルターは既存のq・tag・sale契約を維持する", async () => {
@@ -57,4 +61,6 @@ test("検索フィルターは既存のq・tag・sale契約を維持する", asy
   assert.match(filters, /query\.set\("sale", "active"\)/);
   assert.match(filters, /ジャンル・タグ/);
   assert.match(filters, /販売中のみ/);
+  const styles = await read("src/app/globals.css");
+  assert.match(styles, /\.marketplace-filter-chip[\s\S]*min-h-11/);
 });

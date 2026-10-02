@@ -1,5 +1,12 @@
 # Recommended Marketplace UI Adjustment Plan
 
+## 実施結果
+
+- 項目1〜8を`codex/marketplace-ui-adjustments-20261002`で実装した。項目3は新しいAPI／DB契約を作らず、既存Readerのowner／paid判定を共通application helperへ集約して再利用した。
+- 項目9の静的回帰は完了したが、実表紙fixture相当の実作品、4 viewport、認証済み本棚・Reader、実画面a11yは外部環境blockerのため未完了である。
+- Phase 2機能、DB migration、Production作品・商品・publication、Checkout enable、Stripe、実決済は変更していない。
+- 次の完了条件は、正規認証済み環境または隔離Stagingで項目9をread-only確認すること。完了まではPhase 2へ進まない。
+
 責任者承認後に別のMarketplace UI Adjustment PRとして実施する候補。最大10項目に限定し、Phase 2機能、DB migration、Production操作、Checkout変更は含めない。
 
 ## 推奨項目
