@@ -1,5 +1,14 @@
 # MANGAI AI Handoff Log
 
+## 2026-10-02 Codex: Marketplaceお気に入り Production UI空状態受入れ
+
+- 責任者提供のProductionスクリーンショットから、`https://app.mang-ai.com/dashboard/favorites`を利用者`tanaka`の認証済み状態で確認した。
+- Header導線、ページ見出し、購入と分離した説明、空状態、Marketplaceへ戻るCTAが正常に表示され、migration未適用／権限エラーはなかった。
+- DBのrow 0件と「あとで読むはまだ空です。」が一致するため、認証済み空状態は合格。実作品が必要な追加・解除・一覧カード等は`NOT_RUN`として分離した。
+- Productionデータ、作品、商品、publication、注文、決済、Provider、credit、利用期限は変更していない。実操作E2Eは別承認事項。
+
+---
+
 ## 2026-10-02 Codex: Marketplaceお気に入り Production権限hardening
 
 - 責任者承認を受け、Production Project `vmdsyxykcrgxcdbrwlkv`へ`202610020001_marketplace_favorites`を1回だけ適用した。checksum一致、適用前table不存在、適用後table／RLS／一意制約／index／3 policy／row 0件を確認した。

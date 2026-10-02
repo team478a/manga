@@ -1,5 +1,15 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Marketplaceお気に入り Production UI空状態受入れ（2026-10-02）
+
+- 責任者提供のProductionスクリーンショットで、`https://app.mang-ai.com/dashboard/favorites`を利用者`tanaka`のログイン状態で確認した。
+- Headerの「あとで読む」導線、ページ見出し、購入と分離した説明、空状態「あとで読むはまだ空です。」、Marketplaceへ戻る「漫画を探す」CTAが正常に表示された。migration未適用エラーや権限エラーは表示されていない。
+- DB postflightのrow 0件とUI空状態が一致するため、Productionの認証済み空状態は合格とする。
+- 公開一般作品がないため、追加・解除、作品カード、重複追加、再解除、非公開化後の非表示は未確認で合格扱いにしない。これらは既存実作品と責任者のmutation承認が揃ってから行う。
+- お気に入りrow、作品、商品、publication、注文、決済、Provider、credit、利用期限は変更していない。
+
+---
+
 ## 0.0 Marketplaceお気に入り Production権限hardening（2026-10-02）
 
 - 責任者承認済み`202610020001_marketplace_favorites`をProduction Project `vmdsyxykcrgxcdbrwlkv`へ1回適用した。local SHA-256は承認値`8868fac7836c09fb54b8da0446de6d847816a726562e23acf5d79a1970381d0f`と一致し、適用前はtable不存在だった。
