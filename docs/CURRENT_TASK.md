@@ -1,5 +1,18 @@
 # MANGAI Current Task
 
+## 2026-10-02 Cloud売上の振込・精算境界案内
+
+- 状態: `IMPLEMENTED / LOCAL_ALL_GATES_PASSED / PRODUCTION_UNCHANGED`
+- Branch: `codex/cloud-sales-payout-boundary-20261002`
+- Base: `067fa2ec9969eda48a5700e92c26c40f8644ea73`（PR #603 merge commit）。
+- 売上管理の金額表示を「クリエイター受取予定額（参考）」へ改め、支払い済みの本番注文だけを合計した参考値であること、現在はMANGAIからの振込・精算確定を利用できないことを明示した。
+- テスト購入は参考集計に含まず、実際の請求・売上・振込も発生しないことを同じ案内で示した。限定テスト販売と収益管理の案内へ戻れるリンクも追加した。
+- DB、schema、migration、RPC、Provider、生成、export Job、Asset、credit、利用期限、作品、checkpoint、publication、商品、注文、決済、Productionデータは変更していない。
+- 検証: 集中12/12、Hub 1213/1213、deps error 0（既知warning 2）、全型検査、ESLint、migration／rollback静的92/92、Hub Production build、RC repository structure、`git diff --check`成功。外部設定はPENDING、手動E2EはREQUIRED。
+- 次: commit、push、Draft PR化し、全CI／Vercel成功で停止する。merge後もProductionの作品・商品・注文・決済変更は利用者操作または別の明示承認を必要とする。
+
+---
+
 ## 2026-10-02 Cloud売上注文の安全な絞り込み
 
 - 状態: `IMPLEMENTED / LOCAL_ALL_GATES_PASSED / PRODUCTION_UNCHANGED`

@@ -1,5 +1,16 @@
 # MANGAI AI Handoff Log
 
+## 2026-10-02 Codex: Cloud売上の振込・精算境界案内
+
+- Branch: `codex/cloud-sales-payout-boundary-20261002`。Base: `067fa2ec9969eda48a5700e92c26c40f8644ea73`（PR #603 merge commit）。
+- 売上管理の受取予定額を参考表示と明記し、対象は支払い済み本番注文のみ、MANGAIからの振込・精算確定は現在利用できないことを案内した。
+- テスト購入は参考集計に含めず、実際の請求・売上・振込も発生しないことを示し、限定テスト販売と収益管理の案内へ戻れるようにした。
+- Productionのページ状態、checkpoint、export Job、Storage、publication、作品、商品、注文、決済、Stripe、Provider、Asset、credit、利用期限、通知設定は変更していない。
+- 集中12/12、Hub 1213/1213、deps error 0（既知warning 2）、全型検査、ESLint、migration／rollback静的92/92、Hub Production build、RC repository structure、`git diff --check`成功。外部設定はPENDING、手動E2EはREQUIRED。
+- 次: commit、push、Draft PR、全CI／Vercel成功で停止する。Productionの作品・商品・注文・決済変更は明示承認または利用者の明示操作まで行わない。
+
+---
+
 ## 2026-10-02 Codex: Cloud売上注文の安全な絞り込み
 
 - Branch: `codex/cloud-sales-order-filters-20261002`。Base: `6aa04463170ce6b41f232eb4e41bd58c81038e5a`（PR #601 merge commit）。
