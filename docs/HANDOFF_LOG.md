@@ -6,8 +6,9 @@
 - 売上管理へ受付済み、支払い済み、不成立・返金の状態別件数を追加し、テストと本番を合算する状態件数と、支払い済み本番だけの売上内訳を分けて案内した。
 - 一覧に支払い済みと不成立・返金の安全な絞り込みを追加した。読込失敗時は件数を0へ変換せず、状態別件数を確認不能として表示する。
 - Productionのページ状態、checkpoint、export Job、Storage、publication、作品、商品、注文、決済、Stripe、Provider、Asset、credit、利用期限、通知設定は変更していない。
-- 集中14/14、Hub 1215/1215、deps error 0（既知warning 2）、全型検査、ESLint、migration／rollback静的92/92、Hub Production build、RC repository structure、`git diff --check`成功。外部設定はPENDING、手動E2EはREQUIRED。
-- 次: commit、push、Draft PR、全CI／Vercel成功で停止する。Productionの作品・商品・注文・決済変更は明示承認または利用者の明示操作まで行わない。
+- 最新基準`342cdf12`を通常mergeし、引継ぎ文書3件だけを両側保持で解消した。実装コードに競合はなく、解消mergeは`15f440e0`。
+- 最新基準統合後に売上集中10/10、Hub 1237/1237、deps error 0（既知warning 2）、全型検査、ESLint、migration／rollback静的92/92、Hub Production build、RC repository structure、`git diff --check`成功。外部設定はPENDING、手動E2EはREQUIRED。
+- 次: 通常push後、PR #606の全CI／Vercel成功で停止する。Productionの作品・商品・注文・決済変更は明示承認または利用者の明示操作まで行わない。
 
 ---
 
