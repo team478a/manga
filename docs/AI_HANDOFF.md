@@ -1,13 +1,22 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Marketplace 続きから読む Production migration受入れ（2026-10-02）
+
+- 責任者承認済み`202610020003_marketplace_reading_progress`をProduction Project `vmdsyxykcrgxcdbrwlkv`へ1回適用した。原本SHA-256は承認値`34c5c316060910aa7531ad4ac50d11b144b9a51714d1c558740e75010d7d959a`と一致した。
+- postflightでtable、RLS、primary key、profile更新index、owner read policy、保存RPCを確認した。authenticatedはtable SELECTとRPC EXECUTEのみ、追加writeなし。anonはtable／RPC権限なし。初期row数は0。
+- 作品、商品、publication、注文、決済、Storage、Provider、生成Job、credit、利用期限、通知設定は変更していない。
+- 実作品Readerの保存・復帰E2Eは未実施。詳細は`docs/MARKETPLACE_READING_PROGRESS_PRODUCTION_ACCEPTANCE_20261002.md`。
+
+---
+
 ## 0.0 Marketplace Phase 2-2 続きから読む（2026-10-02）
 
 - Branch `codex/marketplace-continue-reading-phase2-20261002`で、固定公開版ごとの最終閲覧ページを保存し、作品詳細・本棚から再開する最小機能を実装した。
 - キーは`profile_id + work_id + publication_id`。現公開版だけを参照するため、版差し替え時に旧版進捗を誤用しない。
 - 未購入者は公開中サンプルだけ、作者・paid購入者は既存Reader entitlement内のページだけをRPC経由で保存する。authenticatedのtable直接書込は不可。
 - migration未適用や保存失敗では進捗機能だけを止め、既存Reader、本棚、購入、Downloadを維持する。
-- `202610020003` forward SHA-256 `34c5c316060910aa7531ad4ac50d11b144b9a51714d1c558740e75010d7d959a`、rollback SHA-256 `691ae0506ef0504896f41ae24d53aed877e970b3ba0f3d1bf7f5f13dcf55cc96`。Production適用は別承認事項。
-- Production、作品、商品、publication、注文、決済、Provider、creditは変更していない。詳細は`docs/MARKETPLACE_CONTINUE_READING_PHASE2_20261002.md`。
+- `202610020003` forward SHA-256 `34c5c316060910aa7531ad4ac50d11b144b9a51714d1c558740e75010d7d959a`、rollback SHA-256 `691ae0506ef0504896f41ae24d53aed877e970b3ba0f3d1bf7f5f13dcf55cc96`。責任者の別承認後にProductionへ1回適用し、postflight合格。
+- Production schema以外の作品、商品、publication、注文、決済、Provider、creditは変更していない。詳細は`docs/MARKETPLACE_CONTINUE_READING_PHASE2_20261002.md`。
 
 ---
 
