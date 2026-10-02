@@ -110,10 +110,17 @@ test("未ログインでも固定商品と売り手が一致すれば購入準�
 });
 
 test("公開画面と購入画面もログイン済みbuyer profileで対象を絞る", async () => {
-  const [workPage, checkoutPage] = await Promise.all([
+  const [workPage, checkoutPage, readerService] = await Promise.all([
     readFile(new URL("../src/app/works/[id]/page.tsx", import.meta.url), "utf8"),
     readFile(
       new URL("../src/app/checkout/[productId]/page.tsx", import.meta.url),
+      "utf8",
+    ),
+    readFile(
+      new URL(
+        "../src/modules/publication/application/work-publication-service.ts",
+        import.meta.url,
+      ),
       "utf8",
     ),
   ]);
@@ -121,10 +128,14 @@ test("公開画面と購入画面もログイン済みbuyer profileで対象を�
   for (const source of [workPage, checkoutPage]) {
     assert.match(source, /isMarketplaceCanaryCheckoutListing/);
     assert.match(source, /isMarketplaceCanaryCheckoutTarget/);
-    assert.match(source, /\.eq\("user_id", user\.id\)/);
     assert.match(source, /buyerProfileId/);
   }
-  assert.match(workPage, /購入準備へ/);
+  assert.match(workPage, /getWorkReaderEntitlement/);
+  assert.match(workPage, /readerEntitlement\.profileId/);
+  assert.match(readerService, /getCurrentProfile/);
+  assert.match(readerService, /profileId: profile\?\.id \?\? null/);
+  assert.match(checkoutPage, /\.eq\("user_id", user\.id\)/);
+  assert.match(workPage, /購入対象を確認/);
   assert.match(checkoutPage, /disabled=\{!canPurchase\}/);
 });
 

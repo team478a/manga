@@ -1,11 +1,52 @@
 # MANGAI Current Task
 
+## 2026-10-02 Marketplace Production空状態read-only受入れ
+
+- 状態: `PRODUCTION_CONNECTED / EMPTY_STATE_VERIFIED / REAL_DATA_ACCEPTANCE_BLOCKED / PHASE2_NO_GO / PRODUCTION_UNCHANGED`
+- Branch: `codex/marketplace-acceptance-blocker-20261002`、Draft PR #609。PR #610のUI調整をmerge commit `f7201c45`で取り込み済み。
+- Productionへログイン済みChromeでread-only接続し、利用者`tanaka`の認証維持、Home、作品一覧、本棚、作品管理の正常な空状態を確認した。
+- 公開作品、購入履歴、所有作品は0件。実表紙、作品詳細、sample／購入済みReader、paid／test／refunded本棚カードは`BLOCKED_NO_ACCEPTANCE_DATA`であり、合格扱いにしない。
+- MANGAI originのconsole error／warningは0件。MetaMask拡張由来の警告だけを製品外ノイズとして分離した。
+- 購入、Checkout、Download、公開状態変更、DB mutation、Provider実行、credit消費は0件。
+- 検証: Marketplace／Checkout／Publication／購入query集中32/32、`git diff --check`成功。
+- 次: 文書差分を検証してPR #609へpushし、全CI／Vercel成功で停止する。Phase 2は実データread-only受入れ完了まで開始しない。
+
+---
+
+## 2026-10-02 Marketplace UI監査差分調整
+
+- 状態: `IMPLEMENTED / STATIC_VERIFIED / REAL_DATA_ACCEPTANCE_BLOCKED / PHASE2_NO_GO / PRODUCTION_UNCHANGED`
+- Branch: `codex/marketplace-ui-adjustments-20261002`、Draft PR #610。監査Draft PR #609のcommit `f117741f`をstacked baseとする。
+- Home、Works、Detail、本棚の表紙を共通`MarketplaceCover`へ統一し、`object-contain`とneutral matteで表紙全体を守る。画像hover拡大は行わない。
+- Detailは試し読みを価格より前へ移し、既存owner／paid判定を共通read-only helperへ集約した。未購入は「無料で試し読み」、購入済み／ownerは「漫画を読む」、sample-onlyは「サンプルを試し読み」と表示する。Reader権限とCheckout条件は変更していない。
+- 「注目作品」を実際の選定規則に合う「販売中の新着」へ変更し、filter chipを44px、本棚を「N冊の本」「本棚はまだ空です。」へ変更した。canary対象外・販売準備中も購入不能理由を補足する。
+- P1-1〜P1-3、P2-1〜P2-5は静的に解消。P1-4の実作品・4 viewport・認証済み本棚・Reader・実画面a11yは外部環境不足のため継続して`BLOCKED_EXTERNAL_ENVIRONMENT`。
+- 検証: 関連37/37、Hub 1237/1237、Hub typecheck、ESLint、deps error 0（既知warning 2）、packages／Next Production build、RC repository structure、`git diff --check`成功。RC外部設定はPENDING、手動E2EはREQUIRED。
+- Production作品、商品、publication、Checkout enable、Stripe、注文、決済、環境変数、DB schema／migration、Phase 2機能は変更していない。
+- PR #610のCore quality、Migration roundtrip、Desktop Windows、Vercel Previewは全て成功した。
+- 次: 責任者レビューで停止する。実データread-only受入れ完了まではPhase 2へ進まない。
+
+---
+
+## 2026-10-02 Marketplace実画面受入れ・UI差分監査
+
+- 状態: `AUDITED_STATIC / BLOCKED_EXTERNAL_ENVIRONMENT / PHASE2_NO_GO / PRODUCTION_UNCHANGED`
+- 基準: `feature/manga-canvas-mvp@ee7018fec559c5bf210e8615ea84d507554da70c`、Marketplace UI PR #602、次工程PR #608。監査branchは`codex/marketplace-acceptance-blocker-20261002`、Draft PR #609。
+- Marketplace集中22/22と`git diff --check`成功。書店型Home、2/3/4/5列Grid、試し読み優先色、4項目Mobile Nav、safe area、empty/error/loading、skip link、focus、ARIA、reduced motionの静的契約は成立する。
+- P0は静的に0件。P1はHome/Works/Detail/Bookshelfの`object-cover`、Detailの価格先行と購入状態非連動CTA、実データ実画面受入れblocker。P2は「注目作品」名称、試し読みCTA重複、36px filter chip、本棚の購入履歴語彙、canary案内。
+- Localは実データなし、VercelはSSOへ302、認証済みbrowser接続もrequest-header policy読込失敗のため、実表紙・4 viewport・認証済み本棚・Reader・実画面a11yは`BLOCKED_EXTERNAL_ENVIRONMENT`。認証迂回やProduction操作は行っていない。
+- 成果物: `docs/MARKETPLACE_UI_ACCEPTANCE_REPORT_20261002.md`、`docs/MARKETPLACE_UI_GAP_LIST_20261002.md`、`docs/MARKETPLACE_UI_ADJUSTMENT_PLAN_20261002.md`。
+- 次: 責任者確認で停止。承認後にMarketplace UI Adjustment PRを別工程で開始し、P1解消と実データread-only受入れ後にPhase 2可否を再判定する。
+
+---
+
 ## 2026-10-02 Marketplace UIマージ後受入れ・Phase 2スコープ監査
 
 - 状態: `AUDITED / LATEST_BASE_SYNCED / EXTERNAL_VISUAL_ACCEPTANCE_BLOCKED / PRODUCTION_UNCHANGED`
 - Branch: `codex/marketplace-phase2-scope-20261002`
 - Base: `feature/manga-canvas-mvp` merge commit `b1645081`（Marketplace UI-1〜5、引き継ぎ更新、Cloud売上の注文状態サマリーを反映済み）。
 - 次タスクはPhase 2実装ではなく、実作品と認証済み購入データを使うMarketplace UIのread-only受入れ確認とする。LocalにはSupabase資格情報・購入データがなく、Vercel Production deploymentはsuccessだが匿名HTTPがVercel SSOへ302転送されるため、現時点の実データ目視は`BLOCKED_EXTERNAL_ENVIRONMENT`。
+- 責任者の続行指示後、認証済みChrome接続を再試行したが、browser request-header policyの読込が2回失敗し、computer-use session reset後も同じ失敗が継続した。認証情報入力、SSO回避、Production mutationは行っていない。
 - Phase 2候補を現行schema・Reader・Marketplace UIと照合した。お気に入り、Continue Reading、Creatorフォロー、レビュー／星評価、ランキング／急上昇、レコメンドはいずれも保存・集計契約がなく、推測実装できない。
 - 受入れ完了後の最初の候補は、行動追跡・moderation・集計に依存しない「お気に入り（あとで読む）」を推奨する。buyer-work一意関係、RLS、冪等な追加・解除、一覧取得を最小契約とし、件数・ランキング・通知・推薦は含めない。DB migrationを伴うため別の明示承認が必要。
 - 最新基準`b1645081`を通常mergeし、引き継ぎ文書3件はMarketplace監査とCloud売上の注文状態サマリーを両側保持して解消した。同期後のMarketplace／売上集中32/32と`git diff --check`が成功した。

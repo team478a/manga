@@ -1,9 +1,39 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Marketplace Production空状態read-only受入れ（2026-10-02）
+
+- Draft PR #609のbranch `codex/marketplace-acceptance-blocker-20261002`で、ログイン済みChromeからProduction `https://app.mang-ai.com`へread-only接続した。利用者`tanaka`の認証は`/`、`/works`、`/dashboard/purchases`、`/dashboard/works`で維持された。
+- 書店Home、作品一覧、本棚、作品管理の正常な空状態を確認した。公開作品、購入履歴、所有作品が0件のため、実表紙、作品詳細、sample／購入済みReader、paid／test／refunded本棚カードは`BLOCKED_NO_ACCEPTANCE_DATA`。
+- MANGAI originのconsole error／warningは0件。MetaMask拡張由来の接続警告だけを製品外ノイズとして分離した。
+- 購入、Checkout、Download、公開状態、DB、Provider、creditは変更していない。Phase 2は`NO-GO`を維持し、受入れ用の既存実データが揃ってからread-only確認を再開する。
+- Marketplace／Checkout／Publication／購入query集中32/32、`git diff --check`成功。次はPR #609の全CI／Vercel成功で停止する。
+
+---
+
+## 0.0 Marketplace UI監査差分調整（2026-10-02）
+
+- Branch `codex/marketplace-ui-adjustments-20261002`、Draft PR #610。監査Draft PR #609の`f117741f`上にstackし、P1/P2の表示差分だけを修正した。
+- 4画面の表紙を共通`MarketplaceCover`の`object-contain` + neutral matteへ統一した。Detailは試し読みを価格より先にし、既存owner／paid判定を共通helperへ集約して未購入「無料で試し読み」／購入済み・owner「漫画を読む」を出し分ける。
+- 「販売中の新着」、44px filter chip、本棚語彙、canary案内を調整した。Phase 2機能、DB、Production、Checkout、Stripe、決済は変更していない。
+- 関連37/37、Hub 1237/1237、Hub typecheck、ESLint、deps error 0（既知warning 2）、packages／Next Production build、RC repository structure、diff check成功。RC外部設定はPENDING、手動E2EはREQUIRED。
+- PR #610のCore quality、Migration roundtrip、Desktop Windows、Vercel Previewは全て成功した。実作品、指定4 viewport、認証済み本棚、Reader、実画面a11yは引き続き`BLOCKED_EXTERNAL_ENVIRONMENT`。Phase 2は`NO-GO`のまま責任者レビューで停止する。
+
+---
+
+## 0.0 Marketplace実画面受入れ・UI差分監査（2026-10-02）
+
+- 基準`feature/manga-canvas-mvp@ee7018fe`、監査branch`codex/marketplace-acceptance-blocker-20261002`、Draft PR #609。UIコードは変更せず、Home、Works、Detail、Reader、Bookshelf、Header、Mobile Nav、状態設計、responsive、a11yを監査した。
+- Marketplace集中22/22とdiff check成功。P0は静的に0件。Home/Works/Detail/Bookshelfの`object-cover`、Detailの価格先行と購入状態非連動CTA、実画面証跡不足をP1とした。
+- Local実データなし、Vercel SSOへの302、認証済みbrowser接続失敗により、実表紙、4 viewport、認証済み本棚、Reader、実画面a11yは`BLOCKED_EXTERNAL_ENVIRONMENT`。Production、DB、Checkout、決済は未変更。
+- 成果物は`docs/MARKETPLACE_UI_ACCEPTANCE_REPORT_20261002.md`、`docs/MARKETPLACE_UI_GAP_LIST_20261002.md`、`docs/MARKETPLACE_UI_ADJUSTMENT_PLAN_20261002.md`。Phase 2は`NO-GO`。責任者確認後にAdjustment PRを別工程で開始する。
+
+---
+
 ## 0.0 Marketplace UIマージ後受入れ・Phase 2スコープ監査（2026-10-02）
 
 - Branch `codex/marketplace-phase2-scope-20261002`、Base `b1645081`。Marketplace UI-1〜5後の残件とPhase 2候補を監査した。
 - 優先する次タスクは、公開Home・一覧・詳細・試し読みと認証済み本棚・Readerを実作品／既存購入で確認するread-only受入れ。Local環境は実データなし、最新Vercel deploymentはSSO保護のため`BLOCKED_EXTERNAL_ENVIRONMENT`。
+- 続行指示を受けて認証済みChrome接続を再試行したが、browser request-header policy読込失敗が再試行・session reset後も継続した。認証操作やSSO回避は行っていない。
 - お気に入り、Continue Reading、Creatorフォロー、レビュー／星評価、ランキング／急上昇、レコメンドに現行保存契約はない。最初の実装候補は「お気に入り（あとで読む）」だが、buyer-work一意関係、RLS、Server Action、migrationの別承認が必要。
 - 最新基準`b1645081`を通常mergeし、引き継ぎ文書3件は両側保持で解消した。Marketplace／売上集中32/32とdiff check成功。
 - Production、DB、作品、商品、publication、Checkout、Stripe、注文、決済、環境変数、UIコードは未変更。詳細は`docs/MARKETPLACE_POST_UI_ACCEPTANCE_AND_PHASE2_SCOPE_20261002.md`。

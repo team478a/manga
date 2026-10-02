@@ -34,7 +34,7 @@ test("Marketplace Homeは書店型の主要セクションと購入者導線を�
   const page = await read("src/app/page.tsx");
 
   for (const label of [
-    "注目作品",
+    "販売中の新着",
     "新着作品",
     "ジャンルから探す",
     "まずは試し読み",
@@ -47,7 +47,7 @@ test("Marketplace Homeは書店型の主要セクションと購入者導線を�
   assert.match(page, /<MarketplaceWorkShelf/);
 });
 
-test("注目作品はactive販売作品だけを新着順で選び人気を推測しない", () => {
+test("販売中の新着はactive販売作品だけを新着順で選び人気を推測しない", () => {
   const sections = selectMarketplaceHomeSections([
     work({ id: "old-sale", created_at: "2026-01-01", digital_products: [{ price: 300, status: "active" }] }),
     work({ id: "new-no-sale", created_at: "2026-03-01" }),

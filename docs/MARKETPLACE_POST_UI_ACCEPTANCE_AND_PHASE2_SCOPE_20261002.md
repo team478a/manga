@@ -34,6 +34,7 @@ Phase 2候補には現行の保存契約がない。受入れ確認後に着手�
 - LocalにはSupabase資格情報と認証済み購入データがなく、実データ目視はできない。
 - 監査時点のmerge commit `342cdf12`のVercel Production deploymentはsuccess。
 - deployment URLへの匿名HTTPはVercel SSOへ`302`転送される。認証済みブラウザ操作の明示承認なしでは画面受入れを継続しない。
+- 明示承認後に認証済みChrome接続を試したが、browser request-header policyの読込失敗が再試行とcomputer-use session reset後も継続した。ログイン操作やSSO回避は行っていない。
 - 過去の隔離Stagingは終了済みであり、再作成・課金・秘密情報設定は別承認事項である。
 
 上記が解消しない場合は`BLOCKED_EXTERNAL_ENVIRONMENT`として記録し、静的テストやCI成功を実データ受入れ成功とは扱わない。
