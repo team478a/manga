@@ -1,5 +1,18 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Marketplaceお気に入り Production権限hardening（2026-10-02）
+
+- 責任者承認済み`202610020001_marketplace_favorites`をProduction Project `vmdsyxykcrgxcdbrwlkv`へ1回適用した。local SHA-256は承認値`8868fac7836c09fb54b8da0446de6d847816a726562e23acf5d79a1970381d0f`と一致し、適用前はtable不存在だった。
+- 適用後はtable、RLS、buyer-work一意制約、index、owner限定3 policy、row 0件を確認した。一方、Production default privilege由来でauthenticatedにUPDATE／TRUNCATE／REFERENCES／TRIGGER、service_roleにTRUNCATE／REFERENCES／TRIGGERが余分に残った。
+- UPDATE policyはないため通常API更新はRLSで拒否されるが、最小権限契約違反のため`202610020002_marketplace_favorites_privilege_hardening`を追加する。既存migrationは変更しない。
+- 追加migrationは4 roleから全table権限をrevoke後、authenticatedへSELECT／INSERT／DELETE、service_roleへCRUDだけを再付与する。rollbackも危険な既定権限を戻さない。
+- `202610020002` forward SHA-256は`06c90f210ded5410b2f3be319599510a01ceb1ddb1e8f4e6c4e752c770edc7ad`、rollback SHA-256は`916a64f51d71ed5880eee99e74818ece7af9e4231def32bb77821b0864096869`。
+- 集中3/3、Hub全1240/1240、migration／rollback静的94/94、Hub typecheck、ESLint、依存境界error 0（既知warning 2）、Production build、diff checkが成功した。
+- Productionへ`202610020002`は未適用。Hotfix merge後にchecksumを固定し、責任者の別承認を待つ。
+- お気に入りrow、作品、商品、publication、注文、決済、Provider、credit、利用期限は変更していない。詳細は`docs/MARKETPLACE_FAVORITES_PRODUCTION_PRIVILEGE_HARDENING_20261002.md`。
+
+---
+
 ## 0.0 Marketplace Phase 2-1 お気に入り（あとで読む）（2026-10-02）
 
 - Branch `codex/marketplace-favorites-phase2-20261002`で、公開一般作品を購入権限と分離して本人だけが保存・解除・一覧確認できる最小機能を実装した。

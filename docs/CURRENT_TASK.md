@@ -1,5 +1,21 @@
 # MANGAI Current Task
 
+## 2026-10-02 Marketplaceお気に入り Production権限hardening
+
+- 状態: `PRODUCTION_001_APPLIED / OVERGRANT_DETECTED / HOTFIX_IMPLEMENTED / LOCAL_VALIDATION_PASSED / PRODUCTION_002_NOT_APPLIED`
+- Branch: `codex/marketplace-favorites-privilege-hardening-20261002`
+- 承認済み`202610020001_marketplace_favorites`をProduction Project `vmdsyxykcrgxcdbrwlkv`へ1回適用した。適用前はtable不存在、適用後はtable、RLS、一意制約、index、owner限定3 policy、row 0件を確認した。
+- postflightでProduction default privilege由来の過剰権限を検出した。`authenticated`はUPDATE／TRUNCATE／REFERENCES／TRIGGER、`service_role`はTRUNCATE／REFERENCES／TRIGGERを余分に保持する。UPDATE policyはなく通常API更新はRLS拒否だが、最小権限契約違反として未完了扱いにする。
+- 既存migration履歴は変更せず、`202610020002_marketplace_favorites_privilege_hardening`で全table権限をrevoke後、authenticatedへSELECT／INSERT／DELETE、service_roleへCRUDだけを再付与する。
+- `202610020002` forward SHA-256は`06c90f210ded5410b2f3be319599510a01ceb1ddb1e8f4e6c4e752c770edc7ad`、rollback SHA-256は`916a64f51d71ed5880eee99e74818ece7af9e4231def32bb77821b0864096869`。
+- 集中3/3、Hub全1240/1240、migration／rollback静的94/94、Hub typecheck、ESLint、依存境界error 0（既知warning 2）、Production build、`git diff --check`が成功した。
+- Productionへ`202610020002`は未適用。Hotfixのmergeと別の明示承認まで適用しない。
+- 作品、商品、publication、注文、決済、Provider、credit、利用期限、お気に入りrowは変更していない。
+- 詳細: `docs/MARKETPLACE_FAVORITES_PRODUCTION_PRIVILEGE_HARDENING_20261002.md`
+- 次: commit／push／Draft PRを作成し、全CI／Vercel成功で停止する。
+
+---
+
 ## 2026-10-02 Marketplace Phase 2-1 お気に入り（あとで読む）
 
 - 状態: `IMPLEMENTED / LOCAL_FOCUSED_TESTS_PASSED / PRODUCTION_MIGRATION_NOT_APPLIED / PRODUCTION_UNCHANGED`

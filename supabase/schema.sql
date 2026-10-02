@@ -1004,7 +1004,8 @@ with check (
 create policy "works_creator_delete" on public.works
 for delete using (creator_id = public.current_profile_id() or public.is_admin());
 
-revoke all on public.marketplace_favorites from public, anon;
+revoke all on public.marketplace_favorites
+from public, anon, authenticated, service_role;
 grant select, insert, delete on public.marketplace_favorites to authenticated;
 grant select, insert, update, delete on public.marketplace_favorites to service_role;
 

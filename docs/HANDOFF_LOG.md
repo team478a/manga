@@ -1,5 +1,17 @@
 # MANGAI AI Handoff Log
 
+## 2026-10-02 Codex: Marketplaceお気に入り Production権限hardening
+
+- 責任者承認を受け、Production Project `vmdsyxykcrgxcdbrwlkv`へ`202610020001_marketplace_favorites`を1回だけ適用した。checksum一致、適用前table不存在、適用後table／RLS／一意制約／index／3 policy／row 0件を確認した。
+- postflightで、Production default privilegeがauthenticatedとservice_roleへ不要な権限を残すことを検出した。通常APIのUPDATEはpolicy不在でRLS拒否されるが、TRUNCATE等を含む最小権限違反を放置しない。
+- Branch `codex/marketplace-favorites-privilege-hardening-20261002`で追加migration `202610020002`を作成する。4 roleを一度revoke allし、authenticatedはSELECT／INSERT／DELETE、service_roleはCRUDだけへ固定する。canonical schema、assertion、manifest、文書を同期する。
+- `202610020002` forward SHA-256は`06c90f210ded5410b2f3be319599510a01ceb1ddb1e8f4e6c4e752c770edc7ad`、rollback SHA-256は`916a64f51d71ed5880eee99e74818ece7af9e4231def32bb77821b0864096869`。
+- 集中3/3、Hub全1240/1240、migration／rollback静的94/94、Hub typecheck、ESLint、依存境界error 0（既知warning 2）、Production build、diff checkが成功した。
+- Productionへ`202610020002`は未適用。Hotfix PRの全CI／Vercel成功で停止し、mergeと別の明示承認を待つ。
+- お気に入りrow、作品、商品、publication、注文、決済、Provider、credit、利用期限は変更していない。
+
+---
+
 ## 2026-10-02 Codex: Marketplace Phase 2-1 お気に入り（あとで読む）
 
 - Branch: `codex/marketplace-favorites-phase2-20261002`。Phase 2最初の独立機能として、購入前の公開一般作品を本人の`あとで読む`へ追加・解除・一覧表示できるようにした。

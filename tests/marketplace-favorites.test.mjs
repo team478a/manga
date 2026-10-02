@@ -30,8 +30,8 @@ test("お気に入りreturn pathはMarketplace内だけを許可する", () => {
   );
 });
 
-test("お気に入りmigrationは本人限定RLS・重複防止・公開一般作品制約を持つ", async () => {
-  const [migration, rollback, schema] = await Promise.all([
+test("お気に入りmigrationは本人限定RLS・重複防止・最小権限を持つ", async () => {
+  const [migration, rollback, hardening, hardeningRollback, schema] = await Promise.all([
     readFile(
       new URL(
         "../supabase/migrations/202610020001_marketplace_favorites.sql",
@@ -42,6 +42,20 @@ test("お気に入りmigrationは本人限定RLS・重複防止・公開一般�
     readFile(
       new URL(
         "../supabase/rollbacks/202610020001_marketplace_favorites.sql",
+        import.meta.url,
+      ),
+      "utf8",
+    ),
+    readFile(
+      new URL(
+        "../supabase/migrations/202610020002_marketplace_favorites_privilege_hardening.sql",
+        import.meta.url,
+      ),
+      "utf8",
+    ),
+    readFile(
+      new URL(
+        "../supabase/rollbacks/202610020002_marketplace_favorites_privilege_hardening.sql",
         import.meta.url,
       ),
       "utf8",
@@ -66,6 +80,24 @@ test("お気に入りmigrationは本人限定RLS・重複防止・公開一般�
     );
   }
   assert.match(rollback, /drop table if exists public\.marketplace_favorites/);
+  for (const source of [hardening, hardeningRollback, schema]) {
+    assert.match(
+      source,
+      /revoke all on public\.marketplace_favorites\s+from public, anon, authenticated, service_role/,
+    );
+    assert.match(
+      source,
+      /grant select, insert, delete on public\.marketplace_favorites to authenticated/,
+    );
+    assert.match(
+      source,
+      /grant select, insert, update, delete on public\.marketplace_favorites to service_role/,
+    );
+    assert.doesNotMatch(
+      source,
+      /grant[^;]*(?:truncate|references|trigger)[^;]*marketplace_favorites/i,
+    );
+  }
 });
 
 test("作品カード・詳細・専用一覧は同じお気に入り操作と状態設計を使用する", async () => {
