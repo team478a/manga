@@ -82,13 +82,27 @@ export default async function SalesPage({
     ? "注文・売上情報を読み込めませんでした。売上や注文が0件になったわけではありません。時間をおいて再読み込みしてください。"
     : null;
 
-  const total = error
+  const paidLiveOrders = error
     ? null
-    : orders
-        .filter(
-          (order) => order.status === "paid" && order.payment_mode === "live",
-        )
-        .reduce((sum, order) => sum + order.creator_revenue, 0);
+    : orders.filter(
+        (order) => order.status === "paid" && order.payment_mode === "live",
+      );
+  const salesSummary = paidLiveOrders
+    ? paidLiveOrders.reduce(
+        (summary, order) => ({
+          completedOrderCount: summary.completedOrderCount + 1,
+          grossSales: summary.grossSales + order.amount,
+          platformFees: summary.platformFees + order.platform_fee,
+          creatorRevenue: summary.creatorRevenue + order.creator_revenue,
+        }),
+        {
+          completedOrderCount: 0,
+          grossSales: 0,
+          platformFees: 0,
+          creatorRevenue: 0,
+        },
+      )
+    : null;
 
   return (
     <main className="page">
@@ -109,7 +123,41 @@ export default async function SalesPage({
       <div className="panel mt-6">
         <p className="text-lg text-stone-600">クリエイター受取予定額（参考）</p>
         <p className="mt-2 text-4xl font-bold">
-          {total === null ? "確認できません" : yen(total)}
+          {salesSummary === null
+            ? "確認できません"
+            : yen(salesSummary.creatorRevenue)}
+        </p>
+        <dl
+          aria-label="支払い済み本番注文の売上内訳"
+          className="mt-5 grid gap-3 sm:grid-cols-3"
+        >
+          <div className="rounded-xl bg-stone-50 p-4">
+            <dt className="text-sm text-stone-600">購入完了</dt>
+            <dd className="mt-1 text-xl font-bold">
+              {salesSummary === null
+                ? "確認できません"
+                : `${salesSummary.completedOrderCount}件`}
+            </dd>
+          </div>
+          <div className="rounded-xl bg-stone-50 p-4">
+            <dt className="text-sm text-stone-600">販売金額</dt>
+            <dd className="mt-1 text-xl font-bold">
+              {salesSummary === null
+                ? "確認できません"
+                : yen(salesSummary.grossSales)}
+            </dd>
+          </div>
+          <div className="rounded-xl bg-stone-50 p-4">
+            <dt className="text-sm text-stone-600">手数料</dt>
+            <dd className="mt-1 text-xl font-bold">
+              {salesSummary === null
+                ? "確認できません"
+                : yen(salesSummary.platformFees)}
+            </dd>
+          </div>
+        </dl>
+        <p className="mt-3 text-sm text-stone-600">
+          この内訳は注文一覧の絞り込みにかかわらず、支払い済みの本番注文だけを集計します。
         </p>
         <div
           className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm leading-relaxed text-amber-950"

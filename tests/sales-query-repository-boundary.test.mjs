@@ -28,8 +28,9 @@ test("売上読込失敗を売上0円や注文0件として表示しない", asy
     page,
     /const \{ data, error \} = await listSalesOrdersForCreator/,
   );
-  assert.match(page, /const total = error[\s\S]*\? null/);
-  assert.match(page, /total === null \? "確認できません" : yen\(total\)/);
+  assert.match(page, /const paidLiveOrders = error[\s\S]*\? null/);
+  assert.match(page, /const salesSummary = paidLiveOrders[\s\S]*: null/);
+  assert.match(page, /salesSummary === null[\s\S]*"確認できません"/);
   assert.match(page, /売上や注文が0件になったわけではありません/);
   assert.match(page, /注文一覧を空として扱わず、読込を停止しました/);
   assert.match(
@@ -142,7 +143,8 @@ test("注文は本番・テスト・受付済みで安全に絞り込める", as
   assert.match(page, /選択した条件に一致する注文はありません/);
   assert.match(page, /すべての注文を表示/);
   assert.ok(
-    page.indexOf("const total = error") < page.indexOf("filteredOrders.map"),
+    page.indexOf("const salesSummary = paidLiveOrders") <
+      page.indexOf("filteredOrders.map"),
   );
 });
 
@@ -161,4 +163,30 @@ test("受取予定額は参考集計で振込・精算未提供と明示する",
     page,
     /order\.status === "paid" && order\.payment_mode === "live"/,
   );
+});
+
+test("支払い済み本番注文の件数・販売金額・手数料・受取予定額を同じ条件で集計する", async () => {
+  const page = await read("src/app/dashboard/sales/page.tsx");
+
+  assert.match(page, /const paidLiveOrders = error/);
+  assert.match(
+    page,
+    /order\.status === "paid" && order\.payment_mode === "live"/,
+  );
+  assert.match(page, /completedOrderCount: summary\.completedOrderCount \+ 1/);
+  assert.match(page, /grossSales: summary\.grossSales \+ order\.amount/);
+  assert.match(
+    page,
+    /platformFees: summary\.platformFees \+ order\.platform_fee/,
+  );
+  assert.match(
+    page,
+    /creatorRevenue: summary\.creatorRevenue \+ order\.creator_revenue/,
+  );
+  assert.match(page, /aria-label="支払い済み本番注文の売上内訳"/);
+  assert.match(page, /<dt className="text-sm text-stone-600">購入完了<\/dt>/);
+  assert.match(page, /<dt className="text-sm text-stone-600">販売金額<\/dt>/);
+  assert.match(page, /<dt className="text-sm text-stone-600">手数料<\/dt>/);
+  assert.match(page, /yen\(salesSummary\.creatorRevenue\)/);
+  assert.match(page, /注文一覧の絞り込みにかかわらず/);
 });
