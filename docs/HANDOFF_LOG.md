@@ -1,5 +1,16 @@
 # MANGAI AI Handoff Log
 
+## 2026-10-02 Codex: Cloud売上注文のスマートフォン表示
+
+- Branch: `codex/cloud-sales-mobile-orders-20261002`。Base: `9f5160a09c9edfd7317eb05457c930ef85cc16a2`（PR #600 merge commit）。
+- 売上管理の注文一覧をスマートフォンではカード表示、PCでは従来の表として表示し、横スクロールなしで主要情報を確認できるようにした。
+- 作品・商品設定へのリンクを共通化し、受付日時、購入者、状態、金額内訳、テスト／本番を両表示で維持する。長いメールはカード内で折り返す。
+- Productionのページ状態、checkpoint、export Job、Storage、publication、作品、商品、注文、決済、Stripe、Provider、Asset、credit、利用期限、通知設定は変更していない。
+- 集中10/10、Hub 1211/1211、deps error 0（既知warning 2）、全型検査、ESLint、migration／rollback静的92/92、Hub Production build、RC repository structure、`git diff --check`成功。外部設定はPENDING、手動E2EはREQUIRED。
+- 次: commit、push、Draft PR、全CI／Vercel成功で停止する。Productionの作品・商品・注文・決済変更は明示承認または利用者の明示操作まで行わない。
+
+---
+
 ## 2026-10-02 Codex: Cloud売上注文から作品・商品設定への導線
 
 - Branch: `codex/cloud-sales-order-source-links-20261002`。Base: `5f61f3dc41c6a222622285ff1157b2e51626e936`（PR #599 merge commit）。
