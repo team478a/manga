@@ -2,12 +2,12 @@
 
 ## 0.0 Marketplace UI-5 Responsive・Accessibility・状態設計（2026-10-02）
 
-- Branch `codex/marketplace-ui-resilience-20261002`。Marketplace UI-4 `00306af9`をstacked baseにし、最新基準`9336ec05`はmerge commit `1a98d9c3`で取り込んだ。PR #602は再承認待ち。
+- Branch `codex/marketplace-ui-resilience-20261002`。Marketplace UI-4 `00306af9`をstacked baseにし、PR #602は`feature/manga-canvas-mvp`へmerge commit `8882c15b`で反映済み。
 - Marketplace Home、作品一覧、作品詳細、本棚へ共通のaccessible loading stateを追加した。作品一覧・詳細・本棚はretry可能なerror boundary、作品詳細は専用not-foundを持ち、query失敗を正常な空状態や商品なしと混同しない。
 - 本文スキップリンク、keyboard focus ring、reduced-motion対応を追加した。既存のスマホ／Desktop responsive gridとmobile bottom navigationは維持した。
 - Production、作品・商品状態、publication、Checkout、Stripe、注文、決済、Storage、環境変数、migrationは変更していない。未契約のPhase 2機能も追加していない。
 - Marketplace集中29/29、最新基準統合後のHub 1236/1236、Hub typecheck、ESLint、deps、packages／Next Production build、diff check成功。Desktop／390px browserでHome、作品一覧、error state、mobile navigation、skip-link focusを確認した。Supabase未設定のため実データ表示は未確認。
-- Marketplace UI-1〜5は実装完了。PR #602は最新基準`9336ec05`を取り込んで競合を解消し、Core quality、Migration roundtrip、Desktop Windows、Vercel Previewはすべて成功。基準取り込みで以前の承認が失効したため再承認待ちである。Production変更やPhase 2着手ではない。
+- Marketplace UI-1〜5は完了。PR #602は最終同期後にCore quality、Migration roundtrip、Desktop Windows、Vercel Previewがすべて成功し、2026-10-02にmerge commit `8882c15b`で反映済み。Production変更やPhase 2着手ではない。
 
 ---
 
