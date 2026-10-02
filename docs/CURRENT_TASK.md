@@ -1,5 +1,72 @@
 # MANGAI Current Task
 
+## 2026-10-02 Marketplace UI-5 Responsive・Accessibility・状態設計
+
+- 状態: `IMPLEMENTED / LOCAL_RELEVANT_GATES_PASSED / PR_ALL_CHECKS_PASSED / REVIEW_REQUIRED / PRODUCTION_UNCHANGED`
+- Branch: `codex/marketplace-ui-resilience-20261002`
+- Base: Marketplace UI-4 `00306af9`をstacked baseとし、最新`feature/manga-canvas-mvp`の`9336ec05`をmerge commit `1a98d9c3`で取り込み済み。PR #602は再承認待ち。
+- Marketplace Home、作品一覧、作品詳細、本棚に共通のaccessible loading skeletonを追加し、`aria-busy`、`aria-live`、`role=status`、reduced motionを適用した。作品一覧・詳細・本棚にはretry可能なerror boundaryを追加し、作品詳細には専用not-foundを追加した。
+- Supabase query失敗を作品0件・該当作品なし・商品なしと混同しないようにし、Homeと作品一覧は読込失敗を明示、作品詳細は取得失敗をerror boundaryへ送る。既存の空状態、返金済み、作品情報欠落の表示は維持した。
+- 全体へ本文スキップリンク、keyboard focus ring、`prefers-reduced-motion`対応を追加した。既存のスマホ2列／Desktop 4〜5列Grid、作品詳細1列／2列、本棚1列／2列を維持した。
+- Production作品公開、商品active化、release checkpoint、publication fixation、Checkout enable、Stripe、実決済、環境変数、DB schema／migrationは変更していない。お気に入り、フォロー、レビュー、星評価、ランキング、急上昇、レコメンド、Continue Readingも追加していない。
+- 検証: Marketplace／購入／Publication集中29/29、最新基準統合後のHub 1236/1236、Hub typecheck、ESLint、deps error 0（既知warning 2）、packages build、Next.js Production build、`git diff --check`成功。localhostでDesktopと390x844 mobileのHome・作品一覧・error state、mobile navigation、本文スキップリンクとfocus表示を目視した。ローカルSupabase資格情報と認証済み購入データがないため、実作品表紙と実データ本棚の目視は未実施。
+- PR #602: 最新基準`9336ec05`を取り込んで競合解消済み。Core quality、Migration roundtrip、Desktop Windows、Vercel Previewはいずれも成功。基準取り込みにより以前の承認が失効したため再承認待ち。
+- 次: PR #602の再承認を待つ。Production状態は変更せず、Phase 2機能は別スコープとして明示承認後に扱う。
+
+---
+
+## 2026-10-02 Marketplace UI-4 本棚
+
+- 状態: `IMPLEMENTED / LOCAL_RELEVANT_GATES_PASSED / PRODUCTION_UNCHANGED`
+- Branch: `codex/marketplace-bookshelf-20261002`
+- Base: Marketplace UI-3 `b1cb487b`をstacked baseとし、最新`feature/manga-canvas-mvp`の`5c775aeb`をmerge commit `8e3c3a1c`で取り込み済み。
+- `/dashboard/purchases`を購入履歴一覧から漫画書店型の本棚へ変更し、縦長2:3表紙、作品タイトル、作者表示名、購入日・商品・価格、漫画を読む、Downloadをカード単位で表示する。スマホは1列、Desktopは2列とし、mobile bottom navigationの本棚導線を維持する。
+- 既存の購入者本人絞り込み、paid／refunded取得、販売停止後の固定publication Reader権限、5分間の署名Download URL、download error feedbackを維持した。購入履歴queryは既存relationから表紙URLと作者表示名の最小列だけを追加取得する。
+- 読込失敗は空本棚と区別してfail closedにし、再読込導線を維持した。購入0件、返金済み、作品・表紙情報欠落にも個別表示を用意した。Continue Reading、お気に入り、フォロー、レビュー、星評価、ランキング、急上昇、レコメンドは追加していない。
+- Production作品公開、商品active化、release checkpoint、publication fixation、Checkout enable、Stripe、実決済、環境変数、DB schema／migrationは変更していない。
+- 検証: Marketplace／購入／Download／Publication集中29/29、Hub 1225/1225、Hub typecheck、ESLint、deps error 0（既知warning 2）、packages build、Next.js Production build、`git diff --check`成功。認証済み購入データとローカルSupabase資格情報がないため実データ目視は未実施で、responsive構造と状態表示は静的回帰テストで固定した。
+- 次: UI-4のレビュー後、Phase UI-5としてMarketplace全体のresponsive、accessibility、empty／error／loading stateを横断監査し、不足だけを小さい変更単位で補う。
+
+---
+
+## 2026-10-02 Marketplace UI-3 作品詳細
+
+- 状態: `IMPLEMENTED / LOCAL_RELEVANT_GATES_PASSED / PRODUCTION_UNCHANGED`
+- Branch: `codex/marketplace-work-detail-20261002`
+- Base: Marketplace UI-2 `af100910`をstacked baseとし、最新`feature/manga-canvas-mvp`の`4344c4f3`をmerge commit `add44d45`で取り込み済み。
+- `/works/[id]`を漫画書店型の作品詳細へ変更し、縦長2:3表紙、作者、既存タグ導線、あらすじ、固定公開版Reader／既存sample画像の試し読み、価格、購入CTA、Creator sectionを追加した。スマホは1列、Desktopは表紙と作品情報の2列構成にする。
+- 既存の公開一般作品query、安全な作者表示名RPC、active商品、固定publication Reader、Checkout mode／Production canary、指定購入者判定を維持した。Creator sectionは表示名だけを使用し、プロフィール・フォロー等の未契約導線は追加していない。
+- Production作品公開、商品active化、release checkpoint、publication fixation、Checkout enable、Stripe、実決済、環境変数、DB schema／migrationは変更していない。お気に入り、フォロー、レビュー、星評価、ランキング、急上昇、レコメンド、Continue Readingも追加していない。
+- 検証: Marketplace／Checkout／Publication集中33/33、Hub 1220/1220、Hub typecheck、ESLint、deps error 0（既知warning 2）、packages build、Next.js Production build、`git diff --check`成功。ローカルSupabase資格情報がないため実作品データを使った目視確認は未実施で、表紙比率、responsive構造、試し読み・購入契約は静的回帰テストで固定した。
+- 次: UI-3のレビュー後、Phase UI-4として`/dashboard/purchases`を表紙、タイトル、作者、読む、Download中心の本棚UIへ変更する。購入権限、Reader、Download契約は維持する。
+
+---
+
+## 2026-10-02 Marketplace UI-2 Home
+
+- 状態: `IMPLEMENTED / LOCAL_RELEVANT_GATES_PASSED / PRODUCTION_UNCHANGED`
+- Branch: `codex/marketplace-home-20261002`
+- Base: Marketplace UI-1 `fc091143d`をstacked baseとし、最新`feature/manga-canvas-mvp`の`a761b694`をmerge commit `f4af983e`で取り込み済み。
+- `/`をCreator向け説明ページから漫画書店Homeへ変更し、書店Hero、注目作品、新着作品、ジャンル・タグ、試し読み作品、Creator CTAを追加した。共通棚は`MarketplaceWorkShelf`としてUI-1の`MarketplaceWorkCard`を再利用する。
+- 注目作品は人気・ランキング・レコメンドを推測せず、既存active商品を持つ作品を新着順で最大5件表示する。画面にも「販売中の作品から、新しく公開された順」と明示する。新着、タグ、試し読みも既存`works`、`digital_products`、作者表示RPC、`sample_image_urls`、`current_publication_id`だけから決定する。
+- Supabase未設定または公開作品0件では、書店HeroとCreator CTAを維持し、作品準備中の安全な表示にする。Production作品、商品active化、release checkpoint、publication、Checkout enable、Stripe、環境変数、DB schema／migration、注文、決済は変更していない。Phase 2機能も追加していない。
+- 検証: Marketplace集中9/9、Hub 1216/1216、Hub typecheck、ESLint、deps error 0（既知warning 2）、packages build、Next.js Production build、`git diff --check`成功。localhostでDesktopと390x844 mobileを目視し、console error／warning 0、見出し階層と主要linkのaccessibility treeを確認した。ローカルSupabase資格情報がないため実作品表紙・棚の目視は未実施し、選定と2〜5列Gridは回帰テストで固定した。
+- 次: UI-2のレビュー後、Phase UI-3として作品詳細を縦長表紙、作者、タグ、あらすじ、試し読み、価格、購入CTA、Creator section中心の書店型UIへ変更する。Checkout／Publication契約は維持する。
+
+---
+
+## 2026-10-02 Marketplace UI-1 Foundation
+
+- Branch: `codex/marketplace-ui-foundation-20261002`
+- Base: `0f93a082f9c3e64904e5d91b4528b8c4c4afeb98`（PR #595 merge commit、`feature/manga-canvas-mvp`）
+- Marketplaceを「AIクリエイター向け販売サイト」から「インディーズ漫画のデジタル書店」へ移行するPhase UI-1として、書店型Header、モバイル下部ナビ、縦長`MarketplaceWorkCard`、検索・タグ・販売中Filter、スマホ2列／PC4〜5列Gridを実装した。
+- 既存の公開一般作品query、作者表示名RPC、active商品価格集計、Checkout mode／Production canary、Publication固定、購入・Download契約は変更していない。ジャンル専用schemaは追加せず、既存`tags`を「ジャンル・タグ」として表示する。
+- モバイル下部ナビは`/`、作品一覧・詳細、`/dashboard`、購入本棚だけに限定し、Reader、Creator、Admin、Checkout、認証画面では表示しない。Readerへのoverlayを発生させない。
+- Production作品、商品active化、release checkpoint、publication、Checkout enable、Stripe、環境変数、DB schema／migration、実決済は変更していない。お気に入り、フォロー、レビュー、星評価、ランキング、急上昇、レコメンド、Continue Readingも追加していない。
+- 検証: Marketplace集中28/28、Hub 1209/1209、deps error 0（既知warning 2）、ESLint、Hub typecheck、packages build、Next.js Production build、ブラウザDesktop／390px mobile表示、mobile navigation accessibility tree、diff check成功。全体typecheckはHub成功後、Desktop依存の追加installがローカルディスク空き容量0で停止したため`LOCAL_BLOCKED_EXTERNAL_ENVIRONMENT`。今回Desktopコードは変更していない。ローカルにSupabase資格情報がないため実作品データの目視は未実施し、Grid列数・表紙比率は静的回帰テストで固定した。
+- 次: UI-1のレビュー後、Phase UI-2としてMarketplace HomeのHero、注目作品、新着作品、ジャンル、試し読み作品、Creator CTAを既存データ契約の範囲で実装する。注目作品の選定契約がないため、人気・ランキング・レコメンドを推測実装しない。
+---
+
 ## 2026-10-02 Cloud売上の本番売上内訳
 
 - 状態: `IMPLEMENTED / LOCAL_ALL_GATES_PASSED / PRODUCTION_UNCHANGED`

@@ -3,7 +3,7 @@ import { readFile } from "node:fs/promises";
 import test from "node:test";
 
 const cases = [
-  ["src/components/Header.tsx", "ログアウト中…"],
+  ["src/components/marketplace/MarketplaceHeader.tsx", "ログアウト中…"],
   ["src/app/dashboard/notifications/page.tsx", "既読にしています…"],
   ["src/app/dashboard/works/new/page.tsx", "作品を保存中…"],
   ["src/app/dashboard/works/[id]/edit/page.tsx", "作品を更新中…"],
