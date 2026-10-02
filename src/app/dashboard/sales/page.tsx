@@ -18,6 +18,8 @@ const salesOrderFilters = [
   { value: "live", label: "本番" },
   { value: "test", label: "テスト" },
   { value: "pending", label: "受付済み" },
+  { value: "paid", label: "支払い済み" },
+  { value: "closed", label: "不成立・返金" },
 ] as const;
 
 type SalesOrderFilter = (typeof salesOrderFilters)[number]["value"];
@@ -35,6 +37,9 @@ function matchesSalesOrderFilter(
   if (filter === "live") return order.payment_mode === "live";
   if (filter === "test") return order.payment_mode === "test";
   if (filter === "pending") return order.status === "pending";
+  if (filter === "paid") return order.status === "paid";
+  if (filter === "closed")
+    return ["failed", "refunded", "canceled"].includes(order.status);
   return true;
 }
 
@@ -103,6 +108,15 @@ export default async function SalesPage({
         },
       )
     : null;
+  const orderStatusSummary = error
+    ? null
+    : {
+        pending: orders.filter((order) => order.status === "pending").length,
+        paid: orders.filter((order) => order.status === "paid").length,
+        closed: orders.filter((order) =>
+          ["failed", "refunded", "canceled"].includes(order.status),
+        ).length,
+      };
 
   return (
     <main className="page">
@@ -186,6 +200,41 @@ export default async function SalesPage({
           「受付済み」は決済確認前、「支払い済み」は購入完了です。失敗・キャンセル・返金済みの注文は受取予定額に含みません。日時は日本時間で表示します。
           作品名・商品名から、所有する設定画面へ戻れます。
         </p>
+        <div className="mt-5">
+          <h3 className="text-lg font-bold">注文状態</h3>
+          <p className="mt-1 text-sm leading-relaxed text-stone-600">
+            状態別件数はテストと本番を合算します。上の売上内訳は支払い済みの本番注文だけが対象です。
+          </p>
+          {orderStatusSummary === null ? (
+            <p className="mt-3 text-sm font-semibold text-stone-700">
+              状態別件数を確認できません。
+            </p>
+          ) : (
+            <dl
+              aria-label="注文状態別の件数"
+              className="mt-3 grid gap-3 sm:grid-cols-3"
+            >
+              <div className="rounded-xl bg-stone-50 p-4">
+                <dt className="text-sm text-stone-600">受付済み</dt>
+                <dd className="mt-1 text-xl font-bold">
+                  {orderStatusSummary.pending}件
+                </dd>
+              </div>
+              <div className="rounded-xl bg-stone-50 p-4">
+                <dt className="text-sm text-stone-600">支払い済み</dt>
+                <dd className="mt-1 text-xl font-bold">
+                  {orderStatusSummary.paid}件
+                </dd>
+              </div>
+              <div className="rounded-xl bg-stone-50 p-4">
+                <dt className="text-sm text-stone-600">不成立・返金</dt>
+                <dd className="mt-1 text-xl font-bold">
+                  {orderStatusSummary.closed}件
+                </dd>
+              </div>
+            </dl>
+          )}
+        </div>
         {!error && orders.length ? (
           <div className="mt-5">
             <nav aria-label="注文の絞り込み" className="flex flex-wrap gap-2">

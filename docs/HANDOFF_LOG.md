@@ -2,11 +2,24 @@
 
 ## 2026-10-02 Codex: Marketplace UIマージ後受入れ・Phase 2スコープ監査
 
-- Branch `codex/marketplace-phase2-scope-20261002`、Base `342cdf12`。Marketplace UI-1〜5の次工程を現行schema、Reader、購入、本棚、GitHub open Issueと照合した。
+- Branch `codex/marketplace-phase2-scope-20261002`、Base `b1645081`。Marketplace UI-1〜5の次工程を現行schema、Reader、購入、本棚、GitHub open Issueと照合した。
 - 次は実作品・認証済み本棚のread-only受入れ確認。LocalはSupabase資格情報と購入データがなく、最新Vercel Production deploymentはsuccessだが匿名HTTPはVercel SSOへ302転送されるため、目視は`BLOCKED_EXTERNAL_ENVIRONMENT`。
 - Phase 2候補には保存契約がない。受入れ後の最初の候補として、最小のbuyer-work関係に閉じる「お気に入り（あとで読む）」を推奨する。Continue Reading、フォロー、レビュー、ランキング、推薦は別Phaseとする。
+- 最新基準`b1645081`を通常mergeし、引き継ぎ文書3件は両側の最新記録を保持して解消した。Marketplace／売上集中32/32とdiff check成功。
 - Production、DB schema／migration、作品、商品、publication、Checkout、Stripe、注文、決済、環境変数、UIコードは変更していない。詳細は`docs/MARKETPLACE_POST_UI_ACCEPTANCE_AND_PHASE2_SCOPE_20261002.md`。
 - 次: 認証済みread-only受入れ、隔離Staging再作成、Phase 2-1実装はいずれも対象を明示した別承認を待つ。
+
+---
+
+## 2026-10-02 Codex: Cloud売上の注文状態サマリー
+
+- Branch: `codex/cloud-sales-order-status-summary-20261002`。Base: `9336ec056ff55c3859cf49f7dc17629b3c71fe2a`（PR #605 merge commit）。
+- 売上管理へ受付済み、支払い済み、不成立・返金の状態別件数を追加し、テストと本番を合算する状態件数と、支払い済み本番だけの売上内訳を分けて案内した。
+- 一覧に支払い済みと不成立・返金の安全な絞り込みを追加した。読込失敗時は件数を0へ変換せず、状態別件数を確認不能として表示する。
+- Productionのページ状態、checkpoint、export Job、Storage、publication、作品、商品、注文、決済、Stripe、Provider、Asset、credit、利用期限、通知設定は変更していない。
+- 最新基準`342cdf12`を通常mergeし、引継ぎ文書3件だけを両側保持で解消した。実装コードに競合はなく、解消mergeは`15f440e0`。
+- 最新基準統合後に売上集中10/10、Hub 1237/1237、deps error 0（既知warning 2）、全型検査、ESLint、migration／rollback静的92/92、Hub Production build、RC repository structure、`git diff --check`成功。外部設定はPENDING、手動E2EはREQUIRED。
+- 次: 通常push後、PR #606の全CI／Vercel成功で停止する。Productionの作品・商品・注文・決済変更は明示承認または利用者の明示操作まで行わない。
 
 ---
 

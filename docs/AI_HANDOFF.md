@@ -2,11 +2,23 @@
 
 ## 0.0 Marketplace UIマージ後受入れ・Phase 2スコープ監査（2026-10-02）
 
-- Branch `codex/marketplace-phase2-scope-20261002`、Base `342cdf12`。Marketplace UI-1〜5後の残件とPhase 2候補を監査した。
+- Branch `codex/marketplace-phase2-scope-20261002`、Base `b1645081`。Marketplace UI-1〜5後の残件とPhase 2候補を監査した。
 - 優先する次タスクは、公開Home・一覧・詳細・試し読みと認証済み本棚・Readerを実作品／既存購入で確認するread-only受入れ。Local環境は実データなし、最新Vercel deploymentはSSO保護のため`BLOCKED_EXTERNAL_ENVIRONMENT`。
 - お気に入り、Continue Reading、Creatorフォロー、レビュー／星評価、ランキング／急上昇、レコメンドに現行保存契約はない。最初の実装候補は「お気に入り（あとで読む）」だが、buyer-work一意関係、RLS、Server Action、migrationの別承認が必要。
+- 最新基準`b1645081`を通常mergeし、引き継ぎ文書3件は両側保持で解消した。Marketplace／売上集中32/32とdiff check成功。
 - Production、DB、作品、商品、publication、Checkout、Stripe、注文、決済、環境変数、UIコードは未変更。詳細は`docs/MARKETPLACE_POST_UI_ACCEPTANCE_AND_PHASE2_SCOPE_20261002.md`。
 - 次は認証済みread-only受入れまたは隔離Stagingの明示承認を待つ。Phase 2機能は同じ承認に含めず、独立して扱う。
+
+---
+
+## 0.0 Cloud売上の注文状態サマリー（2026-10-02）
+
+- Branch `codex/cloud-sales-order-status-summary-20261002`、Base `9336ec056ff55c3859cf49f7dc17629b3c71fe2a`（PR #605 merge commit）。販売者がテスト販売後の注文状態を一覧走査せず確認するためのread-only表示改善である。
+- owner-scoped注文を受付済み、支払い済み、不成立・返金へ集計する。状態件数はテストと本番の両方、売上内訳は既存どおり`paid/live`だけで、画面上にも集計範囲の違いを明示する。
+- allowlistへ`paid`と`closed`を追加し、`closed`は`failed/refunded/canceled`だけを表示する。取得失敗時は状態別件数も「確認できません」とし、未知queryは全件表示へfail closedする。
+- 最新基準`342cdf12`を通常mergeし、引継ぎ文書3件だけを両側保持で解消した。実装コードに競合はなく、解消mergeは`15f440e0`。
+- Production、DB、schema、migration、RPC、Provider、export Job、Asset、credit、作品、checkpoint、publication、商品、注文、決済は変更していない。最新基準統合後に売上集中10/10、Hub 1237/1237、deps error 0（既知warning 2）、全型検査、ESLint、migration／rollback静的92/92、Hub Production build、RC repository structure、diff check成功。
+- 次は通常push後、PR #606の全CI／Vercel成功で停止する。merge後もProductionの作品・商品・注文・決済変更は別の明示承認または利用者の明示操作が必要。
 
 ---
 
