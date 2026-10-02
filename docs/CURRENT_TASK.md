@@ -1,5 +1,19 @@
 # MANGAI Current Task
 
+## 2026-10-02 Cloud売上の注文状態サマリー
+
+- 状態: `IMPLEMENTED / LATEST_BASE_SYNCED / LOCAL_ALL_GATES_PASSED / PRODUCTION_UNCHANGED`
+- Branch: `codex/cloud-sales-order-status-summary-20261002`
+- Base: `9336ec056ff55c3859cf49f7dc17629b3c71fe2a`（PR #605 merge commit）。
+- 売上管理へ、受付済み、支払い済み、不成立・返金の状態別件数を追加した。件数はowner-scoped注文のテストと本番を合算し、支払い済み本番注文だけを対象にする売上内訳とは明示的に分離した。
+- 一覧フィルターへ「支払い済み」と「不成立・返金」を追加した。不成立・返金は`failed`、`refunded`、`canceled`だけを含み、未知queryは従来どおり全件表示へ戻す。読込失敗時は状態別件数も0件にせず「確認できません」とする。
+- DB、schema、migration、RPC、Provider、生成、export Job、Asset、credit、利用期限、作品、checkpoint、publication、商品、注文、決済、Productionデータは変更していない。
+- 最新基準`342cdf12`を通常mergeし、Marketplace UI更新と注文状態サマリーを両立した。競合は引継ぎ文書3件だけで、実装コードの競合はなかった。解消mergeは`15f440e0`。
+- 最新基準統合後の検証: 売上集中10/10、Hub 1237/1237、deps error 0（既知warning 2）、全型検査、ESLint、migration／rollback静的92/92、Hub Production build、RC repository structure、`git diff --check`成功。外部設定はPENDING、手動E2EはREQUIRED。
+- 次: 通常push後、PR #606の全CI／Vercel成功で停止する。merge後もProductionの作品・商品・注文・決済変更は利用者操作または別の明示承認を必要とする。
+
+---
+
 ## 2026-10-02 Marketplace UI-5 Responsive・Accessibility・状態設計
 
 - 状態: `MERGED / LOCAL_RELEVANT_GATES_PASSED / PR_ALL_CHECKS_PASSED / PRODUCTION_UNCHANGED`
