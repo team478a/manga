@@ -50,6 +50,16 @@
 - 次はUI-1レビュー後にMarketplace HomeのPhase UI-2へ進む。注目作品の選定契約がないため、ランキングやレコメンドとして推測実装しない。
 ---
 
+## 0.0 Cloud売上の本番売上内訳（2026-10-02）
+
+- Branch `codex/cloud-sales-revenue-breakdown-20261002`、Base `91ee5edbb214680b962c2b6526f287063db9b0a1`（PR #604 merge commit）。販売者が販売金額、手数料、受取予定額を区別するためのread-only表示改善である。
+- owner-scopedで取得した注文から`status=paid`かつ`payment_mode=live`だけを一度抽出し、購入完了件数、販売金額、手数料、受取予定額を同じ集合から集計する。
+- 集計は一覧フィルターの影響を受けない。取得失敗時は全内訳を「確認できません」とし、0件・0円への誤変換を防ぐ。テスト注文の請求・売上・振込なし、振込・精算未提供の既存案内を維持する。
+- Production、DB、schema、migration、RPC、Provider、export Job、Asset、credit、作品、checkpoint、publication、商品、注文、決済は変更していない。集中13/13、Hub 1214/1214、deps error 0（既知warning 2）、全型検査、ESLint、migration／rollback静的92/92、Hub Production build、RC repository structure、diff check成功。
+- 次はDraft PRの全CI／Vercel成功で停止する。merge後もProductionの作品・商品・注文・決済変更は別の明示承認または利用者の明示操作が必要。
+
+---
+
 ## 0.0 Cloud売上の振込・精算境界案内（2026-10-02）
 
 - Branch `codex/cloud-sales-payout-boundary-20261002`、Base `067fa2ec9969eda48a5700e92c26c40f8644ea73`（PR #603 merge commit）。販売者が参考集計を振込可能額や精算確定額と誤認しないためのread-only表示改善である。

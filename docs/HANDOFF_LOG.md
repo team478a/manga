@@ -54,6 +54,17 @@
 - 次はUI-1レビュー後にPhase UI-2 Marketplace Homeへ進む。注目・人気・ランキング相当の新契約をUIだけで作らない。
 ---
 
+## 2026-10-02 Codex: Cloud売上の本番売上内訳
+
+- Branch: `codex/cloud-sales-revenue-breakdown-20261002`。Base: `91ee5edbb214680b962c2b6526f287063db9b0a1`（PR #604 merge commit）。
+- 売上管理へ支払い済み本番注文の購入完了件数、販売金額、手数料、受取予定額を追加し、同じ`paid/live`条件から集計した。
+- 表示フィルターと集計を分離し、テスト・受付済みの一覧表示で本番売上内訳が変化しないようにした。読込失敗時は全項目を「確認できません」として扱う。
+- Productionのページ状態、checkpoint、export Job、Storage、publication、作品、商品、注文、決済、Stripe、Provider、Asset、credit、利用期限、通知設定は変更していない。
+- 集中13/13、Hub 1214/1214、deps error 0（既知warning 2）、全型検査、ESLint、migration／rollback静的92/92、Hub Production build、RC repository structure、`git diff --check`成功。外部設定はPENDING、手動E2EはREQUIRED。
+- 次: commit、push、Draft PR、全CI／Vercel成功で停止する。Productionの作品・商品・注文・決済変更は明示承認または利用者の明示操作まで行わない。
+
+---
+
 ## 2026-10-02 Codex: Cloud売上の振込・精算境界案内
 
 - Branch: `codex/cloud-sales-payout-boundary-20261002`。Base: `067fa2ec9969eda48a5700e92c26c40f8644ea73`（PR #603 merge commit）。
