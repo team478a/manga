@@ -20,7 +20,20 @@ export default async function SalesPage() {
 
   return (
     <main className="page">
-      <h1 className="text-3xl font-bold">売上管理</h1>
+      <Link className="text-leaf underline" href="/dashboard">
+        ← マイページ
+      </Link>
+      <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h1 className="text-3xl font-bold">売上管理</h1>
+          <p className="mt-2 text-stone-600">
+            指定購入者が購入手続きを完了すると、注文と売上の状態がここに表示されます。
+          </p>
+        </div>
+        <Link className="button-secondary w-fit" href="/dashboard/sales">
+          注文・売上情報を再読み込み
+        </Link>
+      </div>
       <div className="panel mt-6">
         <p className="text-lg text-stone-600">クリエイター受取予定額</p>
         <p className="mt-2 text-4xl font-bold">
@@ -70,7 +83,22 @@ export default async function SalesPage() {
                   <td className="py-3">{order.payment_mode === "test" ? "テスト" : "本番"}</td>
                 </tr>
               )) : (
-                <tr><td className="py-5 text-stone-600" colSpan={7}>注文はまだありません。</td></tr>
+                <tr>
+                  <td className="py-5 text-stone-600" colSpan={7}>
+                    <p className="font-semibold text-stone-900">注文はまだありません。</p>
+                    <p className="mt-2 max-w-3xl leading-relaxed">
+                      販売中の作品から購入準備URLを案内し、管理者が確認した指定購入者・期間内で購入手続きが完了すると反映されます。画面を開いたままでは自動更新されないため、購入者から完了連絡を受けた後に再読み込みしてください。
+                    </p>
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      <Link className="button-secondary" href="/creator">
+                        販売中の作品を確認
+                      </Link>
+                      <Link className="button-secondary" href="/dashboard/monitor/guide#internal-test-sale">
+                        テスト販売の手順
+                      </Link>
+                    </div>
+                  </td>
+                </tr>
               )}
             </tbody>
           </table>

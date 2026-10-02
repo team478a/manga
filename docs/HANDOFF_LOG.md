@@ -1,5 +1,16 @@
 # MANGAI AI Handoff Log
 
+## 2026-10-02 Codex: Cloud購入案内後の注文・売上確認導線
+
+- Branch: `codex/cloud-sales-empty-state-handoff-20261002`。Base: `4344c4f3833a8422a43101af39acfb67918ffef3`（PR #597 merge commit）。
+- 売上管理で、指定購入者の購入完了後に注文が表示されること、手動再読み込みが必要なことを明示した。注文0件でも販売中作品とテスト販売手順へ戻れる。
+- 既存のcreator owner絞り込み、live受取予定額からのtest注文除外、読込失敗時のfail-closedを維持した。自動polling、注文・決済作成は追加していない。
+- Productionのページ状態、checkpoint、export Job、Storage、publication、作品、商品、注文、決済、Stripe、Provider、Asset、credit、利用期限、通知設定は変更していない。
+- 集中13/13、Hub 1208/1208、deps error 0（既知warning 2）、全型検査、ESLint、migration／rollback静的92/92、Hub Production build、RC repository structure、`git diff --check`成功。外部設定はPENDING、手動E2EはREQUIRED。
+- 次: commit、push、Draft PR、全CI／Vercel成功で停止する。Productionの購入資格設定、URL実送信、注文、決済は明示承認または利用者の明示操作まで行わない。
+
+---
+
 ## 2026-10-02 Codex: Cloud販売開始後の購入者URL案内
 
 - Branch: `codex/cloud-marketplace-buyer-link-handoff-20261002`。Base: `a761b6949ae6ae25c4b6ede50e3a97454462f5fe`（PR #596 merge commit）。

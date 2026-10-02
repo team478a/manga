@@ -1,5 +1,18 @@
 # MANGAI Current Task
 
+## 2026-10-02 Cloud購入案内後の注文・売上確認導線
+
+- 状態: `IMPLEMENTED / LOCAL_ALL_GATES_PASSED / PRODUCTION_UNCHANGED`
+- Branch: `codex/cloud-sales-empty-state-handoff-20261002`
+- Base: `4344c4f3833a8422a43101af39acfb67918ffef3`（PR #597 merge commit）。
+- 売上管理にマイページへの戻り、手動再読み込み、購入完了後に注文が表示される説明を追加した。注文0件では販売中作品と限定テスト販売手順へ戻れるようにした。
+- 画面を開いたままでは自動更新されないことを明示し、購入者から完了連絡を受けた後に利用者が再読み込みする。自動polling、注文作成、決済開始は追加していない。
+- DB、schema、migration、RPC、Provider、生成、export Job、Asset、credit、利用期限、作品、checkpoint、publication、商品、注文、決済、Productionデータは変更していない。
+- 検証: 集中13/13、Hub 1208/1208、deps error 0（既知warning 2）、全型検査、ESLint、migration／rollback静的92/92、Hub Production build、RC repository structure、`git diff --check`成功。外部設定はPENDING、手動E2EはREQUIRED。
+- 次: commit、push、Draft PR化し、全CI／Vercel成功で停止する。merge後もProductionの購入資格設定、URL送信、注文、決済は利用者操作または別の明示承認を必要とする。
+
+---
+
 ## 2026-10-02 Cloud販売開始後の購入者URL案内
 
 - 状態: `IMPLEMENTED / LOCAL_ALL_GATES_PASSED / PRODUCTION_UNCHANGED`

@@ -28,3 +28,16 @@ test("売上読込失敗を売上0円や注文0件として表示しない", asy
   assert.match(page, /注文一覧を空として扱わず、読込を停止しました/);
   assert.match(page, /error \? \([\s\S]*注文・売上情報を再読み込み[\s\S]*\) : orders\.length/);
 });
+
+test("注文がない販売者は再読み込みと販売中作品・手順へ戻れる", async () => {
+  const page = await read("src/app/dashboard/sales/page.tsx");
+
+  assert.match(page, /指定購入者が購入手続きを完了すると/);
+  assert.match(page, /画面を開いたままでは自動更新されない/);
+  assert.match(page, /href="\/dashboard\/sales"/);
+  assert.match(page, /注文・売上情報を再読み込み/);
+  assert.match(page, /href="\/creator"/);
+  assert.match(page, /販売中の作品を確認/);
+  assert.match(page, /href="\/dashboard\/monitor\/guide#internal-test-sale"/);
+  assert.match(page, /テスト販売の手順/);
+});
