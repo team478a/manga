@@ -41,3 +41,19 @@ test("注文がない販売者は再読み込みと販売中作品・手順へ�
   assert.match(page, /href="\/dashboard\/monitor\/guide#internal-test-sale"/);
   assert.match(page, /テスト販売の手順/);
 });
+
+test("注文一覧は日本時間の受付日時と状態の意味を表示する", async () => {
+  const [page, repository] = await Promise.all([
+    read("src/app/dashboard/sales/page.tsx"),
+    read("src/modules/sales/infrastructure/sales-query-repository.ts"),
+  ]);
+
+  assert.match(repository, /created_at/);
+  assert.match(repository, /\.order\("created_at", \{ ascending: false \}\)/);
+  assert.match(page, /timeZone: "Asia\/Tokyo"/);
+  assert.match(page, /<th className="py-3">受付日時<\/th>/);
+  assert.match(page, /<time dateTime=\{order\.created_at\}>/);
+  assert.match(page, /受付済み.+決済確認前/);
+  assert.match(page, /支払い済み.+購入完了/);
+  assert.match(page, /失敗・キャンセル・返金済みの注文は受取予定額に含みません/);
+});
