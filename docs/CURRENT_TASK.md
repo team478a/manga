@@ -1,5 +1,17 @@
 # MANGAI Current Task
 
+## 2026-10-02 Cloud手動作品の完成判定修正
+
+- 状態: `IMPLEMENTED / FOCUSED_TESTS_PASSED / PRODUCTION_E2E_PENDING_MERGE`
+- Branch: `codex/cloud-manual-project-completion-20261002`
+- 手動作成または一般向けDesktop importのCloud作品には、AIネームとの対応行`cloud_story_storyboard_projects`が存在しない。正常な対応行なしを読込失敗扱いにしていたため、画像とCanvasを保存してもページ確定へ進めない問題を修正した。
+- 対応行がない場合だけ必須セリフ0件として完成判定を続行する。DB照会エラー、対応行がある作品のStoryboard欠落・形式不正は従来どおりfail closed。画像、保存revision、PNG、手動確認、全ページ確定、完成版checkpointの条件は緩和しない。
+- 責任者はProduction `test`で既存画像を再利用した非公開2ページE2E専用作品を作り、完成版checkpointとpaused商品まで準備することを承認済み。公開、販売開始、決済、Provider実行、credit予約・消費は禁止。実操作は本修正のmerge・Production反映後に正規UIで行う。
+- 集中19/19、Hub全1243/1243、全typecheck、対象ESLint、Production build、`git diff --check`成功。詳細: `docs/CLOUD_MANUAL_PROJECT_COMPLETION_FIX_20261002.md`。
+- 次: commit、push、Draft PR、全CI／Vercel成功で停止する。merge後にProduction E2Eを別の実行記録として行う。
+
+---
+
 ## 2026-10-02 Marketplace 続きから読む Production migration受入れ
 
 - 状態: `PRODUCTION_MIGRATION_APPLIED / POSTFLIGHT_PASSED / INITIAL_ROWS_ZERO`

@@ -1,5 +1,15 @@
 # MANGAI AI Handoff Log
 
+## 2026-10-02 Codex: Cloud手動作品の完成判定修正
+
+- Branch: `codex/cloud-manual-project-completion-20261002`
+- 手動Cloud作品と一般向けDesktop import作品で正常なStoryboard対応行なしをエラーにしていた完成判定を修正した。対応行なしは必須セリフ0件、DBエラーと既存Storyboard破損はfail closedとする。
+- 画像、保存revision、PNG、手動確認、ページ確定、完成版checkpointの既存条件は維持する。
+- 責任者承認済みのProduction E2Eは、`test`本人の正規UIで非公開2ページ作品、完成版checkpoint、PDF、paused商品まで。公開、販売開始、決済、Provider、creditは変更しない。
+- 集中19/19、Hub全1243/1243、全typecheck、対象ESLint、Production build、`git diff --check`成功。次はDraft PRの全CI／Vercel成功で停止する。
+
+---
+
 ## 2026-10-02 Codex: Marketplace 続きから読む Production migration受入れ
 
 - 責任者の明示承認後、migration原本SHA-256と承認値`34c5c316060910aa7531ad4ac50d11b144b9a51714d1c558740e75010d7d959a`の一致を確認した。
@@ -162,6 +172,7 @@
 - Production、DB、migration、RPC、Storage、Checkout、Stripe、publication、商品・作品状態、注文、決済、Provider、Job、credit、利用者データは変更していない。Phase 2機能は追加していない。
 - Marketplace集中28/28、Hub 1209/1209、deps error 0（既知warning 2）、ESLint、Hub typecheck、packages build、Next.js Production build、browser Desktop／390px mobile、mobile navigation accessibility、diff check成功。全体typecheckはDesktop依存installがローカルディスク空き容量0で停止したため`LOCAL_BLOCKED_EXTERNAL_ENVIRONMENT`（Desktop差分なし）。Supabase未設定のローカル環境では安全なempty stateを目視確認した。
 - 次はUI-1レビュー後にPhase UI-2 Marketplace Homeへ進む。注目・人気・ランキング相当の新契約をUIだけで作らない。
+
 ---
 
 ## 2026-10-02 Codex: Cloud売上の本番売上内訳
