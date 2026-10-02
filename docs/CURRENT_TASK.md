@@ -1,15 +1,26 @@
 # MANGAI Current Task
 
+## 2026-10-02 Marketplace 続きから読む Production migration受入れ
+
+- 状態: `PRODUCTION_MIGRATION_APPLIED / POSTFLIGHT_PASSED / INITIAL_ROWS_ZERO`
+- Branch: `codex/marketplace-reading-progress-production-acceptance-20261002`
+- 責任者の明示承認後、原本SHA-256が承認値`34c5c316060910aa7531ad4ac50d11b144b9a51714d1c558740e75010d7d959a`と一致することを確認し、Production Project `vmdsyxykcrgxcdbrwlkv`の`main / PRODUCTION`へ`202610020003_marketplace_reading_progress`を1回適用した。
+- postflightでtable、RLS、primary key、profile更新index、owner read policy、保存RPCを確認した。authenticatedはtable SELECTとRPC EXECUTEのみ、追加writeなし。anonはtable／RPC権限なし。初期row数は0。
+- 作品、商品、publication、注文、決済、Storage、Provider、生成Job、credit、利用期限、通知設定は変更していない。
+- 実作品Readerの保存・復帰E2Eは未実施。次はこの証跡を文書のみのDraft PRにし、全CI／Vercel成功で停止する。詳細: `docs/MARKETPLACE_READING_PROGRESS_PRODUCTION_ACCEPTANCE_20261002.md`。
+
+---
+
 ## 2026-10-02 Marketplace Phase 2-2 続きから読む
 
-- 状態: `IMPLEMENTED / FOCUSED_TESTS_PASSED / PRODUCTION_MIGRATION_NOT_APPLIED`
+- 状態: `IMPLEMENTED / FOCUSED_TESTS_PASSED / PRODUCTION_MIGRATION_APPLIED / POSTFLIGHT_PASSED`
 - Branch: `codex/marketplace-continue-reading-phase2-20261002`
 - ログイン済みReaderの最終ページを`profile + work + current publication`単位で保存し、作品詳細と本棚から現行版の保存ページへ復帰する最小機能を実装した。
 - 匿名は保存しない。未購入者は公開中サンプルだけ、作者・支払済み購入者は既存Reader権限内の本文ページを保存できる。直接table書込は許可せず、検証付きRPCだけを使用する。
 - migration未適用または進捗DB失敗時は、従来Reader／本棚へ縮退する。公開版差し替え時は旧版進捗を流用しない。
 - Migration `202610020003_marketplace_reading_progress` forward SHA-256 `34c5c316060910aa7531ad4ac50d11b144b9a51714d1c558740e75010d7d959a`、rollback SHA-256 `691ae0506ef0504896f41ae24d53aed877e970b3ba0f3d1bf7f5f13dcf55cc96`。
 - 集中追加3/3、Marketplace関連138/138、Hub全1243/1243、migration静的95/95、Hub typecheck、ESLint、依存境界error 0（既知warning 2）、Production build、diff check成功。
-- Production migration、作品、商品、publication、注文、決済、Provider、creditは変更していない。次はcommit／push／Draft PR作成後、全CI／Vercel成功で停止する。詳細: `docs/MARKETPLACE_CONTINUE_READING_PHASE2_20261002.md`。
+- Production migrationは責任者の別承認後に1回適用し、postflight合格。作品、商品、publication、注文、決済、Provider、creditは変更していない。詳細: `docs/MARKETPLACE_CONTINUE_READING_PHASE2_20261002.md`、`docs/MARKETPLACE_READING_PROGRESS_PRODUCTION_ACCEPTANCE_20261002.md`。
 
 ---
 

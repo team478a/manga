@@ -2,7 +2,7 @@
 
 作成日: 2026-10-02
 対象: 一般向けCloud Marketplaceの固定公開版Reader
-状態: 実装・ローカル検証済み。Production migration未適用。
+状態: 実装・ローカル検証済み。Production migration適用・postflight合格。
 
 ## 1. 利用者向けの動作
 
@@ -31,7 +31,7 @@
 - ID: `202610020003_marketplace_reading_progress`
 - Forward SHA-256: `34c5c316060910aa7531ad4ac50d11b144b9a51714d1c558740e75010d7d959a`
 - Rollback SHA-256: `691ae0506ef0504896f41ae24d53aed877e970b3ba0f3d1bf7f5f13dcf55cc96`
-- Production適用は本PRに含めない。merge後も責任者の明示承認を必要とする。
+- 実装PR merge後、責任者の明示承認を受けてProduction Project `vmdsyxykcrgxcdbrwlkv`へ1回適用した。postflightでtable、RLS、primary key、index、owner read policy、RPC、最小権限、初期row数0を確認した。
 
 ## 5. 対象外
 

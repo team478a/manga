@@ -1,11 +1,21 @@
 # MANGAI AI Handoff Log
 
+## 2026-10-02 Codex: Marketplace 続きから読む Production migration受入れ
+
+- 責任者の明示承認後、migration原本SHA-256と承認値`34c5c316060910aa7531ad4ac50d11b144b9a51714d1c558740e75010d7d959a`の一致を確認した。
+- Production Project `vmdsyxykcrgxcdbrwlkv`の`main / PRODUCTION`へ`202610020003_marketplace_reading_progress`を1回適用した。
+- postflightはtable、RLS、primary key、index、owner限定read policy、保存RPC、authenticated最小権限、anon拒否をすべて確認した。初期row数は0。
+- 作品、商品、publication、注文、決済、Storage、Provider、Job、credit、利用期限、通知設定は変更していない。実作品Reader E2Eは別工程。
+- Branch `codex/marketplace-reading-progress-production-acceptance-20261002`で文書証跡だけをDraft PR化し、全CI／Vercel成功で停止する。
+
+---
+
 ## 2026-10-02 Codex: Marketplace Phase 2-2 続きから読む
 
 - Readerで表示した最終ページを現在の固定公開版単位で保存し、ページ指定なしReaderと本棚から復帰する機能を追加した。
 - 本棚は2ページ目以降を「続きから読む（Nページ）」と表示する。保存失敗・migration未適用時は従来の「漫画を読む」とReaderへ縮退する。
 - DBは本人SELECT、検証付きRPC書込、service role CRUDに限定した。サンプル利用者と作者／paid購入者の権限を分離し、既存Reader entitlementを変更していない。
-- Migration `202610020003`はProduction未適用。Production変更、Provider実行、credit消費はない。
+- Migration `202610020003`は責任者の別承認後にProductionへ1回適用し、postflight合格。Provider実行、credit消費、作品・注文変更はない。
 - 集中追加3/3、Marketplace関連138/138、Hub全1243/1243、migration静的95/95、Hub typecheck、ESLint、依存境界error 0（既知warning 2）、Production build、diff check成功。Draft PRで全CI／Vercel成功まで監視する。
 
 ---
