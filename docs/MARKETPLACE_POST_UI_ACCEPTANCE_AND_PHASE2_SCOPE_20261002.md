@@ -9,6 +9,7 @@ Phase 2候補には現行の保存契約がない。受入れ確認後に着手�
 ## 2. 監査基準
 
 - Base: `feature/manga-canvas-mvp` merge commit `342cdf12`
+- Latest base sync: PR #606 merge commit `b1645081`を通常mergeし、Marketplace UI監査とCloud売上サマリーを両立した。
 - Marketplace UI実装: PR #602、merge commit `8882c15b`
 - 引き継ぎ更新: PR #607、merge commit `342cdf12`
 - 現行schemaのMarketplace主要テーブル: `profiles`、`works`、`digital_products`、`orders`、`cloud_work_publications`、`cloud_work_publication_pages`
@@ -32,7 +33,7 @@ Phase 2候補には現行の保存契約がない。受入れ確認後に着手�
 ### 現在の外部環境状態
 
 - LocalにはSupabase資格情報と認証済み購入データがなく、実データ目視はできない。
-- merge commit `342cdf12`のVercel Production deploymentはsuccess。
+- 監査時点のmerge commit `342cdf12`のVercel Production deploymentはsuccess。
 - deployment URLへの匿名HTTPはVercel SSOへ`302`転送される。認証済みブラウザ操作の明示承認なしでは画面受入れを継続しない。
 - 過去の隔離Stagingは終了済みであり、再作成・課金・秘密情報設定は別承認事項である。
 
