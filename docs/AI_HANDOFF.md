@@ -1,5 +1,15 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Cloud漫画制作の目的別ステップ化（2026-10-03）
+
+- Branch `codex/cloud-guided-creation-flow-20261003`で、Cloud制作画面の情報密度と次操作の見つけにくさを改善した。
+- 作品画面は「構成→原稿→完成版→出力→販売準備」の状態から現在の目的を1件だけ提示し、全体ロードマップと詳細診断を段階的に開く。
+- ページ編集は「コマ→画像→文字（任意）→保存・確定」を案内し、基本操作とcreditを使うAI操作を分離する。品質修正導線はAI詳細を自動展開するため退行しない。
+- 完成・公開・販売の判定、DB、migration、API、Provider、creditに変更なし。Production E2Eは改善のmerge・反映まで停止し、既存の非公開作品を保持する。
+- 目的別3/3、関連36/36、Hub全1246/1246、全typecheck、対象ESLint、依存境界、Production build、diff check成功。詳細は`docs/CLOUD_GUIDED_CREATION_FLOW_20261003.md`。
+
+---
+
 ## 0.0 Cloud手動作品の完成判定修正（2026-10-02）
 
 - Branch `codex/cloud-manual-project-completion-20261002`で、手動作成または一般向けDesktop importのCloud作品が、AIネーム対応行なしを理由に完成判定で停止する問題を修正した。

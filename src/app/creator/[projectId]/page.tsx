@@ -49,6 +49,7 @@ import { LongformPageManager } from "./LongformPageManager";
 import { DurableExportPanel } from "./DurableExportPanel";
 import { ProjectCheckpointPanel } from "./ProjectCheckpointPanel";
 import { LongformReadinessPanel } from "./LongformReadinessPanel";
+import { CloudCreationJourney } from "./CloudCreationJourney";
 import { MarketplaceBuyerLinkActions } from "./MarketplaceBuyerLinkActions";
 import { buildCloudLongformReadiness } from "@/lib/cloud-longform-readiness";
 import { buildCloudMarketplaceDraftGuidance } from "@/lib/cloud-marketplace-draft-guidance";
@@ -116,6 +117,9 @@ export default async function CloudProjectPage({
     releaseCheckpointCount: releaseCheckpoints.length,
   });
   const pageProductionStateById = new Map(pageProductionStates.map((state) => [state.pageId, state]));
+  const finalizedPageCount = pageProductionStates.filter((state) => state.status === "finalized").length;
+  const firstEditablePageId = pages.find((page) => pageProductionStateById.get(page.id)?.status !== "finalized")?.id ?? null;
+  const completedPdfCount = exportHistory.jobs.filter((item) => item.format === "pdf" && item.status === "completed" && item.downloadable).length;
   const resolvedReleaseGuidancePages = pages.flatMap((page) => {
     const state = pageProductionStateById.get(page.id);
     return state ? [{
@@ -179,7 +183,23 @@ export default async function CloudProjectPage({
           {query.error}
         </InlineErrorMessage>
       ) : null}
-      <LongformReadinessPanel readiness={longformReadiness} />
+      <CloudCreationJourney
+        completedPdfCount={completedPdfCount}
+        finalizedPageCount={finalizedPageCount}
+        firstEditablePageId={firstEditablePageId}
+        manuscriptReady={Boolean(exportReadiness?.ready)}
+        pageCount={pages.length}
+        productAvailable={Boolean(marketplaceDraft?.product)}
+        projectId={projectId}
+        releaseCheckpointCount={releaseCheckpoints.length}
+      />
+      <details
+        className="mt-6 rounded-xl border border-stone-200 bg-white p-4"
+        id="project-details"
+        open={pages.length > 0 && finalizedPageCount === pages.length && !exportReadiness?.ready}
+      >
+        <summary className="cursor-pointer text-lg font-bold text-stone-900">詳しい進捗・原稿チェック・復旧状況を見る</summary>
+        <LongformReadinessPanel readiness={longformReadiness} />
       {manuscript ? (
         <section className="panel mt-6" aria-labelledby="manuscript-status">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
@@ -364,6 +384,7 @@ export default async function CloudProjectPage({
           </div>
         </section>
       ) : null}
+      </details>
       <DurableExportPanel
         available={exportHistory.available}
         jobs={exportHistory.jobs}
@@ -481,7 +502,7 @@ export default async function CloudProjectPage({
           作品をゴミ箱へ移動
         </PendingSubmitButton>
       </form>
-      <div className="mt-7 grid gap-6 lg:grid-cols-[1fr_320px]">
+      <div className="mt-7 scroll-mt-6 grid gap-6 lg:grid-cols-[1fr_320px]" id="project-structure">
         <section className="space-y-5" id="panel-generation">
           {longform.available ? (
             <LongformPageManager
