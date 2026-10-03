@@ -39,6 +39,7 @@ import { isDomainError } from "@/lib/domain-errors";
 import { formString } from "@/app/actions/shared/form-data";
 import { findNextCloudReleaseCheckpointPage } from "@/lib/cloud-release-checkpoint-guidance";
 import { logHubEvent } from "@/lib/hub-logger";
+import { getCloudMarketplaceDraftFailureStage } from "@/lib/cloud-marketplace-diagnostics";
 
 const projectSchema = z.object({
   title: z.string().trim().min(1).max(200),
@@ -335,6 +336,7 @@ export async function syncCloudMarketplaceDraftAction(
     logHubEvent("error", "cloud_marketplace_draft_sync_failed", {
       projectId,
       checkpointId: parsed.data.checkpointId,
+      stage: getCloudMarketplaceDraftFailureStage(error),
       error,
     });
     const message = domainMessage(

@@ -1,14 +1,13 @@
 import { randomUUID } from "node:crypto";
 import { createCloudMarketplaceArtifacts } from "@/lib/cloud-canvas-export";
+import {
+  CloudMarketplaceDraftSyncError,
+  wrapCloudMarketplaceDraftError,
+} from "@/lib/cloud-marketplace-diagnostics";
 import { assertCloudMarketplaceDraftMutable } from "@/lib/cloud-marketplace-policy";
 import { ownedMarketplaceStoragePath } from "@/lib/content-boundary";
 import { requireProfile } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
-import {
-  DomainError,
-  isDomainError,
-  StorageTransactionError,
-} from "@/lib/domain-errors";
 
 const WORKS_BUCKET = "works";
 const PRODUCTS_BUCKET = "digital-products";
@@ -100,7 +99,16 @@ export async function syncCloudMarketplaceDraft(input: {
   price: number;
 }) {
   const { user, profile } = await requireProfile();
-  const current = await findDraft(profile.id, input.projectId);
+  let current: Awaited<ReturnType<typeof findDraft>>;
+  try {
+    current = await findDraft(profile.id, input.projectId);
+  } catch (error) {
+    throw wrapCloudMarketplaceDraftError(
+      "draft_lookup",
+      error,
+      "販売用下書きの現在状態を確認できませんでした。",
+    );
+  }
   assertCloudMarketplaceDraftMutable({
     workStatus: current.work?.status,
     workIsPublic: current.work?.is_public,
@@ -111,11 +119,11 @@ export async function syncCloudMarketplaceDraft(input: {
   try {
     artifacts = await createCloudMarketplaceArtifacts(input.projectId, input.checkpointId);
   } catch (error) {
-    if (isDomainError(error)) throw error;
-    throw new DomainError(
-      "INTERNAL_ERROR",
+    if (error instanceof CloudMarketplaceDraftSyncError) throw error;
+    throw wrapCloudMarketplaceDraftError(
+      "artifact_generation",
+      error,
       "販売用原稿の画像・PDFを作成できませんでした。",
-      { cause: error },
     );
   }
   if (!artifacts.checkpoint) throw new Error("完成版を販売原稿へ固定できませんでした。");
@@ -155,7 +163,9 @@ export async function syncCloudMarketplaceDraft(input: {
         upsert: false,
       });
     if (coverError)
-      throw new StorageTransactionError(
+      throw new CloudMarketplaceDraftSyncError(
+        "cover_upload",
+        "STORAGE_TRANSACTION_ERROR",
         "販売用の表紙画像を保存できませんでした。",
       );
     uploaded.push({ bucket: WORKS_BUCKET, path: coverPath });
@@ -170,7 +180,9 @@ export async function syncCloudMarketplaceDraft(input: {
         upsert: false,
       });
     if (productUploadError)
-      throw new StorageTransactionError(
+      throw new CloudMarketplaceDraftSyncError(
+        "pdf_upload",
+        "STORAGE_TRANSACTION_ERROR",
         "販売用のPDFを保存できませんでした。",
       );
     uploaded.push({ bucket: PRODUCTS_BUCKET, path: productPath });
@@ -180,7 +192,9 @@ export async function syncCloudMarketplaceDraft(input: {
         pagePaths[index], artifacts.pages[index].bytes, { contentType: "image/png", upsert: false },
       );
       if (error)
-        throw new StorageTransactionError(
+        throw new CloudMarketplaceDraftSyncError(
+          "page_upload",
+          "STORAGE_TRANSACTION_ERROR",
           `販売用の${index + 1}ページ目を保存できませんでした。`,
         );
       uploaded.push({ bucket: PRODUCTS_BUCKET, path: pagePaths[index] });
@@ -206,7 +220,8 @@ export async function syncCloudMarketplaceDraft(input: {
       | { work_id: string; product_id: string; publication_id: string; publication_version: number }
       | undefined;
     if (syncError || !result)
-      throw new DomainError(
+      throw new CloudMarketplaceDraftSyncError(
+        "database_sync",
         "INTERNAL_ERROR",
         "販売用の作品・商品・完成版を保存できませんでした。",
         { cause: syncError ?? undefined },

@@ -1,5 +1,19 @@
 # MANGAI Current Task
 
+## 2026-10-03 Cloud販売下書きの安全な工程ID診断
+
+- 状態: `READY_FOR_REVIEW`
+- Branch: `codex/cloud-marketplace-draft-stage-diagnostics-20261003`
+- PR #619 merge後、Productionの同一checkpointで販売下書きを承認範囲内で1回だけ再試行した。POSTは303、約12秒後に`INTERNAL_ERROR`で停止した。Storage系codeではないためartifact生成またはDB同期まで絞れたが、既存sanitizeログでは工程を区別できなかった。
+- 固定工程IDを型付きErrorへ付与し、構造化ログの`stage`へ安全なenumだけを記録する。生エラー、stack、Supabase応答、Storage path、画像、Prompt、メール、tokenは記録しない。
+- artifact preflight、checkpoint画像化、PDF生成、表紙／PDF／ページ保存、DB同期を区別する。既存の利用者向け案内、補償削除、公開・販売gateは維持する。
+- 集中17/17、Hub全1250/1250、Hub typecheck、対象ESLint、依存境界error 0（既知warning 2）、Production build成功。DB、migration、RPC、Storage object、販売状態、決済、Provider、creditは変更していない。
+- PR: [#620](https://github.com/team478a/manga/pull/620)。Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功。
+- 次: merge・Production反映後に同じcheckpointを1回だけ再試行し、`stage`で原因を確定する。公開・販売開始・決済は実行しない。
+- 詳細: `docs/CLOUD_MARKETPLACE_DRAFT_STAGE_DIAGNOSTICS_20261003.md`
+
+---
+
 ## 2026-10-03 Cloud漫画制作の目的別ステップ化
 
 - 状態: `IMPLEMENTED / FULL_TESTS_PASSED / PRODUCTION_E2E_PAUSED`
