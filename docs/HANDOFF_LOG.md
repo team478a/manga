@@ -1,5 +1,15 @@
 # MANGAI AI Handoff Log
 
+## 2026-10-03 Codex: Cloud販売下書きDB同期の列名衝突修正
+
+- PR #620反映後のProduction再試行で`stage=database_sync`を確認した。SQL EditorのROLLBACK診断はSQLSTATE `42702`、`column reference "work_id" is ambiguous`を返した。
+- 対象Projectの作品・商品・publicationは各0件、checkpoint pageは2件。診断transactionはROLLBACKし、公開、販売開始、注文、決済、Provider、credit、永続DB変更は0件。
+- `sync_cloud_marketplace_release_draft`内のDB列をtable aliasで完全修飾し、`#variable_conflict error`を追加した。権限、所有権、完成版、公開済み／active拒否、原子性は維持する。
+- migration `202610030001_cloud_marketplace_release_draft_qualification`、rollback、schema、manifest、再発テストを追加。forward SHA-256 `7d9aff799797c5f89371eb4262907be2604b22fecb1fb1aafcd3c90f09f83c75`。
+- 集中11/11、Hub 1252/1252、migration静的96/96、Hub型検査、対象lint、Production build、diff check成功。修正版RPCはProductionの一時transaction内で`completed`となり、全ROLLBACK後に修正版未残存・作品0・商品0・publication 0を再確認した。Production適用はmerge後の別承認が必要。詳細: `docs/CLOUD_MARKETPLACE_RELEASE_DRAFT_QUALIFICATION_FIX_20261003.md`。
+
+---
+
 ## 2026-10-03 Codex: Cloud販売下書きの安全な工程ID診断
 
 - PR #619 merge・Production反映後、`test`の非公開E2E作品で販売下書きを1回だけ再試行した。Production POSTは303、約12秒後に`INTERNAL_ERROR`で停止した。再送、公開、販売開始、注文、決済、Provider、credit操作は行っていない。

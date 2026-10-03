@@ -1,5 +1,14 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Cloud販売下書きDB同期の列名衝突修正（2026-10-03）
+
+- Productionの安全な再試行で`database_sync`停止を確認し、ROLLBACK診断でSQLSTATE `42702`、`column reference "work_id" is ambiguous`を再現した。
+- `sync_cloud_marketplace_release_draft`のRETURNS TABLE出力変数と未修飾列の衝突を、table aliasによる完全修飾と`#variable_conflict error`で修正した。
+- migration `202610030001_cloud_marketplace_release_draft_qualification`、rollback、schema、manifest、再発テストを追加。forward SHA-256は`7d9aff799797c5f89371eb4262907be2604b22fecb1fb1aafcd3c90f09f83c75`。
+- 集中11/11、Hub 1252/1252、migration静的96/96、Hub型検査、対象lint、Production build、diff check成功。修正版RPCはProductionの一時transaction内で成功し、全ROLLBACK後に未適用・対象row 0件を再確認した。Production migration未適用。公開・販売開始・決済・Provider・creditは変更していない。詳細は`docs/CLOUD_MARKETPLACE_RELEASE_DRAFT_QUALIFICATION_FIX_20261003.md`。
+
+---
+
 ## 0.0 Cloud漫画制作の目的別ステップ化（2026-10-03）
 
 - Branch `codex/cloud-guided-creation-flow-20261003`で、Cloud制作画面の情報密度と次操作の見つけにくさを改善した。
