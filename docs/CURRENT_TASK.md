@@ -1,15 +1,28 @@
 # MANGAI Current Task
 
+## 2026-10-03 Cloud販売下書き Production受入れ
+
+- 状態: `PRODUCTION_ACCEPTED / PRIVATE_DRAFT_READY / PUBLICATION_NOT_STARTED`
+- Branch: `codex/cloud-marketplace-release-draft-production-proof-20261003`
+- 責任者承認済みmigration `202610030001_cloud_marketplace_release_draft_qualification`（SHA-256 `7d9aff799797c5f89371eb4262907be2604b22fecb1fb1aafcd3c90f09f83c75`）をProduction Project `vmdsyxykcrgxcdbrwlkv`へ1回適用した。
+- postflightは`#variable_conflict error`、publication／productの`work_id`完全修飾、authenticated／service_role実行権限を確認し、anon実行権限なしを確認した。
+- `test`の非公開2ページE2E作品で販売下書きを1回だけ再試行し成功した。作品`draft`・`is_public=false`、商品`paused`・500円、publication v1・2ページ、publication page 2件。
+- 注文0件、生成Job 0件、費用台帳0件。作品公開、販売開始、注文、決済、Provider実行、credit消費は行っていない。
+- 次: 商品下書きと作品設定の表示確認後、一般公開と販売開始を伴うcanaryは対象・価格・停止条件を示した別の実行時明示承認で進める。
+- 詳細: `docs/CLOUD_MARKETPLACE_RELEASE_DRAFT_QUALIFICATION_FIX_20261003.md`
+
+---
+
 ## 2026-10-03 Cloud販売下書きDB同期の列名衝突修正
 
-- 状態: `READY_FOR_REVIEW / ALL_TESTS_PASSED / PRODUCTION_MIGRATION_NOT_APPLIED`
+- 状態: `MERGED / PRODUCTION_APPLIED / E2E_PASSED`
 - Branch: `codex/cloud-marketplace-release-draft-qualification-20261003`
 - Base: `origin/feature/manga-canvas-mvp`@`90d98cdb`（PR #620 merge commit）
 - Production再試行の安全な工程IDは`database_sync`だった。ROLLBACK診断でSQLSTATE `42702`、`column reference "work_id" is ambiguous`を再現し、対象Projectの作品・商品・publicationが各0件のままを確認した。
 - `returns table(work_id,...)`の出力変数と未修飾のDB列が衝突していたため、作品・商品・publication・checkpoint pageの列をtable aliasで完全修飾し、`#variable_conflict error`を明示した。
 - migration `202610030001_cloud_marketplace_release_draft_qualification`、rollback、正規schema、manifest、再発テストを追加した。forward SHA-256は`7d9aff799797c5f89371eb4262907be2604b22fecb1fb1aafcd3c90f09f83c75`。
-- 集中11/11、Hub 1252/1252、migration静的96/96、Hub型検査、対象lint、Production build、diff check成功。修正版RPCはProductionの一時transaction内で`completed`まで到達し、全ROLLBACK後に修正版未残存・作品0・商品0・publication 0を再確認した。Production migrationは未適用。公開、販売開始、注文、決済、Provider、credit、永続DB変更は行っていない。
-- 次: Draft PRを作成し、全CI／Vercel成功でレビュー可能にする。merge後、対象migrationのProduction適用にはIDとSHA-256を含む別の実行時明示承認が必要。
+- 集中11/11、Hub 1252/1252、migration静的96/96、Hub型検査、対象lint、Production build、diff check成功。PR #621をmergeし、責任者の実行時明示承認後にProductionへ1回適用した。
+- 同一非公開2ページ作品の販売下書き再試行は成功した。公開、販売開始、注文、決済、Provider、credit操作は行っていない。
 - 詳細: `docs/CLOUD_MARKETPLACE_RELEASE_DRAFT_QUALIFICATION_FIX_20261003.md`
 
 ---

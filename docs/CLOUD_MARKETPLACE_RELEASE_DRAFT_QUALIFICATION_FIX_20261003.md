@@ -27,5 +27,8 @@
 
 - 集中11/11、Hub 1252/1252、migration静的96/96、Hub型検査、対象lint、Production build、diff check成功。
 - 修正版RPCをProductionの一時transaction内へ定義して同じ入力を実行した結果は`completed`だった。続けてfunction定義を含む全変更を`ROLLBACK`し、修正版未残存、作品0件、商品0件、publication 0件を再確認した。
-- Production適用は未実施。merge後にmigration IDとSHA-256を示して責任者の実行時明示承認を得る。
-- 適用後は同じ非公開2ページ作品で販売下書きを1回だけ再試行する。成功しても公開・販売開始・決済は行わない。
+- PR #621 merge後、責任者承認値と原本SHA-256の一致を確認し、Production Project `vmdsyxykcrgxcdbrwlkv`へmigrationを1回適用した。
+- postflightで`#variable_conflict error`、publication／productの`work_id`完全修飾、authenticated／service_roleの実行権限、anon実行権限なしを確認した。
+- 同じ非公開2ページ作品で販売下書きを1回だけ再試行し成功した。作品は`draft`・非公開、商品は`paused`・500円、publication v1・2ページ、publication pageは2件。
+- 注文0件、対象Projectの生成Job 0件、費用台帳0件。公開、販売開始、決済、Provider、credit消費は行っていない。
+- 次は商品・作品設定の表示を確認し、一般公開と販売開始を伴うcanaryは別の実行時明示承認で進める。

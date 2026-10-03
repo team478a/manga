@@ -1,5 +1,14 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Cloud販売下書き Production受入れ（2026-10-03）
+
+- 承認済みmigration `202610030001_cloud_marketplace_release_draft_qualification`（SHA-256 `7d9aff799797c5f89371eb4262907be2604b22fecb1fb1aafcd3c90f09f83c75`）をProductionへ1回適用し、guard、列完全修飾、権限境界をpostflight確認した。
+- `test`の非公開2ページE2E販売下書きは成功。作品は`draft`／非公開、商品は`paused`／500円、固定publicationはv1／2ページ。
+- 注文、生成Job、費用台帳は各0件。公開、販売開始、決済、Provider、credit操作はしていない。
+- 次は商品・作品設定の表示確認。一般公開と販売開始を同時に行うcanaryは、対象と停止条件を明示した別承認が必要。
+
+---
+
 ## 0.0 Cloud販売下書きDB同期の列名衝突修正（2026-10-03）
 
 - Productionの安全な再試行で`database_sync`停止を確認し、ROLLBACK診断でSQLSTATE `42702`、`column reference "work_id" is ambiguous`を再現した。
