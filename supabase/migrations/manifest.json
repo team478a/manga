@@ -570,7 +570,13 @@
       "description": "固定公開版ごとの最終閲覧ページを権限境界内で保存",
       "forwardSha256": "34c5c316060910aa7531ad4ac50d11b144b9a51714d1c558740e75010d7d959a",
       "rollbackSha256": "691ae0506ef0504896f41ae24d53aed877e970b3ba0f3d1bf7f5f13dcf55cc96"
+    },
+    {
+      "id": "202610030001_cloud_marketplace_release_draft_qualification",
+      "description": "Cloud販売下書き同期の戻り値名とDB列名の衝突を完全修飾で解消",
+      "forwardSha256": "7d9aff799797c5f89371eb4262907be2604b22fecb1fb1aafcd3c90f09f83c75",
+      "rollbackSha256": "7b88f89269ab6139125ab708c1beac556601bcc144bde89404e60209aca75951"
     }
   ],
-  "schemaSha256": "de18c27143f1dd64da9773e48afe4193917daf75999e0c7b61ee3404e3b8bd26"
+  "schemaSha256": "4724704bea028d247936ac5ac3bbb15653a5927699f1ddaec5b2520848459c3a"
 }
