@@ -10,6 +10,19 @@
 
 ---
 
+# 2026-10-03 Codex: Cloud販売下書きの工程別診断
+
+- Branch: `codex/cloud-marketplace-draft-diagnostics-20261003`
+- Base: `0ef12d2a`（PR #618 merge commit）
+- Productionの承認済み非公開2ページE2Eで販売下書きが汎用エラー停止した。公開・販売開始・注文・決済・Provider・credit操作は0件。
+- artifact生成、表紙、PDF、ページ画像、DB同期を安全な工程別案内へ分け、失敗時にsanitize済み構造化ログ`cloud_marketplace_draft_sync_failed`を残す。Supabase生メッセージと利用者コンテンツは露出しない。
+- durable exportは待機中0/2。export worker endpointは存在するがschedulerがなく、本タスクでは秘密値取得・Worker実行・Job再登録をしていない。
+- 検証: 集中14/14、Hub 1247/1247、lint、Hub typecheck、Production build、diff check成功。
+- PR [#619](https://github.com/team478a/manga/pull/619)はMERGEABLE／レビュー可能。実装HEAD `afb1189e`のCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功。
+- 次: 証跡同期後の最終HEADの全5チェック成功で停止する。merge後に同じcheckpointの販売下書きを1回だけ再試行し、工程別エラーとProductionログで原因を確定する。販売公開は実行しない。
+
+---
+
 ## 2026-10-02 Codex: Cloud手動作品の完成判定修正
 
 - Branch: `codex/cloud-manual-project-completion-20261002`

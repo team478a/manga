@@ -146,6 +146,22 @@ test("販売下書き後は販売準備欄へ戻り公開を自動実行しな�
   assert.doesNotMatch(functionSource, /publishCloudMarketplaceListing\(/);
 });
 
+test("販売下書き失敗は工程別の安全な案内と監査イベントを残す", async () => {
+  const [actions, marketplace] = await Promise.all([
+    read("src/app/creator/actions.ts"),
+    read("src/lib/cloud-marketplace.ts"),
+  ]);
+
+  assert.match(actions, /cloud_marketplace_draft_sync_failed/);
+  assert.match(actions, /checkpointId: parsed\.data\.checkpointId/);
+  assert.match(marketplace, /販売用原稿の画像・PDFを作成できませんでした/);
+  assert.match(marketplace, /販売用の表紙画像を保存できませんでした/);
+  assert.match(marketplace, /販売用のPDFを保存できませんでした/);
+  assert.match(marketplace, /販売用の作品・商品・完成版を保存できませんでした/);
+  assert.doesNotMatch(marketplace, /throw new Error\(coverError\.message\)/);
+  assert.doesNotMatch(marketplace, /throw new Error\(productUploadError\.message\)/);
+});
+
 test("出品開始・停止後も販売準備欄で最新状態を確認できる", async () => {
   const actions = await read("src/app/creator/actions.ts");
   const publishStart = actions.indexOf(

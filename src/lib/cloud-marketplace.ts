@@ -4,6 +4,11 @@ import { assertCloudMarketplaceDraftMutable } from "@/lib/cloud-marketplace-poli
 import { ownedMarketplaceStoragePath } from "@/lib/content-boundary";
 import { requireProfile } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
+import {
+  DomainError,
+  isDomainError,
+  StorageTransactionError,
+} from "@/lib/domain-errors";
 
 const WORKS_BUCKET = "works";
 const PRODUCTS_BUCKET = "digital-products";
@@ -102,7 +107,17 @@ export async function syncCloudMarketplaceDraft(input: {
     productStatus: current.product?.status,
   });
 
-  const artifacts = await createCloudMarketplaceArtifacts(input.projectId, input.checkpointId);
+  let artifacts: Awaited<ReturnType<typeof createCloudMarketplaceArtifacts>>;
+  try {
+    artifacts = await createCloudMarketplaceArtifacts(input.projectId, input.checkpointId);
+  } catch (error) {
+    if (isDomainError(error)) throw error;
+    throw new DomainError(
+      "INTERNAL_ERROR",
+      "販売用原稿の画像・PDFを作成できませんでした。",
+      { cause: error },
+    );
+  }
   if (!artifacts.checkpoint) throw new Error("完成版を販売原稿へ固定できませんでした。");
   if (artifacts.cover.byteLength > MAX_COVER_BYTES)
     throw new Error("表紙画像が10MBを超えています。");
@@ -139,7 +154,10 @@ export async function syncCloudMarketplaceDraft(input: {
         contentType: "image/png",
         upsert: false,
       });
-    if (coverError) throw new Error(coverError.message);
+    if (coverError)
+      throw new StorageTransactionError(
+        "販売用の表紙画像を保存できませんでした。",
+      );
     uploaded.push({ bucket: WORKS_BUCKET, path: coverPath });
     const { data: coverPublic } = supabase.storage
       .from(WORKS_BUCKET)
@@ -151,14 +169,20 @@ export async function syncCloudMarketplaceDraft(input: {
         contentType: "application/pdf",
         upsert: false,
       });
-    if (productUploadError) throw new Error(productUploadError.message);
+    if (productUploadError)
+      throw new StorageTransactionError(
+        "販売用のPDFを保存できませんでした。",
+      );
     uploaded.push({ bucket: PRODUCTS_BUCKET, path: productPath });
 
     for (let index = 0; index < artifacts.pages.length; index += 1) {
       const { error } = await supabase.storage.from(PRODUCTS_BUCKET).upload(
         pagePaths[index], artifacts.pages[index].bytes, { contentType: "image/png", upsert: false },
       );
-      if (error) throw new Error(error.message);
+      if (error)
+        throw new StorageTransactionError(
+          `販売用の${index + 1}ページ目を保存できませんでした。`,
+        );
       uploaded.push({ bucket: PRODUCTS_BUCKET, path: pagePaths[index] });
     }
 
@@ -182,8 +206,10 @@ export async function syncCloudMarketplaceDraft(input: {
       | { work_id: string; product_id: string; publication_id: string; publication_version: number }
       | undefined;
     if (syncError || !result)
-      throw new Error(
-        syncError?.message || "Marketplace下書きを保存できませんでした。",
+      throw new DomainError(
+        "INTERNAL_ERROR",
+        "販売用の作品・商品・完成版を保存できませんでした。",
+        { cause: syncError ?? undefined },
       );
     return { workId: result.work_id, productId: result.product_id,
       publicationId: result.publication_id, publicationVersion: Number(result.publication_version) };
