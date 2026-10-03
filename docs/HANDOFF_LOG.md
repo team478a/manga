@@ -1,5 +1,15 @@
 # MANGAI AI Handoff Log
 
+## 2026-10-03 Codex: Cloud販売下書き Production受入れ
+
+- 責任者承認値と原本SHA-256が一致するmigration `202610030001_cloud_marketplace_release_draft_qualification`をProduction Project `vmdsyxykcrgxcdbrwlkv`へ1回適用した。
+- postflightは衝突guardと列完全修飾が有効、authenticated／service_roleはEXECUTE可、anonは不可だった。
+- `test`の非公開2ページE2E作品で販売下書きを1回だけ再試行し、作品`582d6bc5-245f-455e-b5c2-aa71c4809909`を`draft`・非公開、商品`2e13db28-bc99-4612-986e-a5c3203ea435`を`paused`・500円、publication v1・2ページとして作成した。
+- 注文0件、対象Projectの生成Job 0件、費用台帳0件。公開、販売開始、決済、Provider、credit操作は未実施。
+- 次の一般公開＋販売開始canaryは別承認。現在の安全な停止位置は「完成版固定済み／作品未公開／商品停止中」。
+
+---
+
 ## 2026-10-03 Codex: Cloud販売下書きDB同期の列名衝突修正
 
 - PR #620反映後のProduction再試行で`stage=database_sync`を確認した。SQL EditorのROLLBACK診断はSQLSTATE `42702`、`column reference "work_id" is ambiguous`を返した。
