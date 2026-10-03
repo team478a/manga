@@ -38,6 +38,7 @@ import {
 import { isDomainError } from "@/lib/domain-errors";
 import { formString } from "@/app/actions/shared/form-data";
 import { findNextCloudReleaseCheckpointPage } from "@/lib/cloud-release-checkpoint-guidance";
+import { logHubEvent } from "@/lib/hub-logger";
 
 const projectSchema = z.object({
   title: z.string().trim().min(1).max(200),
@@ -331,6 +332,11 @@ export async function syncCloudMarketplaceDraftAction(
       price: parsed.data.price,
     });
   } catch (error) {
+    logHubEvent("error", "cloud_marketplace_draft_sync_failed", {
+      projectId,
+      checkpointId: parsed.data.checkpointId,
+      error,
+    });
     const message = domainMessage(
       error,
       "販売用の下書きを作成できませんでした。",

@@ -13,6 +13,20 @@
 
 ---
 
+# 2026-10-03 Cloud販売下書きの工程別診断
+
+- 状態: `IMPLEMENTED_LOCAL_VALIDATION_COMPLETE`
+- Branch: `codex/cloud-marketplace-draft-diagnostics-20261003`
+- Base: `origin/feature/manga-canvas-mvp`@`0ef12d2a`（PR #618 merge commit）
+- Productionの`test`アカウントで、責任者承認済みの非公開2ページE2E作品と完成版checkpointを準備した。販売下書き作成は汎用案内で失敗し、公開・販売開始・注文・決済・Provider実行・credit消費は行われていない。
+- 販売artifact生成、表紙保存、PDF保存、ページ画像保存、DB同期を工程別の安全なDomain Errorへ変換する。Supabaseの生エラー、Storage path、秘密値、利用者コンテンツは画面へ出さない。
+- Server Action失敗時に`cloud_marketplace_draft_sync_failed`を構造化ログへ残す。記録対象はProject／checkpoint識別子と既存loggerでsanitizeされる例外だけで、画像・Prompt・メール・tokenは含めない。
+- durable PDF exportは`0/2ページ・待機中`。Production環境変数は存在するが、repository上にexport workerを定期起動するschedulerがないため、本PRでは実行・再登録しない。
+- 集中14/14、Hub 1247/1247、lint、Hub typecheck、Production build、diff check成功。DB schema、migration、RPC、Storage object、販売状態、決済、Provider、creditは変更していない。
+- 次: commit／push／Draft PRを作成し、全CI／Vercel Preview成功で停止する。mergeとProduction反映後、同じcheckpointで販売下書きを1回だけ再試行し、表示された工程と構造化ログから実原因を確定する。公開・販売開始は別承認とする。
+
+---
+
 ## 2026-10-02 Cloud手動作品の完成判定修正
 
 - 状態: `IMPLEMENTED / FOCUSED_TESTS_PASSED / PRODUCTION_E2E_PENDING_MERGE`
