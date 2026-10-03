@@ -15,6 +15,7 @@ import { CONTENT_POLICY_VERSION } from "@mangai/shared";
 import { stageCloudProjectCheckpointExportBundle, stageCloudProjectExportBundle } from "@/lib/cloud-creator-server";
 import { renderCloudCanvasPng } from "@/lib/cloud-canvas-render";
 import { assertCloudMarketplaceManuscriptReady } from "@/lib/cloud-marketplace-policy";
+import { wrapCloudMarketplaceDraftError } from "@/lib/cloud-marketplace-diagnostics";
 import { getCloudManuscriptPreflight } from "../projects/manuscript-preflight-service";
 
 type StagedPage = {
@@ -156,9 +157,28 @@ async function loadPageImages(pages: StagedPage[]): Promise<ExportImage[]> {
 }
 
 export async function createCloudMarketplaceArtifacts(projectId: string, checkpointId: string) {
-  const readiness = await getCloudManuscriptPreflight(projectId, { requireFinalizedPages: true });
-  assertCloudMarketplaceManuscriptReady(readiness);
-  const staged = await stageExport(projectId, checkpointId);
+  try {
+    const readiness = await getCloudManuscriptPreflight(projectId, {
+      requireFinalizedPages: true,
+    });
+    assertCloudMarketplaceManuscriptReady(readiness);
+  } catch (error) {
+    throw wrapCloudMarketplaceDraftError(
+      "artifact_preflight",
+      error,
+      "販売用原稿の完成状態を確認できませんでした。",
+    );
+  }
+  let staged: Awaited<ReturnType<typeof stageExport>>;
+  try {
+    staged = await stageExport(projectId, checkpointId);
+  } catch (error) {
+    throw wrapCloudMarketplaceDraftError(
+      "artifact_checkpoint_render",
+      error,
+      "完成版から販売用画像を作成できませんでした。",
+    );
+  }
   try {
     if (!staged.pages.length)
       throw new Error("販売用に書き出せるPageがありません。");
@@ -175,10 +195,20 @@ export async function createCloudMarketplaceArtifacts(projectId: string, checkpo
       title: staged.bundle.project.title,
       ageRating: staged.bundle.project.age_rating,
     });
+    let pdf: Uint8Array;
+    try {
+      pdf = await createPagesPdf(images, { dpi: staged.bundle.project.dpi });
+    } catch (error) {
+      throw wrapCloudMarketplaceDraftError(
+        "artifact_pdf",
+        error,
+        "販売用PDFを作成できませんでした。",
+      );
+    }
     return {
       project: staged.bundle.project,
       checkpoint: "checkpoint" in staged.bundle ? staged.bundle.checkpoint : null,
-      pdf: await createPagesPdf(images, { dpi: staged.bundle.project.dpi }),
+      pdf,
       cover,
       pages: images.map((image, index) => ({
         pageNumber: Number.parseInt(staged.pages[index].fileName.slice(0, 3), 10),

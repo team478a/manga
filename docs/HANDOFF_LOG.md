@@ -1,5 +1,16 @@
 # MANGAI AI Handoff Log
 
+## 2026-10-03 Codex: Cloud販売下書きの安全な工程ID診断
+
+- PR #619 merge・Production反映後、`test`の非公開E2E作品で販売下書きを1回だけ再試行した。Production POSTは303、約12秒後に`INTERNAL_ERROR`で停止した。再送、公開、販売開始、注文、決済、Provider、credit操作は行っていない。
+- 既存ログではartifact生成とDB同期を区別できなかったため、固定の安全な工程IDをDomain Errorへ付与し、構造化ログへ`stage`だけを追加した。
+- 完成状態確認、checkpoint画像化、PDF生成、表紙／PDF／ページ保存、DB同期を分離した。生の例外メッセージ、stack、Supabase応答、Storage path、利用者コンテンツ、秘密値は記録しない。
+- 集中17/17、Hub全1250/1250、Hub typecheck、対象ESLint、依存境界error 0（既知warning 2）、Production build成功。DB、migration、RPC、Storage、販売状態、決済、Provider、creditは変更していない。
+- 次: Draft PRの全CI／Vercel成功で停止する。merge後のProduction再試行は同じcheckpointで1回だけとし、公開・販売開始は実行しない。
+- 詳細: `docs/CLOUD_MARKETPLACE_DRAFT_STAGE_DIAGNOSTICS_20261003.md`
+
+---
+
 ## 2026-10-03 Codex: Cloud漫画制作の目的別ステップ化
 
 - Productionの非公開2ページE2Eで判明した「情報が多く、次の操作が分からない」問題に対応した。

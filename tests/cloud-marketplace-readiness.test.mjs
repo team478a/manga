@@ -154,6 +154,12 @@ test("販売下書き失敗は工程別の安全な案内と監査イベント�
 
   assert.match(actions, /cloud_marketplace_draft_sync_failed/);
   assert.match(actions, /checkpointId: parsed\.data\.checkpointId/);
+  assert.match(actions, /stage: getCloudMarketplaceDraftFailureStage\(error\)/);
+  assert.match(marketplace, /artifact_generation/);
+  assert.match(marketplace, /cover_upload/);
+  assert.match(marketplace, /pdf_upload/);
+  assert.match(marketplace, /page_upload/);
+  assert.match(marketplace, /database_sync/);
   assert.match(marketplace, /販売用原稿の画像・PDFを作成できませんでした/);
   assert.match(marketplace, /販売用の表紙画像を保存できませんでした/);
   assert.match(marketplace, /販売用のPDFを保存できませんでした/);
