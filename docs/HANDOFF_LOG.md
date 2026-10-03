@@ -1,5 +1,15 @@
 # MANGAI AI Handoff Log
 
+## 2026-10-03 Codex: Cloud漫画制作の目的別ステップ化
+
+- Productionの非公開2ページE2Eで判明した「情報が多く、次の操作が分からない」問題に対応した。
+- 作品画面は5つの目的のうち現在行う1件を強調し、詳細進捗・診断・復旧情報を折りたたむ。ページ編集は基本4手順と次操作へのアンカーを表示する。
+- AI制作アシストをcreditを使う詳細操作として分離した。既存画像だけの編集、品質修正、保存・確定の従来機能は維持する。
+- データ、DB、migration、Provider、credit、公開、販売、決済は変更していない。Production E2Eはmerge・反映後に再開する。
+- 目的別3/3、関連36/36、Hub全1246/1246、全typecheck、対象ESLint、依存境界、Production build、diff check成功。詳細は`docs/CLOUD_GUIDED_CREATION_FLOW_20261003.md`。
+
+---
+
 ## 2026-10-02 Codex: Cloud手動作品の完成判定修正
 
 - Branch: `codex/cloud-manual-project-completion-20261002`

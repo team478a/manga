@@ -2,6 +2,7 @@ import { AlertTriangle, CheckCircle2, CircleDashed, Flag } from "lucide-react";
 import type { LongformReadiness } from "@/lib/cloud-longform-readiness";
 
 export function LongformReadinessPanel({ readiness }: { readiness: LongformReadiness }) {
+  const current = readiness.items.find((item) => item.status !== "complete") ?? readiness.items.at(-1);
   return (
     <section className="panel mt-6 border-violet-200 bg-violet-50/40" aria-labelledby="longform-readiness-heading">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
@@ -16,22 +17,30 @@ export function LongformReadinessPanel({ readiness }: { readiness: LongformReadi
           {readiness.ready ? "完成準備完了" : `${readiness.completedCount}/${readiness.totalCount} 完了`}
         </span>
       </div>
-      <ol className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-        {readiness.items.map((item, index) => {
-          const Icon = item.status === "complete" ? CheckCircle2 : item.status === "unavailable" ? AlertTriangle : CircleDashed;
-          const style = item.status === "complete"
-            ? "border-green-200 bg-green-50 text-green-900"
-            : item.status === "unavailable"
-              ? "border-amber-200 bg-amber-50 text-amber-950"
-              : "border-violet-200 bg-white text-stone-900";
-          return <li className={`rounded-xl border p-4 ${style}`} key={item.id}>
-            <div className="flex items-center gap-2"><Icon className="h-5 w-5 shrink-0" /><strong>{index + 1}. {item.label}</strong></div>
-            <p className="mt-2 text-xs leading-relaxed">{item.detail}</p>
-          </li>;
-        })}
-      </ol>
+      {current ? <div className="mt-5 rounded-xl border border-violet-200 bg-white p-4">
+        <p className="text-xs font-bold text-violet-700">現在の確認項目</p>
+        <p className="mt-1 font-bold">{current.label}</p>
+        <p className="mt-1 text-sm leading-relaxed text-stone-700">{current.detail}</p>
+      </div> : null}
       <p className="mt-5 text-xs font-bold text-violet-700">次に行う操作</p>
       <a className="button mt-2 inline-flex" href={readiness.nextAction.href}>{readiness.nextAction.label}</a>
+      <details className="mt-5 rounded-xl border border-violet-200 bg-white p-4">
+        <summary className="cursor-pointer font-bold text-violet-950">安全な完成・復旧の全4段階を見る</summary>
+        <ol className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+          {readiness.items.map((item, index) => {
+            const Icon = item.status === "complete" ? CheckCircle2 : item.status === "unavailable" ? AlertTriangle : CircleDashed;
+            const style = item.status === "complete"
+              ? "border-green-200 bg-green-50 text-green-900"
+              : item.status === "unavailable"
+                ? "border-amber-200 bg-amber-50 text-amber-950"
+                : "border-violet-200 bg-white text-stone-900";
+            return <li className={`rounded-xl border p-4 ${style}`} key={item.id}>
+              <div className="flex items-center gap-2"><Icon className="h-5 w-5 shrink-0" /><strong>{index + 1}. {item.label}</strong></div>
+              <p className="mt-2 text-xs leading-relaxed">{item.detail}</p>
+            </li>;
+          })}
+        </ol>
+      </details>
     </section>
   );
 }

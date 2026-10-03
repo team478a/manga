@@ -1406,7 +1406,9 @@ export function CloudCanvasEditor({
       return;
     }
     setMessage(finding.suggestion === "edit_text" ? "Canvas上の文字を選択して修正してください。文字変更だけでは画像Jobやcreditは発生しません。" : "修正内容を生成欄へ準備しました。費用と候補数を確認してから明示的に実行してください。");
-    document.getElementById("panel-generation-controls")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    const generationControls = document.getElementById("panel-generation-controls");
+    if (generationControls instanceof HTMLDetailsElement) generationControls.open = true;
+    generationControls?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
   function restoreAssetRevision(layerId: string) {
     if (selection?.type !== "panel") return;
@@ -1459,6 +1461,13 @@ export function CloudCanvasEditor({
       return "対象コマには既に原稿画像があります。元Assetは履歴に残りますが、採用後の表示画像と書き出し結果が変わります。";
     return null;
   })();
+  const visiblePanels = canvas.panels.filter((panel) => panel.visible);
+  const placedPanelImageCount = visiblePanels.filter((panel) => Boolean(panel.imageAssetId) || canvas.panelLayers.some((layer) => layer.panelId === panel.id && layer.visible && Boolean(layer.assetId))).length;
+  const pageGuide = visiblePanels.length === 0
+    ? { action: "コマを追加", detail: "最初にページの中へコマ枠を作ります。", href: "#page-layout-tools", label: "1. コマを作る" }
+    : placedPanelImageCount < visiblePanels.length
+      ? { action: "画像素材へ移動", detail: `画像が未配置のコマが${visiblePanels.length - placedPanelImageCount}件あります。既存画像の配置またはAI生成を選べます。`, href: "#page-image-assets", label: "2. 画像を置く" }
+      : { action: "保存・完成条件を確認", detail: "必要に応じて吹き出しや文字を整え、保存済みになってからページを確定します。", href: "#page-completion-status", label: "4. 保存して確定する" };
   const editingBlocked = pageLockState !== "acquired";
 
   return (
@@ -1620,6 +1629,25 @@ export function CloudCanvasEditor({
           </button>
         </div>
       </header>
+      <section aria-labelledby="page-basic-guide-heading" className="mx-auto mt-4 max-w-[1600px] rounded-xl border border-violet-300 bg-violet-50 p-4">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <p className="text-xs font-bold text-violet-700">基本の制作手順</p>
+            <h2 className="mt-1 text-lg font-bold" id="page-basic-guide-heading">今やること：{pageGuide.label}</h2>
+            <p className="mt-1 text-sm text-stone-700">{pageGuide.detail}</p>
+          </div>
+          <a className="button shrink-0" href={pageGuide.href}>{pageGuide.action}</a>
+        </div>
+        <details className="mt-3 rounded-lg border border-violet-200 bg-white p-3">
+          <summary className="cursor-pointer text-sm font-bold text-violet-950">コマ・画像・文字・保存の順番を見る</summary>
+          <ol className="mt-3 grid gap-2 text-sm sm:grid-cols-2 lg:grid-cols-4">
+            <li className="rounded-md bg-stone-50 p-3"><strong>1. コマ</strong><p className="mt-1 text-xs">コマ枠を追加・調整</p></li>
+            <li className="rounded-md bg-stone-50 p-3"><strong>2. 画像</strong><p className="mt-1 text-xs">既存素材またはAIを配置</p></li>
+            <li className="rounded-md bg-stone-50 p-3"><strong>3. 文字（任意）</strong><p className="mt-1 text-xs">吹き出し・セリフを編集</p></li>
+            <li className="rounded-md bg-stone-50 p-3"><strong>4. 保存・確定</strong><p className="mt-1 text-xs">保存状態と完成条件を確認</p></li>
+          </ol>
+        </details>
+      </section>
       {saveState === "conflict" || saveState === "error" ? (
         <div
           className="mx-auto flex max-w-[1600px] flex-wrap items-center gap-3 bg-red-50 p-3 text-red-800"
@@ -1678,17 +1706,19 @@ export function CloudCanvasEditor({
               : "セリフの自動配置を完了できませんでした。再処理後も解消しない場合は運営へ連絡してください。"}
         </div>
       ) : null}
-      {initialPageCompletion ? (
-        <PageCompletionBanner
-          actionError={initialActionError}
-          actionMessage={initialActionMessage}
-          completion={initialPageCompletion}
-          productionState={initialPageProductionState}
-          projectId={project.id}
-          pageId={page.id}
-          saved={saveState === "saved"}
-        />
-      ) : null}
+      <div className="scroll-mt-28" id="page-completion-status">
+        {initialPageCompletion ? (
+          <PageCompletionBanner
+            actionError={initialActionError}
+            actionMessage={initialActionMessage}
+            completion={initialPageCompletion}
+            productionState={initialPageProductionState}
+            projectId={project.id}
+            pageId={page.id}
+            saved={saveState === "saved"}
+          />
+        ) : null}
+      </div>
       {existingManuscriptRepairCount ? (
         <section
           aria-labelledby="existing-manuscript-repair"
@@ -1741,8 +1771,9 @@ export function CloudCanvasEditor({
               ))}
             </div>
           </section>
-          <section className="panel p-4">
-            <h2 className="font-bold">追加</h2>
+          <section className="panel scroll-mt-28 p-4" id="page-layout-tools">
+            <h2 className="font-bold">基本操作</h2>
+            <p className="mt-1 text-xs text-stone-600">コマ、吹き出し、文字をページへ追加します。</p>
             <div className="mt-3 grid gap-2">
               <button
                 className="button-secondary"
@@ -1750,7 +1781,7 @@ export function CloudCanvasEditor({
                 type="button"
               >
                 <PanelTop className="mr-2 h-5 w-5" />
-                コマ
+                コマを追加
               </button>
               <button
                 className="button-secondary"
@@ -1770,10 +1801,10 @@ export function CloudCanvasEditor({
               </button>
             </div>
           </section>
-          <section className="panel p-4" id="panel-generation-controls">
-            <h2 className="flex items-center gap-2 font-bold">
-              <Sparkles className="h-5 w-5" /> AI制作アシスト
-            </h2>
+          <details className="panel p-4" id="panel-generation-controls">
+            <summary className="flex cursor-pointer list-none items-center gap-2 font-bold">
+              <Sparkles className="h-5 w-5" /> AI制作アシスト（creditを使う詳細操作）
+            </summary>
             <div className="mt-3 rounded border border-stone-200 bg-stone-50 p-2 text-xs">
               {quota ? (
                 <>
@@ -2609,9 +2640,10 @@ export function CloudCanvasEditor({
                 </div>
               ))}
             </div>
-          </section>
-          <section className="panel p-4">
+          </details>
+          <section className="panel scroll-mt-28 p-4" id="page-image-assets">
             <h2 className="font-bold">画像素材</h2>
+            <p className="mt-1 text-xs leading-relaxed text-stone-600">既存画像を追加し、先にCanvas上のコマを選んでから素材をクリックすると配置できます。</p>
             <label className="button-secondary mt-3 w-full cursor-pointer">
               <ImagePlus className="mr-2 h-5 w-5" />
               画像を追加

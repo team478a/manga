@@ -1,5 +1,18 @@
 # MANGAI Current Task
 
+## 2026-10-03 Cloud漫画制作の目的別ステップ化
+
+- 状態: `IMPLEMENTED / FULL_TESTS_PASSED / PRODUCTION_E2E_PAUSED`
+- Branch: `codex/cloud-guided-creation-flow-20261003`
+- Production非公開2ページE2Eで、作品画面の情報量が多く、初回利用者が次の操作を判断しにくい問題を確認した。E2E完了を優先せず、操作性改善を先行する。
+- 作品画面を「構成」「原稿」「完成版」「出力」「販売準備」の5目的に整理し、現在の次操作を1件だけ表示する。詳細進捗・原稿チェック・復旧状況は折りたたむ。
+- ページ編集画面に「コマ→画像→文字（任意）→保存・確定」の案内と現在操作への直接導線を追加し、creditを使うAI操作は詳細領域へ分離した。
+- 完成条件、公開・販売条件、DB、migration、API、Provider、creditは変更しない。Productionの既存非公開作品も変更していない。
+- 目的別3/3、関連36/36、Hub全1246/1246、全typecheck、対象ESLint、依存境界error 0、Production build、diff check成功。Draft PRを作成し、全CI／Vercel成功で停止する。
+- 詳細: `docs/CLOUD_GUIDED_CREATION_FLOW_20261003.md`
+
+---
+
 ## 2026-10-02 Cloud手動作品の完成判定修正
 
 - 状態: `IMPLEMENTED / FOCUSED_TESTS_PASSED / PRODUCTION_E2E_PENDING_MERGE`
