@@ -1,5 +1,16 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Durable PDF Export Phase A 安定化（2026-10-07）
+
+- Branch `codex/cloud-durable-export-stabilization-20261007`。既存workerは1 requestで1 segmentを処理する設計だが、repository内に起動schedulerがなく、Productionの2ページJobが`queued`のまま進まない構成だった。
+- 無効既定のGitHub Actions schedulerを追加。5分間隔、concurrency 1、最大3 segment、request timeout 285秒。定期実行はrepository variableが`true`の場合だけ、manual `check`は無通信、manual `run`は明示canaryとして実行できる。
+- worker URLはHTTPSかlocalhost HTTP、固定`/api/internal/cloud-export/worker`、資格情報・query・hashなしに限定。secret、応答body、Job ID、Storage path、利用者コンテンツはログへ出さず、未知例外は`export_failed`へ固定化した。
+- lease、`SKIP LOCKED`、partial unique index、segment idempotency、上限付きretryを維持。cleanupは別の既存Storage lifecycle workerへ分離したまま。DB、migration、RPC、Production環境、作品、商品、publication、注文、決済、Provider、creditは未変更。
+- 集中19/19、Hub全テスト、Canvas 26/26、AI 50/50、migration 96/96、Desktop 407/407、Hub／Desktop build、型検査、lint、依存境界、Desktop a11y、diff check成功。
+- 状態は`IMPLEMENTED / REPOSITORY_TESTS_PASSED / PRODUCTION_E2E_BLOCKED_EXTERNAL_ENVIRONMENT`。別の実行時明示承認なしにProductionへsecret／variable設定、worker実行、Job変更、cleanup実行はしない。Phase B未着手。詳細は`docs/cloud/CLOUD_EXPORT_WORKER_SCHEDULER.md`。
+
+---
+
 ## 0.0 Cloud販売下書き Production受入れ（2026-10-03）
 
 - 承認済みmigration `202610030001_cloud_marketplace_release_draft_qualification`（SHA-256 `7d9aff799797c5f89371eb4262907be2604b22fecb1fb1aafcd3c90f09f83c75`）をProductionへ1回適用し、guard、列完全修飾、権限境界をpostflight確認した。

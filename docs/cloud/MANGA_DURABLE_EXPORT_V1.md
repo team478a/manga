@@ -41,6 +41,8 @@ Jobは一時停止、再開、中止、失敗箇所からの再実行に対応�
 
 値を表示しない確認コマンドは `npm run cloud:export:preflight` です。内部Worker endpointは `POST /api/internal/cloud-export/worker` で、Bearer secretが一致した場合だけ1segmentを処理します。
 
+1リクエストは1segmentだけを処理するため、Jobを`queued`から継続して進める実行主体が必要です。Repositoryでは既定停止のGitHub Actions Schedulerを使用します。設定、手動canary、定期実行、停止手順は`CLOUD_EXPORT_WORKER_SCHEDULER.md`を参照してください。
+
 ## 安全境界
 
 - Job／segmentは所有者RLSで保護する。

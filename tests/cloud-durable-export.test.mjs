@@ -57,6 +57,16 @@ test("Workerはページ画像・分割PDF・完成PDFを非公開Storageへ保�
   assert.match(storage, /cloud-exports/);
 });
 
+test("Worker失敗は固定コードだけを保存し内部例外を永続化しない", () => {
+  const worker = read("src/modules/cloud-creator/export/process-export-segment.ts");
+  assert.match(worker, /SAFE_EXPORT_FAILURE_CODES/);
+  assert.match(worker, /safeExportFailureCode\(error\)/);
+  assert.doesNotMatch(
+    worker,
+    /failExportJob\([\s\S]*?error instanceof Error \? error\.message/,
+  );
+});
+
 test("作品画面は進捗・停止・再開・失敗箇所からの再開を表示する", () => {
   const component = read("src/app/creator/[projectId]/DurableExportPanel.tsx");
   const autoRefresh = read("src/app/creator/[projectId]/DurableExportAutoRefresh.tsx");

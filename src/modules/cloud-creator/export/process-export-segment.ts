@@ -30,6 +30,22 @@ import {
   uploadExportObject,
 } from "./manga-export-storage";
 
+const SAFE_EXPORT_FAILURE_CODES = new Set([
+  "export_pages_missing",
+  "export_snapshots_missing",
+  "export_assets_missing",
+  "export_project_missing",
+  "export_segments_missing",
+  "export_job_finish_failed",
+  "export_storage_read_failed",
+  "export_storage_write_failed",
+]);
+
+function safeExportFailureCode(error: unknown) {
+  const message = error instanceof Error ? error.message : "";
+  return SAFE_EXPORT_FAILURE_CODES.has(message) ? message : "export_failed";
+}
+
 export async function processExportSegment(input: {
   workerId: string;
   client?: MangaExportAdminClient;
@@ -165,7 +181,7 @@ export async function processExportSegment(input: {
       client,
       job.id,
       job.leaseToken,
-      error instanceof Error ? error.message : "export_failed",
+      safeExportFailureCode(error),
     );
     return { status: "failed" as const, jobId: job.id };
   }
