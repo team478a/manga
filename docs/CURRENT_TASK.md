@@ -1,5 +1,20 @@
 # MANGAI Current Task
 
+## 2026-10-07 Durable PDF Export Phase A 安定化
+
+- 状態: `IMPLEMENTED / REPOSITORY_TESTS_PASSED / PRODUCTION_E2E_BLOCKED_EXTERNAL_ENVIRONMENT`
+- Branch: `codex/cloud-durable-export-stabilization-20261007`
+- Base: `origin/feature/manga-canvas-mvp`@`8e13983afbcea67f77860fff685aa257fde9618a`
+- 直接原因は、1回に1 segmentを処理する既存export worker endpointは実装済みだった一方、repository内に定期起動する実行主体がなかったこと。Productionで観測した`0/2 queued`はこの構成と一致する。
+- 無効既定のGitHub Actions schedulerを追加した。5分間隔、同時実行1、1回最大3 segment、1 request最大285秒。手動`check`は無通信、手動`run`だけが明示canaryとして動く。URLはHTTPS・固定path・資格情報／queryなしを要求し、秘密値や応答body、Job IDをログへ出さない。
+- workerの既存lease、`FOR UPDATE SKIP LOCKED`、部分unique index、segment冪等性を維持した。`failed`では同一runを止め、次回schedulerで既存の上限付きretryへ渡す。Storage cleanupは既存`cloud_storage_cleanup` workerの責務のままで、export schedulerから直接削除しない。
+- worker失敗のDB記録は固定code allowlistへ限定し、未知の生例外メッセージを`export_failed`へ丸める。migration、DB schema、RPC、Production環境、作品、publication、商品、注文、決済、Provider、creditは変更していない。
+- 検証: 集中19/19、Hub全テスト、Canvas 26/26、AI 50/50、migration静的96/96、Desktop 407/407、Hub／Desktop build、Hub型検査、lint、依存境界error 0（既知warning 2）、Desktop a11y違反0、diff check成功。
+- Production E2Eは未実施。GitHub/Vercelの秘密値と有効化変数、既存2ページJobの`queued → running → completed → download`、期限後cleanup観測には、対象と停止条件を示した別の実行時明示承認が必要。Phase Bは開始していない。
+- 詳細: `docs/cloud/CLOUD_EXPORT_WORKER_SCHEDULER.md`
+
+---
+
 ## 2026-10-03 Cloud販売下書き Production受入れ
 
 - 状態: `PRODUCTION_ACCEPTED / PRIVATE_DRAFT_READY / PUBLICATION_NOT_STARTED`

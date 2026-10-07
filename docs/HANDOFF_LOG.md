@@ -1,5 +1,17 @@
 # MANGAI AI Handoff Log
 
+## 2026-10-07 Codex: Durable PDF Export Phase A 安定化
+
+- Productionの`0/2 queued`をrepository側から追跡し、worker endpoint、claim RPC、lease、`SKIP LOCKED`、partial unique index、segment retryは既存実装済みだが、定期実行schedulerが存在しないことを直接原因として確定した。
+- 無効既定のGitHub Actions schedulerと実行scriptを追加した。定期実行はrepository variableが厳密に`true`の場合だけ、手動`check`は無通信、手動`run`は別の明示canaryに限定する。1回最大3 segment、同時実行1、timeout付きで、`failed`／`idle`時は停止する。
+- URLはHTTPS、固定endpoint、資格情報・query・hashなしを検証する。ログは固定statusだけで、secret、応答body、Job ID、Storage path、利用者コンテンツを出さない。workerの未知例外も固定`export_failed`へsanitizeした。
+- cleanupは既存Cloud Storage lifecycle workerの責務を維持し、本schedulerはStorage objectを削除しない。DB／migration／RPCの変更なし。
+- 集中19/19、Hub全テスト、Canvas 26/26、AI 50/50、migration 96/96、Desktop 407/407、Hub／Desktop build、lint、型検査、依存境界、Desktop a11y、diff check成功。RC preflightはrepository structure READY、外部資格情報と手動E2EのみPENDING。
+- Production変更は0件。残りは別の実行時明示承認後に、秘密値設定・scheduler canary・既存2ページJobの完了／download・期限後cleanupをProductionで確認すること。Phase Bは未着手。
+- 詳細: `docs/cloud/CLOUD_EXPORT_WORKER_SCHEDULER.md`
+
+---
+
 ## 2026-10-03 Codex: Cloud販売下書き Production受入れ
 
 - 責任者承認値と原本SHA-256が一致するmigration `202610030001_cloud_marketplace_release_draft_qualification`をProduction Project `vmdsyxykcrgxcdbrwlkv`へ1回適用した。
