@@ -31,9 +31,9 @@ test("利用者向けWebマニュアルは制作完走とモバイル操作を�
     "原稿編集で人物・画風・参照画像を固定する",
     "ページを選び、見積りと停止理由を確認する",
     "全ページを確定し、完成原稿PDFを書き出す",
-    "原稿編集からPDF完成までの操作デモ",
-    "動画・日本語字幕・章ジャンプ付き",
-    "一時停止しながら",
+    "最初から順番に見るステップ別動画マニュアル",
+    "市場分析から収益管理までを8本に分けました",
+    "実画面に沿った動画・日本語字幕付き",
     "市場分析",
     "AI企画提案",
     "シナリオ作成",
@@ -109,53 +109,82 @@ test("利用者向けWebマニュアルは制作完走とモバイル操作を�
   assert.match(source, /id="creator-operation-video"/);
   assert.match(source, /<CloudCreatorOperationVideo \/>/);
   for (const text of [
-    "作品画面で現在地を確認",
-    "人物・衣装と作品の画風を固定",
-    "参照画像を登録してコマへ割り当て",
-    "最初は連続する2ページだけを選択",
-    "必要creditと停止理由を確認",
-    "生成候補を拡大して比較・採用",
-    "吹き出しと文字を画像とは別に調整",
-    "全ページを確定してPDFを保存",
-    "見たい操作へ移動",
-    "動画の内容を文字で読む",
-    "動画を保存",
+    "市場分析",
+    "AI企画提案",
+    "シナリオ作成",
+    "ネーム作成",
+    "原稿編集",
+    "作品管理",
+    "販売準備",
+    "収益管理",
+    "音声なし・日本語字幕付き・実画面に沿った匿名化表示",
+    "この動画を保存",
   ]) {
     assert.match(operationVideo, new RegExp(text.replace("・", "・")));
   }
-  assert.match(operationVideo, /<video/);
+  assert.equal((operationVideo.match(/<video/g) ?? []).length, 1);
+  assert.match(operationVideo, /manuals\.map/);
+  assert.match(operationVideo, /<details/);
+  assert.match(operationVideo, /open=\{manual\.number === 1\}/);
   assert.match(operationVideo, /controls/);
   assert.match(operationVideo, /playsInline/);
-  assert.match(operationVideo, /cloud-creator-operation-guide\.mp4/);
-  assert.match(operationVideo, /cloud-creator-operation-guide-poster\.webp/);
-  assert.match(operationVideo, /cloud-creator-operation-guide\.vtt/);
+  for (const id of [
+    "01-market-analysis-guide",
+    "02-proposal-guide",
+    "03-scenario-guide",
+    "04-storyboard-guide",
+    "cloud-creator-operation-guide",
+    "06-work-management-guide",
+    "07-sales-preparation-guide",
+    "08-sales-management-guide",
+  ]) {
+    assert.match(operationVideo, new RegExp(id));
+  }
   assert.match(operationVideo, /kind="captions"/);
   assert.match(operationVideo, /srcLang="ja"/);
   assert.match(operationVideo, /download=/);
-  assert.match(operationVideo, /video\.currentTime = seconds/);
+  assert.doesNotMatch(operationVideo, /currentTime/);
   assert.match(creatorIndex, /guide#creator-operation-video/);
   assert.match(creatorProject, /guide#creator-operation-video/);
   assert.doesNotMatch(source, /APIキーを入力|出典URLを入力/);
 });
 
-test("原稿編集動画マニュアルは配信可能なMP4・poster・日本語字幕を含む", async () => {
+test("8工程の動画マニュアルは配信可能なMP4・poster・日本語字幕を含む", async () => {
   const base = new URL("../public/manual/cloud/", import.meta.url);
-  const [video, poster, captions, generator] = await Promise.all([
-    stat(new URL("cloud-creator-operation-guide.mp4", base)),
-    stat(new URL("cloud-creator-operation-guide-poster.webp", base)),
-    readFile(new URL("cloud-creator-operation-guide.vtt", base), "utf8"),
-    readFile(
-      new URL("../scripts/build-cloud-operation-video.mjs", import.meta.url),
-      "utf8",
-    ),
-  ]);
-  assert.ok(video.size > 100_000);
-  assert.ok(video.size < 10_000_000);
-  assert.ok(poster.size > 10_000);
-  assert.match(captions, /^WEBVTT/m);
-  assert.match(captions, /作品画面で現在地を確認/);
-  assert.match(captions, /全ページを確定してPDF保存/);
-  assert.doesNotMatch(captions, /@|API[_ -]?KEY|Bearer|ma2025/i);
+  const manualIds = [
+    "01-market-analysis-guide",
+    "02-proposal-guide",
+    "03-scenario-guide",
+    "04-storyboard-guide",
+    "cloud-creator-operation-guide",
+    "06-work-management-guide",
+    "07-sales-preparation-guide",
+    "08-sales-management-guide",
+  ];
+  const generator = await readFile(
+    new URL("../scripts/build-cloud-operation-video.mjs", import.meta.url),
+    "utf8",
+  );
+  for (const id of manualIds) {
+    const [video, poster, captions] = await Promise.all([
+      stat(new URL(`${id}.mp4`, base)),
+      stat(new URL(`${id}-poster.webp`, base)),
+      readFile(new URL(`${id}.vtt`, base), "utf8"),
+    ]);
+    assert.ok(video.size > 100_000, `${id}.mp4 is unexpectedly small`);
+    assert.ok(video.size < 10_000_000, `${id}.mp4 is unexpectedly large`);
+    assert.ok(poster.size > 10_000, `${id} poster is unexpectedly small`);
+    assert.match(captions, /^WEBVTT/m);
+    assert.doesNotMatch(captions, /@|API[_ -]?KEY|Bearer|ma2025/i);
+  }
+  assert.match(
+    await readFile(new URL("01-market-analysis-guide.vtt", base), "utf8"),
+    /ダッシュボードから開始/,
+  );
+  assert.match(
+    await readFile(new URL("cloud-creator-operation-guide.vtt", base), "utf8"),
+    /全ページを確定してPDF保存/,
+  );
   for (const image of [
     "03-creator-project.svg",
     "04-generation-preflight.svg",

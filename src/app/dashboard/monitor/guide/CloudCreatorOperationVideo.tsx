@@ -1,134 +1,186 @@
-"use client";
+import { Download, PlayCircle } from "lucide-react";
 
-import { Download, ListVideo, PlayCircle } from "lucide-react";
-import { useRef } from "react";
-
-const VIDEO_PATH = "/manual/cloud/cloud-creator-operation-guide.mp4";
-
-const chapters = [
-  { time: 5, label: "作品画面で現在地を確認" },
-  { time: 12, label: "人物・衣装と作品の画風を固定" },
-  { time: 20, label: "参照画像を登録してコマへ割り当て" },
-  { time: 27, label: "最初は連続する2ページだけを選択" },
-  { time: 35, label: "必要creditと停止理由を確認" },
-  { time: 43, label: "生成候補を拡大して比較・採用" },
-  { time: 51, label: "吹き出しと文字を画像とは別に調整" },
-  { time: 59, label: "全ページを確定してPDFを保存" },
+const manuals = [
+  {
+    number: 1,
+    id: "01-market-analysis-guide",
+    title: "市場分析",
+    duration: "約25秒",
+    description: "ダッシュボードから分析を開始し、条件を選んで結果を保存します。",
+    actions: [
+      "ダッシュボードの「市場分析を開始」を押す",
+      "ジャンル・テーマ・ページ数を選ぶ",
+      "分析結果を確認して保存する",
+    ],
+  },
+  {
+    number: 2,
+    id: "02-proposal-guide",
+    title: "AI企画提案",
+    duration: "約25秒",
+    description: "市場分析から3案を作り、内容を比較して制作する企画を採用します。",
+    actions: [
+      "保存した市場分析から企画提案へ進む",
+      "本命案・差別化案・小さく試す案を比較する",
+      "詳しい内容を確認して1案を採用する",
+    ],
+  },
+  {
+    number: 3,
+    id: "03-scenario-guide",
+    title: "シナリオ作成",
+    duration: "約25秒",
+    description: "採用企画から初稿を作り、人物・構成・シーンを確認して採用します。",
+    actions: [
+      "採用企画から初稿シナリオを作る",
+      "登場人物・三幕構成・ページ配分を確認する",
+      "必要なら修正し、使用する版を採用する",
+    ],
+  },
+  {
+    number: 4,
+    id: "04-storyboard-guide",
+    title: "ネーム作成",
+    duration: "約25秒",
+    description: "採用シナリオをページ・コマ・構図・セリフへ変換します。",
+    actions: [
+      "初稿ネームを作る",
+      "ページ、コマ割り、構図、セリフを確認する",
+      "ネームを採用してCanvas下書きを作る",
+    ],
+  },
+  {
+    number: 5,
+    id: "cloud-creator-operation-guide",
+    title: "原稿編集",
+    duration: "約1分",
+    description: "人物・画風を固定し、画像候補の採用、文字調整、PDF完成まで進めます。",
+    actions: [
+      "人物・衣装・画風・参照画像を保存する",
+      "連続2ページで生成候補を確認して採用する",
+      "文字を調整し、全ページ確定・完成版固定・PDF保存へ進む",
+    ],
+  },
+  {
+    number: 6,
+    id: "06-work-management-guide",
+    title: "作品管理",
+    duration: "約25秒",
+    description: "作品一覧から制作状態を確認し、編集再開または販売準備へ進みます。",
+    actions: [
+      "作品一覧から対象作品を開く",
+      "原稿・完成版・PDFの状態を確認する",
+      "原稿編集を続けるか販売準備へ進む",
+    ],
+  },
+  {
+    number: 7,
+    id: "07-sales-preparation-guide",
+    title: "販売準備",
+    duration: "約25秒",
+    description: "固定した完成版から販売下書きを作り、公開と販売開始を順番に行います。",
+    actions: [
+      "完成版・作品情報・税込価格を確認する",
+      "非公開・販売停止中の下書きを作る",
+      "作品公開後、商品情報を再確認して販売を開始する",
+    ],
+  },
+  {
+    number: 8,
+    id: "08-sales-management-guide",
+    title: "収益管理",
+    duration: "約25秒",
+    description: "注文区分、金額、支払い・返金状態を作品ごとに確認します。",
+    actions: [
+      "売上サマリーと注文一覧を確認する",
+      "本番注文とテスト注文を区別する",
+      "作品ごとの販売数・金額・状態を確認する",
+    ],
+  },
 ] as const;
-
-const transcript = [
-  "作品画面で原稿チェックの残数を確認し、画像生成前の設定から始めます。",
-  "ページをまたいで変えたくない人物の外見・衣装、作品の画風、場所・小物を先に保存します。",
-  "人物・場所・小物の参照画像を登録し、必要なコマへ割り当てます。",
-  "最初は連続する2ページだけを選び、人物と画風を確認してから範囲を広げます。",
-  "必要credit、残り利用枠、最大予約費用、停止理由を確認し、開始ボタンは1回だけ押します。",
-  "生成候補の顔、手、衣装、背景、疑似文字を確認し、使う候補だけをコマへ配置します。",
-  "セリフ修正では画像を作り直さず、吹き出しと文字の位置・大きさ・縦書きを調整します。",
-  "原稿チェックを解消し、全ページ確定、完成版固定、PDF書き出しの順に進みます。",
-] as const;
-
-function formatTime(seconds: number) {
-  return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
-}
 
 export function CloudCreatorOperationVideo() {
-  const videoRef = useRef<HTMLVideoElement>(null);
-
-  const jumpTo = (seconds: number) => {
-    const video = videoRef.current;
-    if (!video) return;
-    video.currentTime = seconds;
-    void video.play().catch(() => undefined);
-  };
-
   return (
-    <div className="panel mt-5 overflow-hidden border-violet-200 p-0">
-      <div className="bg-stone-950">
-        <video
-          aria-label="原稿編集からPDF完成までの動画マニュアル"
-          className="aspect-video h-auto w-full"
-          controls
-          playsInline
-          poster="/manual/cloud/cloud-creator-operation-guide-poster.webp"
-          preload="metadata"
-          ref={videoRef}
-        >
-          <source src={VIDEO_PATH} type="video/mp4" />
-          <track
-            default
-            kind="captions"
-            label="日本語字幕"
-            src="/manual/cloud/cloud-creator-operation-guide.vtt"
-            srcLang="ja"
-          />
-          お使いのブラウザでは動画を再生できません。下の文字版手順をご利用ください。
-        </video>
-      </div>
-
-      <div className="space-y-5 p-4 sm:p-5">
-        <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
-          <div>
-            <p className="flex items-center gap-2 font-bold text-stone-900">
-              <PlayCircle
-                className="h-5 w-5 text-violet-700"
-                aria-hidden="true"
-              />
-              約1分15秒・音声なし・日本語字幕付き
-            </p>
-            <p className="mt-1 text-sm leading-relaxed text-stone-600">
-              再生速度、全画面、字幕は動画プレイヤーから変更できます。
-            </p>
-          </div>
-          <a
-            className="button-secondary shrink-0"
-            download="MANGAI-Cloud-原稿編集からPDF完成まで.mp4"
-            href={VIDEO_PATH}
+    <div className="mt-5 space-y-4">
+      {manuals.map((manual) => {
+        const basePath = `/manual/cloud/${manual.id}`;
+        return (
+          <details
+            className="panel overflow-hidden border-violet-200 p-0"
+            id={`video-step-${manual.number}`}
+            key={manual.id}
+            open={manual.number === 1}
           >
-            <Download className="h-4 w-4" aria-hidden="true" />
-            動画を保存
-          </a>
-        </div>
+            <summary className="cursor-pointer list-none p-4 marker:hidden sm:p-5">
+              <div className="flex items-start gap-3">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-violet-100 font-bold text-violet-800">
+                  {manual.number}
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-bold text-violet-700">
+                    STEP {manual.number} / 8
+                  </p>
+                  <h3 className="mt-1 text-xl font-bold text-stone-900">
+                    {manual.title}
+                  </h3>
+                  <p className="mt-1 text-sm leading-relaxed text-stone-600">
+                    {manual.description}
+                  </p>
+                </div>
+                <span className="shrink-0 rounded-full bg-stone-100 px-3 py-1 text-xs font-bold text-stone-600">
+                  {manual.duration}
+                </span>
+              </div>
+            </summary>
 
-        <div>
-          <p className="flex items-center gap-2 text-sm font-bold text-violet-800">
-            <ListVideo className="h-4 w-4" aria-hidden="true" />
-            見たい操作へ移動
-          </p>
-          <ol className="mt-3 grid gap-2 sm:grid-cols-2">
-            {chapters.map((chapter, index) => (
-              <li key={chapter.label}>
-                <button
-                  className="flex min-h-12 w-full items-center gap-3 rounded-xl border border-violet-200 bg-white px-3 py-2 text-left text-sm font-bold text-stone-800 transition hover:bg-violet-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-700"
-                  onClick={() => jumpTo(chapter.time)}
-                  type="button"
-                >
-                  <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-violet-100 text-violet-800">
-                    {index + 1}
-                  </span>
-                  <span className="min-w-0 flex-1">{chapter.label}</span>
-                  <span className="shrink-0 font-normal text-stone-500">
-                    {formatTime(chapter.time)}
-                  </span>
-                </button>
-              </li>
-            ))}
-          </ol>
-        </div>
+            <div className="border-t border-violet-100">
+              <video
+                aria-label={`ステップ${manual.number} ${manual.title}の動画マニュアル`}
+                className="aspect-video h-auto w-full bg-stone-950"
+                controls
+                playsInline
+                poster={`${basePath}-poster.webp`}
+                preload="metadata"
+              >
+                <source src={`${basePath}.mp4`} type="video/mp4" />
+                <track
+                  default
+                  kind="captions"
+                  label="日本語字幕"
+                  src={`${basePath}.vtt`}
+                  srcLang="ja"
+                />
+                お使いのブラウザでは動画を再生できません。下の文字版手順をご利用ください。
+              </video>
 
-        <details className="rounded-xl border border-stone-200 bg-stone-50 p-4">
-          <summary className="cursor-pointer font-bold text-stone-900">
-            動画の内容を文字で読む
-          </summary>
-          <ol className="mt-4 space-y-3 text-sm leading-relaxed text-stone-700">
-            {transcript.map((item, index) => (
-              <li className="flex gap-3" key={item}>
-                <span className="font-bold text-violet-700">{index + 1}.</span>
-                <span>{item}</span>
-              </li>
-            ))}
-          </ol>
-        </details>
-      </div>
+              <div className="space-y-4 p-4 sm:p-5">
+                <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
+                  <p className="flex items-center gap-2 text-sm font-bold text-stone-800">
+                    <PlayCircle className="h-5 w-5 text-violet-700" aria-hidden="true" />
+                    音声なし・日本語字幕付き・実画面に沿った匿名化表示
+                  </p>
+                  <a
+                    className="button-secondary shrink-0"
+                    download={`MANGAI-STEP${manual.number}-${manual.title}.mp4`}
+                    href={`${basePath}.mp4`}
+                  >
+                    <Download className="h-4 w-4" aria-hidden="true" />
+                    この動画を保存
+                  </a>
+                </div>
+                <ol className="grid gap-2 sm:grid-cols-3">
+                  {manual.actions.map((action, index) => (
+                    <li className="rounded-xl bg-violet-50 p-3 text-sm leading-relaxed text-violet-950" key={action}>
+                      <span className="font-bold text-violet-700">{index + 1}. </span>
+                      {action}
+                    </li>
+                  ))}
+                </ol>
+              </div>
+            </div>
+          </details>
+        );
+      })}
     </div>
   );
 }
