@@ -1,5 +1,15 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Cloud制作 ステップ別動画マニュアル（2026-10-08）
+
+- Branch `codex/cloud-operation-video-manual-20261008`。市場分析から収益管理までを、実画面に沿った匿名化表示の8本の独立動画へ分割した。
+- 「使い方」ではステップ1を初期表示し、2〜8を目的別に展開できる。各動画に日本語字幕、3項目の文字版手順、個別ダウンロードを備え、作品一覧と作品画面から`guide#creator-operation-video`へ移動できる。
+- 動画生成は`MANGAI_FFMPEG_PATH`を指定して`npm run manual:cloud:video`。入力はrepository内の匿名化済み素材とUI定義だけで、Productionや外部サービスへ接続しない。
+- 8本の動画・poster・字幕を生成済み。集中12/12、Hub全テスト、型検査、lint、依存境界error 0（既知warning 2）、Production build、diff check成功。Production、DB、migration、Provider、credit、公開・販売状態は未変更。
+- 詳細は`docs/CLOUD_OPERATION_VIDEO_MANUAL_20261008.md`。
+
+---
+
 ## 0.0 Durable PDF Export Phase A 安定化（2026-10-07）
 
 - Branch `codex/cloud-durable-export-stabilization-20261007`。既存workerは1 requestで1 segmentを処理する設計だが、repository内に起動schedulerがなく、Productionの2ページJobが`queued`のまま進まない構成だった。

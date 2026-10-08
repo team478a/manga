@@ -29,7 +29,7 @@ import { CloudCreatorOperationVideo } from "./CloudCreatorOperationVideo";
 const sections = [
   { href: "#quick-start", label: "最初の5分" },
   { href: "#visual-guide", label: "画面で確認" },
-  { href: "#creator-operation-video", label: "原稿編集の操作デモ" },
+  { href: "#creator-operation-video", label: "ステップ別動画" },
   { href: "#workflow", label: "制作手順" },
   { href: "#manga-production", label: "漫画原稿の作り方" },
   { href: "#internal-test-sale", label: "MANGAI内テスト販売" },
@@ -517,19 +517,21 @@ export default async function GeneralMonitorGuidePage() {
         className="mt-9 scroll-mt-6"
         id="creator-operation-video"
       >
-        <p className="text-sm font-bold text-violet-700">音声なし・字幕付き</p>
+        <p className="text-sm font-bold text-violet-700">
+          実画面に沿った動画・日本語字幕付き
+        </p>
         <h2
           className="mt-1 text-2xl font-bold"
           id="creator-operation-video-title"
         >
-          原稿編集からPDF完成までの操作デモ
+          最初から順番に見るステップ別動画マニュアル
         </h2>
         <p className="mt-2 max-w-3xl leading-relaxed text-stone-600">
-          人物・画風の固定から、2ページ生成、候補採用、吹き出し修正、全ページ確定、PDF保存までを約1分で確認できます。
-          一時停止しながら、表示された順番でご自身の作品を操作してください。
+          市場分析から収益管理までを8本に分けました。最初はステップ1から順番に開き、動画と同じ見出し・ボタンを実際の画面で探しながら進めてください。
+          後から必要な工程だけを見直すこともできます。
         </p>
         <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm leading-relaxed text-amber-950">
-          画面例は匿名化した説明用表示です。実際の作品名、画像、利用枠、料金は含みません。生成開始前には、必ずご自身の画面に表示される必要creditと最大予約費用を確認してください。
+          動画は現在の実画面に沿って、個人名・作品内容・利用枠を匿名化しています。表示件数や料金はアカウントごとに異なるため、生成や販売を開始する前にご自身の画面で必ず確認してください。
         </div>
         <CloudCreatorOperationVideo />
       </section>

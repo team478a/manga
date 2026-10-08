@@ -1,5 +1,18 @@
 # MANGAI Current Task
 
+## 2026-10-08 Cloud制作 ステップ別動画マニュアル
+
+- 状態: `IMPLEMENTED / 8_VIDEOS_RENDERED / FULL_TESTS_PASSED / PRODUCTION_NOT_CHANGED`
+- Branch: `codex/cloud-operation-video-manual-20261008`
+- Base: `origin/feature/manga-canvas-mvp`@`a23e551db65f84cb3bfa72e3beeb6ebe9f1fa7aa`
+- 購入者の「最初から実画面に沿って、ステップごとに見たい」という声に対応し、市場分析、AI企画、シナリオ、ネーム、原稿編集、作品管理、販売準備、収益管理を8本の独立動画へ分割した。
+- ステップ1を初期表示し、2〜8は目的別に開ける。各動画に日本語字幕、3項目の文字版手順、個別ダウンロードを備え、作品一覧・作品画面から直接移動できる。
+- 画面構成と表示文言は現在の実装に沿わせ、個人名、実作品、Prompt、秘密値、credit残数は匿名化した。Production、DB、migration、Provider、credit、公開・販売状態は変更していない。
+- 8本の動画・poster・字幕を生成済み。集中12/12、Hub全テスト、型検査、lint、依存境界error 0（既知warning 2）、Production build、diff check成功。全posterと動画の代表フレームも目視確認済み。
+- 詳細: `docs/CLOUD_OPERATION_VIDEO_MANUAL_20261008.md`
+
+---
+
 ## 2026-10-07 Durable PDF Export Phase A 安定化
 
 - 状態: `IMPLEMENTED / REPOSITORY_TESTS_PASSED / PRODUCTION_E2E_BLOCKED_EXTERNAL_ENVIRONMENT`

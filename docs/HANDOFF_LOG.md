@@ -1,5 +1,15 @@
 # MANGAI AI Handoff Log
 
+## 2026-10-08 Codex: Cloud制作 ステップ別動画マニュアル
+
+- 購入者の「最初から実画面に沿って、ステップごとに見たい」という報告に対応し、市場分析から収益管理までを8本の独立動画へ分割した。
+- ステップ1を初期表示し、2〜8を目的別に展開できる。各動画に日本語字幕、3項目の文字版手順、個別ダウンロードを備え、作品一覧・作品画面にも導線を置いた。
+- 再生成scriptはrepository内の匿名化済み素材とUI定義だけを入力とし、外部取得を行わない。動画にも利用者データ、実作品、秘密値、credit情報を含めない。
+- 8本の動画・poster・字幕を生成済み。集中12/12、Hub全テスト、型検査、lint、依存境界、Production build、diff check成功。Production、DB、migration、Provider、credit、公開・販売状態の変更なし。
+- 詳細: `docs/CLOUD_OPERATION_VIDEO_MANUAL_20261008.md`
+
+---
+
 ## 2026-10-07 Codex: Durable PDF Export Phase A 安定化
 
 - Productionの`0/2 queued`をrepository側から追跡し、worker endpoint、claim RPC、lease、`SKIP LOCKED`、partial unique index、segment retryは既存実装済みだが、定期実行schedulerが存在しないことを直接原因として確定した。
