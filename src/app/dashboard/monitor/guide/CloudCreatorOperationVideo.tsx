@@ -1,218 +1,133 @@
 "use client";
 
-import Image from "next/image";
-import { Pause, Play, RotateCcw, SkipBack, SkipForward } from "lucide-react";
-import { useEffect, useState } from "react";
+import { Download, ListVideo, PlayCircle } from "lucide-react";
+import { useRef } from "react";
 
-const FRAME_DURATION_MS = 7_000;
+const VIDEO_PATH = "/manual/cloud/cloud-creator-operation-guide.mp4";
 
-const frames = [
-  {
-    title: "作品画面で完成までの現在地を確認",
-    description: "原稿チェックの残数を確認し、画像生成前の設定から始めます。",
-    image: "/manual/cloud/03-creator-project.svg",
-    alt: "原稿編集の作品画面で完成ガイドと原稿チェックを確認する画面例",
-    focus: { x: 25, y: 36 },
-  },
-  {
-    title: "人物・衣装と作品の画風を固定",
-    description:
-      "ページをまたいで変えたくない外見、衣装、場所、小物を先に保存します。",
-    image: "/manual/cloud/03-creator-project.svg",
-    alt: "原稿編集の作品画面で外見、衣装、画風、場所、小物を設定する画面例",
-    focus: { x: 32, y: 72 },
-  },
-  {
-    title: "参照画像を登録してコマへ割り当て",
-    description: "登場人物・場所・小物の見本を、必要なコマへ割り当てます。",
-    image: "/manual/cloud/03-creator-project.svg",
-    alt: "原稿編集の作品画面で参照画像とコマ割当を開く画面例",
-    focus: { x: 79, y: 72 },
-  },
-  {
-    title: "最初は連続する2ページだけを選択",
-    description: "少ない範囲で人物と画風を確認してから、次のページへ広げます。",
-    image: "/manual/cloud/04-generation-preflight.svg",
-    alt: "画像生成するページを選び、連続2ページの見積りを確認する画面例",
-    focus: { x: 20, y: 28 },
-  },
-  {
-    title: "必要creditと停止理由を確認して開始",
-    description:
-      "利用枠、人物・画風の準備、停止理由の4点を確認し、開始ボタンは1回だけ押します。",
-    image: "/manual/cloud/04-generation-preflight.svg",
-    alt: "ページ一括生成の必要credit、利用枠、準備状況、停止理由を確認する画面例",
-    focus: { x: 57, y: 61 },
-  },
-  {
-    title: "生成候補を拡大して比較・採用",
-    description:
-      "顔、手、衣装、背景、疑似文字を確認し、使用する候補だけをコマへ配置します。",
-    image: "/manual/cloud/06-candidate-review.svg",
-    alt: "原稿編集で生成候補を比較し、品質を確認してコマへ採用する画面例",
-    focus: { x: 84, y: 77 },
-  },
-  {
-    title: "吹き出しと文字を画像とは別に調整",
-    description:
-      "セリフ修正では画像を作り直さず、吹き出し・文字の位置や大きさを整えます。",
-    image: "/manual/cloud/07-dialogue-edit.svg",
-    alt: "原稿編集で吹き出しと縦書き文字を選択して調整する画面例",
-    focus: { x: 53, y: 50 },
-  },
-  {
-    title: "全ページを確定してPDFを保存",
-    description:
-      "原稿チェックを解消し、全ページ確定、完成版固定、PDF書き出しの順に進みます。",
-    image: "/manual/cloud/05-export.svg",
-    alt: "全ページ確定、完成版固定、PDF書き出し、ダウンロードの順番を示す画面例",
-    focus: { x: 65, y: 54 },
-  },
+const chapters = [
+  { time: 5, label: "作品画面で現在地を確認" },
+  { time: 12, label: "人物・衣装と作品の画風を固定" },
+  { time: 20, label: "参照画像を登録してコマへ割り当て" },
+  { time: 27, label: "最初は連続する2ページだけを選択" },
+  { time: 35, label: "必要creditと停止理由を確認" },
+  { time: 43, label: "生成候補を拡大して比較・採用" },
+  { time: 51, label: "吹き出しと文字を画像とは別に調整" },
+  { time: 59, label: "全ページを確定してPDFを保存" },
 ] as const;
 
+const transcript = [
+  "作品画面で原稿チェックの残数を確認し、画像生成前の設定から始めます。",
+  "ページをまたいで変えたくない人物の外見・衣装、作品の画風、場所・小物を先に保存します。",
+  "人物・場所・小物の参照画像を登録し、必要なコマへ割り当てます。",
+  "最初は連続する2ページだけを選び、人物と画風を確認してから範囲を広げます。",
+  "必要credit、残り利用枠、最大予約費用、停止理由を確認し、開始ボタンは1回だけ押します。",
+  "生成候補の顔、手、衣装、背景、疑似文字を確認し、使う候補だけをコマへ配置します。",
+  "セリフ修正では画像を作り直さず、吹き出しと文字の位置・大きさ・縦書きを調整します。",
+  "原稿チェックを解消し、全ページ確定、完成版固定、PDF書き出しの順に進みます。",
+] as const;
+
+function formatTime(seconds: number) {
+  return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
+}
+
 export function CloudCreatorOperationVideo() {
-  const [frameIndex, setFrameIndex] = useState(0);
-  const [playing, setPlaying] = useState(false);
-  const frame = frames[frameIndex];
-  const atEnd = frameIndex === frames.length - 1;
+  const videoRef = useRef<HTMLVideoElement>(null);
 
-  useEffect(() => {
-    const animationFrame = window.requestAnimationFrame(() => {
-      const reducedMotion = window.matchMedia(
-        "(prefers-reduced-motion: reduce)",
-      ).matches;
-      setPlaying(!reducedMotion);
-    });
-    return () => window.cancelAnimationFrame(animationFrame);
-  }, []);
-
-  useEffect(() => {
-    if (!playing) return;
-    const timer = window.setTimeout(() => {
-      if (atEnd) {
-        setPlaying(false);
-        return;
-      }
-      setFrameIndex((current) => current + 1);
-    }, FRAME_DURATION_MS);
-    return () => window.clearTimeout(timer);
-  }, [atEnd, frameIndex, playing]);
-
-  const play = () => {
-    if (atEnd) setFrameIndex(0);
-    setPlaying(true);
-  };
-
-  const move = (next: number) => {
-    setPlaying(false);
-    setFrameIndex(Math.min(frames.length - 1, Math.max(0, next)));
+  const jumpTo = (seconds: number) => {
+    const video = videoRef.current;
+    if (!video) return;
+    video.currentTime = seconds;
+    void video.play().catch(() => undefined);
   };
 
   return (
     <div className="panel mt-5 overflow-hidden border-violet-200 p-0">
-      <div className="relative aspect-video overflow-hidden bg-stone-950">
-        <Image
-          alt={frame.alt}
-          className="object-contain"
-          fill
-          priority
-          sizes="(max-width: 1024px) 100vw, 960px"
-          src={frame.image}
-        />
-        <span
-          aria-hidden="true"
-          className="pointer-events-none absolute h-12 w-12 -translate-x-1/2 -translate-y-1/2 rounded-full border-4 border-violet-700 bg-white/70 shadow-[0_0_0_8px_rgba(124,58,237,0.18)]"
-          style={{ left: `${frame.focus.x}%`, top: `${frame.focus.y}%` }}
+      <div className="bg-stone-950">
+        <video
+          aria-label="原稿編集からPDF完成までの動画マニュアル"
+          className="aspect-video h-auto w-full"
+          controls
+          playsInline
+          poster="/manual/cloud/cloud-creator-operation-guide-poster.webp"
+          preload="metadata"
+          ref={videoRef}
         >
-          <span className="absolute left-1/2 top-1/2 h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-violet-700" />
-        </span>
-        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-stone-950/95 via-stone-950/80 to-transparent px-4 pb-4 pt-16 text-white sm:px-6 sm:pb-6">
-          <p className="text-xs font-bold text-violet-200">
-            操作 {frameIndex + 1} / {frames.length}
-          </p>
-          <h3 className="mt-1 text-lg font-bold sm:text-xl">{frame.title}</h3>
-          <p className="mt-1 max-w-3xl text-sm leading-relaxed text-stone-100 sm:text-base">
-            {frame.description}
-          </p>
-        </div>
-      </div>
-      <div className="space-y-4 p-4 sm:p-5">
-        <div
-          aria-label={`操作デモの進行状況 ${frameIndex + 1}/${frames.length}`}
-          aria-valuemax={frames.length}
-          aria-valuemin={1}
-          aria-valuenow={frameIndex + 1}
-          className="h-2 overflow-hidden rounded-full bg-violet-100"
-          role="progressbar"
-        >
-          <div
-            className="h-full rounded-full bg-violet-600 transition-[width] duration-300"
-            style={{ width: `${((frameIndex + 1) / frames.length) * 100}%` }}
+          <source src={VIDEO_PATH} type="video/mp4" />
+          <track
+            default
+            kind="captions"
+            label="日本語字幕"
+            src="/manual/cloud/cloud-creator-operation-guide.vtt"
+            srcLang="ja"
           />
-        </div>
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex flex-wrap gap-2">
-            <button
-              aria-label="前の操作"
-              className="button-secondary"
-              disabled={frameIndex === 0}
-              onClick={() => move(frameIndex - 1)}
-              type="button"
-            >
-              <SkipBack className="h-4 w-4" />
-              前へ
-            </button>
-            {playing ? (
-              <button
-                className="button"
-                onClick={() => setPlaying(false)}
-                type="button"
-              >
-                <Pause className="h-4 w-4" />
-                一時停止
-              </button>
-            ) : (
-              <button className="button" onClick={play} type="button">
-                {atEnd ? (
-                  <RotateCcw className="h-4 w-4" />
-                ) : (
-                  <Play className="h-4 w-4" />
-                )}
-                {atEnd ? "最初から見る" : "再生"}
-              </button>
-            )}
-            <button
-              aria-label="次の操作"
-              className="button-secondary"
-              disabled={atEnd}
-              onClick={() => move(frameIndex + 1)}
-              type="button"
-            >
-              次へ
-              <SkipForward className="h-4 w-4" />
-            </button>
+          お使いのブラウザでは動画を再生できません。下の文字版手順をご利用ください。
+        </video>
+      </div>
+
+      <div className="space-y-5 p-4 sm:p-5">
+        <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
+          <div>
+            <p className="flex items-center gap-2 font-bold text-stone-900">
+              <PlayCircle
+                className="h-5 w-5 text-violet-700"
+                aria-hidden="true"
+              />
+              約1分15秒・音声なし・日本語字幕付き
+            </p>
+            <p className="mt-1 text-sm leading-relaxed text-stone-600">
+              再生速度、全画面、字幕は動画プレイヤーから変更できます。
+            </p>
           </div>
-          <p className="text-sm text-stone-600">約1分・音声なし・字幕付き</p>
+          <a
+            className="button-secondary shrink-0"
+            download="MANGAI-Cloud-原稿編集からPDF完成まで.mp4"
+            href={VIDEO_PATH}
+          >
+            <Download className="h-4 w-4" aria-hidden="true" />
+            動画を保存
+          </a>
         </div>
-        <ol className="grid grid-cols-4 gap-2 sm:grid-cols-8">
-          {frames.map((item, index) => (
-            <li key={item.title}>
-              <button
-                aria-current={index === frameIndex ? "step" : undefined}
-                aria-label={`操作${index + 1}：${item.title}`}
-                className={`min-h-10 w-full rounded-lg border px-2 py-1 text-xs font-bold transition ${
-                  index === frameIndex
-                    ? "border-violet-600 bg-violet-600 text-white"
-                    : "border-violet-200 bg-white text-violet-800 hover:bg-violet-50"
-                }`}
-                onClick={() => move(index)}
-                type="button"
-              >
-                {index + 1}
-              </button>
-            </li>
-          ))}
-        </ol>
+
+        <div>
+          <p className="flex items-center gap-2 text-sm font-bold text-violet-800">
+            <ListVideo className="h-4 w-4" aria-hidden="true" />
+            見たい操作へ移動
+          </p>
+          <ol className="mt-3 grid gap-2 sm:grid-cols-2">
+            {chapters.map((chapter, index) => (
+              <li key={chapter.label}>
+                <button
+                  className="flex min-h-12 w-full items-center gap-3 rounded-xl border border-violet-200 bg-white px-3 py-2 text-left text-sm font-bold text-stone-800 transition hover:bg-violet-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-700"
+                  onClick={() => jumpTo(chapter.time)}
+                  type="button"
+                >
+                  <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-violet-100 text-violet-800">
+                    {index + 1}
+                  </span>
+                  <span className="min-w-0 flex-1">{chapter.label}</span>
+                  <span className="shrink-0 font-normal text-stone-500">
+                    {formatTime(chapter.time)}
+                  </span>
+                </button>
+              </li>
+            ))}
+          </ol>
+        </div>
+
+        <details className="rounded-xl border border-stone-200 bg-stone-50 p-4">
+          <summary className="cursor-pointer font-bold text-stone-900">
+            動画の内容を文字で読む
+          </summary>
+          <ol className="mt-4 space-y-3 text-sm leading-relaxed text-stone-700">
+            {transcript.map((item, index) => (
+              <li className="flex gap-3" key={item}>
+                <span className="font-bold text-violet-700">{index + 1}.</span>
+                <span>{item}</span>
+              </li>
+            ))}
+          </ol>
+        </details>
       </div>
     </div>
   );

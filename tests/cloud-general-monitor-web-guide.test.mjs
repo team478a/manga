@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { readFile } from "node:fs/promises";
+import { readFile, stat } from "node:fs/promises";
 import test from "node:test";
 
 test("利用者向けWebマニュアルは制作完走とモバイル操作を案内する", async () => {
@@ -32,7 +32,7 @@ test("利用者向けWebマニュアルは制作完走とモバイル操作を�
     "ページを選び、見積りと停止理由を確認する",
     "全ページを確定し、完成原稿PDFを書き出す",
     "原稿編集からPDF完成までの操作デモ",
-    "音声なし・字幕付き",
+    "動画・日本語字幕・章ジャンプ付き",
     "一時停止しながら",
     "市場分析",
     "AI企画提案",
@@ -109,17 +109,53 @@ test("利用者向けWebマニュアルは制作完走とモバイル操作を�
   assert.match(source, /id="creator-operation-video"/);
   assert.match(source, /<CloudCreatorOperationVideo \/>/);
   for (const text of [
+    "作品画面で現在地を確認",
     "人物・衣装と作品の画風を固定",
     "参照画像を登録してコマへ割り当て",
     "最初は連続する2ページだけを選択",
+    "必要creditと停止理由を確認",
     "生成候補を拡大して比較・採用",
     "吹き出しと文字を画像とは別に調整",
     "全ページを確定してPDFを保存",
-    "一時停止",
-    "最初から見る",
+    "見たい操作へ移動",
+    "動画の内容を文字で読む",
+    "動画を保存",
   ]) {
     assert.match(operationVideo, new RegExp(text.replace("・", "・")));
   }
+  assert.match(operationVideo, /<video/);
+  assert.match(operationVideo, /controls/);
+  assert.match(operationVideo, /playsInline/);
+  assert.match(operationVideo, /cloud-creator-operation-guide\.mp4/);
+  assert.match(operationVideo, /cloud-creator-operation-guide-poster\.webp/);
+  assert.match(operationVideo, /cloud-creator-operation-guide\.vtt/);
+  assert.match(operationVideo, /kind="captions"/);
+  assert.match(operationVideo, /srcLang="ja"/);
+  assert.match(operationVideo, /download=/);
+  assert.match(operationVideo, /video\.currentTime = seconds/);
+  assert.match(creatorIndex, /guide#creator-operation-video/);
+  assert.match(creatorProject, /guide#creator-operation-video/);
+  assert.doesNotMatch(source, /APIキーを入力|出典URLを入力/);
+});
+
+test("原稿編集動画マニュアルは配信可能なMP4・poster・日本語字幕を含む", async () => {
+  const base = new URL("../public/manual/cloud/", import.meta.url);
+  const [video, poster, captions, generator] = await Promise.all([
+    stat(new URL("cloud-creator-operation-guide.mp4", base)),
+    stat(new URL("cloud-creator-operation-guide-poster.webp", base)),
+    readFile(new URL("cloud-creator-operation-guide.vtt", base), "utf8"),
+    readFile(
+      new URL("../scripts/build-cloud-operation-video.mjs", import.meta.url),
+      "utf8",
+    ),
+  ]);
+  assert.ok(video.size > 100_000);
+  assert.ok(video.size < 10_000_000);
+  assert.ok(poster.size > 10_000);
+  assert.match(captions, /^WEBVTT/m);
+  assert.match(captions, /作品画面で現在地を確認/);
+  assert.match(captions, /全ページを確定してPDF保存/);
+  assert.doesNotMatch(captions, /@|API[_ -]?KEY|Bearer|ma2025/i);
   for (const image of [
     "03-creator-project.svg",
     "04-generation-preflight.svg",
@@ -127,13 +163,11 @@ test("利用者向けWebマニュアルは制作完走とモバイル操作を�
     "06-candidate-review.svg",
     "07-dialogue-edit.svg",
   ]) {
-    assert.match(operationVideo, new RegExp(image.replace(".", "\\.")));
+    assert.match(generator, new RegExp(image.replace(".", "\\.")));
   }
-  assert.match(operationVideo, /prefers-reduced-motion/);
-  assert.match(operationVideo, /role="progressbar"/);
-  assert.match(creatorIndex, /guide#creator-operation-video/);
-  assert.match(creatorProject, /guide#creator-operation-video/);
-  assert.doesNotMatch(source, /APIキーを入力|出典URLを入力/);
+  assert.match(generator, /\.tmp-cloud-operation-video/);
+  assert.match(generator, /MANGAI_FFMPEG_PATH/);
+  assert.doesNotMatch(generator, /\bfetch\s*\(|https?:\/\/(?!www\.w3\.org\/2000\/svg)/);
 });
 
 test("スタッフ向けWebマニュアルは約10名の招待・監視・停止を案内する", async () => {

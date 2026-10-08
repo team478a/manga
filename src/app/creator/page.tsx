@@ -71,7 +71,7 @@ export default async function CloudCreatorPage({
           <div className="flex flex-wrap gap-2">
             <Link className="button-secondary" href="/dashboard/monitor/guide#creator-operation-video">
               <PlayCircle className="mr-2 h-5 w-5" />
-              原稿編集の操作デモ
+              原稿編集の動画マニュアル
             </Link>
             {!projects.length ? (
               <Link className="button" href="/creator/new">

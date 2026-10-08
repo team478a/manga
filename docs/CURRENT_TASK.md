@@ -1,5 +1,18 @@
 # MANGAI Current Task
 
+## 2026-10-08 Cloud原稿編集 動画マニュアル
+
+- 状態: `IMPLEMENTED / VIDEO_RENDERED / FULL_TESTS_PASSED / PRODUCTION_NOT_CHANGED`
+- Branch: `codex/cloud-operation-video-manual-20261008`
+- Base: `origin/feature/manga-canvas-mvp`@`a23e551db65f84cb3bfa72e3beeb6ebe9f1fa7aa`
+- 「原稿編集以降が分からない」という購入者の声に対応し、作品画面からPDF完成までを8章、約1分13秒で案内する実MP4を追加した。
+- ブラウザ標準操作、日本語字幕、章ジャンプ、動画ダウンロード、文字版手順を備えた。作品一覧・作品画面から動画への導線も明確化した。
+- 動画素材はrepository内の匿名化済み画面のみ。利用者名、作品、Prompt、秘密値、credit残数は含めず、Production、DB、migration、Provider、credit、公開・販売状態は変更していない。
+- 集中12/12、Hub全テスト、Hub型検査、ESLint、依存境界error 0（既知warning 2）、Production build、diff check成功。動画のポスター・先頭・中盤・終端も目視確認済み。
+- 詳細: `docs/CLOUD_OPERATION_VIDEO_MANUAL_20261008.md`
+
+---
+
 ## 2026-10-07 Durable PDF Export Phase A 安定化
 
 - 状態: `IMPLEMENTED / REPOSITORY_TESTS_PASSED / PRODUCTION_E2E_BLOCKED_EXTERNAL_ENVIRONMENT`

@@ -1,5 +1,15 @@
 # MANGAI AI Handoff Log
 
+## 2026-10-08 Codex: Cloud原稿編集 動画マニュアル
+
+- 購入者の「原稿編集以降の操作が分からない」という報告に対応し、約1分13秒の実MP4を「使い方」へ組み込んだ。
+- 8章の直接移動、日本語字幕、ブラウザ標準再生、ダウンロード、文字版手順を追加。作品一覧・作品画面にも動画への導線を置いた。
+- 再生成scriptは匿名化済みSVGだけを入力とし、外部取得を行わない。動画にも利用者データ、作品、秘密値、credit情報を含めない。
+- 集中12/12、Hub全テスト、型検査、lint、依存境界、Production build、diff check成功。Production、DB、migration、Provider、credit、公開・販売状態の変更なし。
+- 詳細: `docs/CLOUD_OPERATION_VIDEO_MANUAL_20261008.md`
+
+---
+
 ## 2026-10-07 Codex: Durable PDF Export Phase A 安定化
 
 - Productionの`0/2 queued`をrepository側から追跡し、worker endpoint、claim RPC、lease、`SKIP LOCKED`、partial unique index、segment retryは既存実装済みだが、定期実行schedulerが存在しないことを直接原因として確定した。

@@ -102,6 +102,7 @@
     "cloud:export:preflight": "node scripts/check-cloud-export-preflight.mjs",
     "cloud:export-worker:scheduler": "node scripts/run-cloud-export-worker-scheduler.mjs",
     "cloud:export-worker:scheduler:preflight": "node scripts/run-cloud-export-worker-scheduler.mjs --check",
+    "manual:cloud:video": "node scripts/build-cloud-operation-video.mjs",
     "cloud:storage:preflight": "node scripts/check-cloud-storage-preflight.mjs",
     "cloud:longform:acceptance": "node --experimental-strip-types --test tests/cloud-100-page-acceptance.test.mjs",
     "db:migrations:validate": "node scripts/validate-supabase-migrations.mjs",
