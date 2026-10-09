@@ -28,7 +28,10 @@ const checkedUrl = (value, label) => {
   return url;
 };
 
-export function resolveMarketplaceAuthExpiryEnvironment(environment) {
+export function resolveMarketplaceAuthExpiryEnvironment(
+  environment,
+  { requireOrderIds = true } = {},
+) {
   if (required(environment, "MANGAI_DB_ENV") !== "staging")
     throw new Error("MANGAI_DB_ENV must be staging.");
   if (required(environment, "MANGAI_MARKETPLACE_CHECKOUT_MODE") !== "test")
@@ -71,14 +74,18 @@ export function resolveMarketplaceAuthExpiryEnvironment(environment) {
   )
     throw new Error("SUPABASE_SERVICE_ROLE_KEY is not configured.");
 
-  const pendingOrderId = required(
-    environment,
-    "MANGAI_STAGING_PENDING_ORDER_ID",
-  );
-  const paidOrderId = required(environment, "MANGAI_STAGING_PAID_ORDER_ID");
-  if (!UUID_PATTERN.test(pendingOrderId) || !UUID_PATTERN.test(paidOrderId))
+  const pendingOrderId = requireOrderIds
+    ? required(environment, "MANGAI_STAGING_PENDING_ORDER_ID")
+    : environment.MANGAI_STAGING_PENDING_ORDER_ID?.trim() || null;
+  const paidOrderId = requireOrderIds
+    ? required(environment, "MANGAI_STAGING_PAID_ORDER_ID")
+    : environment.MANGAI_STAGING_PAID_ORDER_ID?.trim() || null;
+  if (
+    (pendingOrderId && !UUID_PATTERN.test(pendingOrderId)) ||
+    (paidOrderId && !UUID_PATTERN.test(paidOrderId))
+  )
     throw new Error("Staging order IDs must be UUIDs.");
-  if (pendingOrderId === paidOrderId)
+  if (pendingOrderId && pendingOrderId === paidOrderId)
     throw new Error("Pending and paid order IDs must be distinct.");
 
   const vercelDeploymentId =

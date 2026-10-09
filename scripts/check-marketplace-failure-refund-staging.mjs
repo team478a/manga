@@ -15,7 +15,9 @@ const required = (environment, name) => {
 };
 
 export function resolveMarketplaceFailureRefundEnvironment(environment) {
-  const base = resolveMarketplaceAuthExpiryEnvironment(environment);
+  const base = resolveMarketplaceAuthExpiryEnvironment(environment, {
+    requireOrderIds: false,
+  });
 
   const stripeSecretKey = required(environment, "STRIPE_SECRET_KEY");
   if (
@@ -26,11 +28,12 @@ export function resolveMarketplaceFailureRefundEnvironment(environment) {
   )
     throw new Error("Stripe Secret Key must be a configured test key.");
 
-  const stripeWebhookEndpointId = required(
-    environment,
-    "MANGAI_STAGING_STRIPE_WEBHOOK_ENDPOINT_ID",
-  );
-  if (!WEBHOOK_ENDPOINT_PATTERN.test(stripeWebhookEndpointId))
+  const stripeWebhookEndpointId =
+    environment.MANGAI_STAGING_STRIPE_WEBHOOK_ENDPOINT_ID?.trim() || null;
+  if (
+    stripeWebhookEndpointId &&
+    !WEBHOOK_ENDPOINT_PATTERN.test(stripeWebhookEndpointId)
+  )
     throw new Error("Stripe test webhook endpoint ID is invalid.");
 
   return { ...base, stripeSecretKey, stripeWebhookEndpointId };
@@ -73,6 +76,27 @@ const readOrder = async ({ fetchFn, orderId, target }) => {
   return body[0];
 };
 
+const findSingleOrder = async ({ fetchFn, status, target }) => {
+  const url = new URL("/rest/v1/orders", target.supabaseUrl);
+  url.searchParams.set(
+    "select",
+    "id,status,payment_mode,product_id,creator_id,amount,stripe_payment_intent_id",
+  );
+  url.searchParams.set("payment_mode", "eq.test");
+  url.searchParams.set("status", `eq.${status}`);
+  url.searchParams.set("limit", "2");
+  const { body } = await responseJson(
+    await fetchFn(url, {
+      headers: authorizedHeaders(target.serviceRoleKey),
+      method: "GET",
+    }),
+    `Staging ${status} order lookup`,
+  );
+  if (!Array.isArray(body) || body.length !== 1)
+    throw new Error(`Expected exactly one ${status} staging test order.`);
+  return body[0];
+};
+
 const stripeRequest = async ({
   body,
   fetchFn,
@@ -111,27 +135,18 @@ const retrievePaymentIntent = async ({ fetchFn, paymentIntentId, target }) => {
   return result.body;
 };
 
-const retrieveWebhookEndpoint = async ({ fetchFn, target }) => {
-  const result = await stripeRequest({
-    fetchFn,
-    pathname: `/v1/webhook_endpoints/${encodeURIComponent(
-      target.stripeWebhookEndpointId,
-    )}`,
-    stripeSecretKey: target.stripeSecretKey,
-  });
-  if (!result.ok)
-    throw new Error(`Stripe webhook endpoint lookup failed with HTTP ${result.status}.`);
+const parsedWebhookEndpoint = (endpoint) => {
   let endpointUrl;
   try {
-    endpointUrl = new URL(result.body.url);
+    endpointUrl = new URL(endpoint.url);
   } catch {
-    throw new Error("Stripe test webhook endpoint URL is invalid.");
+    return null;
   }
   const queryKeys = [...endpointUrl.searchParams.keys()];
   if (
-    result.body.id !== target.stripeWebhookEndpointId ||
-    result.body.livemode !== false ||
-    result.body.status !== "enabled" ||
+    !WEBHOOK_ENDPOINT_PATTERN.test(endpoint.id) ||
+    endpoint.livemode !== false ||
+    endpoint.status !== "enabled" ||
     endpointUrl.protocol !== "https:" ||
     !endpointUrl.hostname.endsWith(".vercel.app") ||
     endpointUrl.pathname !== "/api/stripe/webhook" ||
@@ -141,24 +156,66 @@ const retrieveWebhookEndpoint = async ({ fetchFn, target }) => {
     queryKeys[0] !== "x-vercel-protection-bypass" ||
     !endpointUrl.searchParams.get("x-vercel-protection-bypass") ||
     !["payment_intent.payment_failed", "charge.refunded"].every((type) =>
-      result.body.enabled_events?.includes(type),
+      endpoint.enabled_events?.includes(type),
     )
   )
-    throw new Error("Stripe test webhook endpoint is not the isolated Preview target.");
-  return { ...result.body, parsedUrl: endpointUrl };
+    return null;
+  return { ...endpoint, parsedUrl: endpointUrl };
+};
+
+const retrieveWebhookEndpoint = async ({ fetchFn, target }) => {
+  if (target.stripeWebhookEndpointId) {
+    const result = await stripeRequest({
+      fetchFn,
+      pathname: `/v1/webhook_endpoints/${encodeURIComponent(
+        target.stripeWebhookEndpointId,
+      )}`,
+      stripeSecretKey: target.stripeSecretKey,
+    });
+    if (!result.ok)
+      throw new Error(
+        `Stripe webhook endpoint lookup failed with HTTP ${result.status}.`,
+      );
+    const endpoint = parsedWebhookEndpoint(result.body);
+    if (!endpoint)
+      throw new Error(
+        "Stripe test webhook endpoint is not the isolated Preview target.",
+      );
+    return endpoint;
+  }
+
+  const result = await stripeRequest({
+    fetchFn,
+    pathname: "/v1/webhook_endpoints?limit=100",
+    stripeSecretKey: target.stripeSecretKey,
+  });
+  if (!result.ok || !Array.isArray(result.body.data))
+    throw new Error(
+      `Stripe webhook endpoint list failed with HTTP ${result.status}.`,
+    );
+  const candidates = result.body.data
+    .map(parsedWebhookEndpoint)
+    .filter(Boolean);
+  if (candidates.length !== 1)
+    throw new Error("Expected exactly one isolated Stripe test webhook endpoint.");
+  return candidates[0];
 };
 
 const validateOrderContext = async ({ fetchFn, target }) => {
-  const failureOrder = await readOrder({
-    fetchFn,
-    orderId: target.pendingOrderId,
-    target,
-  });
-  const refundOrder = await readOrder({
-    fetchFn,
-    orderId: target.paidOrderId,
-    target,
-  });
+  const failureOrder = target.pendingOrderId
+    ? await readOrder({
+        fetchFn,
+        orderId: target.pendingOrderId,
+        target,
+      })
+    : await findSingleOrder({ fetchFn, status: "pending", target });
+  const refundOrder = target.paidOrderId
+    ? await readOrder({
+        fetchFn,
+        orderId: target.paidOrderId,
+        target,
+      })
+    : await findSingleOrder({ fetchFn, status: "paid", target });
   if (
     !["pending", "failed"].includes(failureOrder.status) ||
     failureOrder.payment_mode !== "test" ||
@@ -226,21 +283,19 @@ const waitForStripeEvent = async ({
   throw new Error(`Stripe test event was not available: ${type}.`);
 };
 
-const updateWebhookEndpointUrl = async ({ fetchFn, target, url }) => {
+const updateWebhookEndpointUrl = async ({ endpointId, fetchFn, target, url }) => {
   const body = new URLSearchParams();
   body.set("url", url);
   const result = await stripeRequest({
     body,
     fetchFn,
     method: "POST",
-    pathname: `/v1/webhook_endpoints/${encodeURIComponent(
-      target.stripeWebhookEndpointId,
-    )}`,
+    pathname: `/v1/webhook_endpoints/${encodeURIComponent(endpointId)}`,
     stripeSecretKey: target.stripeSecretKey,
   });
   if (
     !result.ok ||
-    result.body.id !== target.stripeWebhookEndpointId ||
+    result.body.id !== endpointId ||
     result.body.livemode !== false ||
     result.body.status !== "enabled" ||
     result.body.url !== url
@@ -255,6 +310,7 @@ const withWebhookEndpointTarget = async ({ context, execute, fetchFn, target }) 
   const retargeted = targetUrl.href !== originalUrl.href;
   if (retargeted)
     await updateWebhookEndpointUrl({
+      endpointId: context.webhookEndpoint.id,
       fetchFn,
       target,
       url: targetUrl.href,
@@ -265,6 +321,7 @@ const withWebhookEndpointTarget = async ({ context, execute, fetchFn, target }) 
     if (retargeted) {
       try {
         await updateWebhookEndpointUrl({
+          endpointId: context.webhookEndpoint.id,
           fetchFn,
           target,
           url: originalUrl.href,
@@ -469,8 +526,18 @@ export async function runMarketplaceFailureRefundAcceptance({
 const help = `MANGAI Marketplace failure / refund staging acceptance
 
 Required environment is the same as marketplace:staging:auth-expiry, plus:
-  MANGAI_STAGING_STRIPE_WEBHOOK_ENDPOINT_ID
   STRIPE_SECRET_KEY (sk_test_ only)
+
+Optional selectors:
+  MANGAI_STAGING_PENDING_ORDER_ID
+  MANGAI_STAGING_PAID_ORDER_ID
+  MANGAI_STAGING_STRIPE_WEBHOOK_ENDPOINT_ID
+
+When omitted, preflight continues only if exactly one pending test order, one paid
+test order, and one compatible isolated Stripe test webhook endpoint are found.
+
+Non-secret CLI override:
+  --preview-url=https://branch-preview.vercel.app
 
 Operations:
   --preflight         read-only Staging and Stripe test verification
@@ -499,7 +566,19 @@ if (isMain) {
       process.exitCode = 1;
     } else {
       try {
+        const previewUrlArgument = process.argv.find((argument) =>
+          argument.startsWith("--preview-url="),
+        );
+        const environment = previewUrlArgument
+          ? {
+              ...process.env,
+              MANGAI_STAGING_PREVIEW_URL: previewUrlArgument.slice(
+                "--preview-url=".length,
+              ),
+            }
+          : process.env;
         const report = await runMarketplaceFailureRefundAcceptance({
+          environment,
           operation: operations[0][1],
         });
         for (const [name, passed] of Object.entries(report.checks))

@@ -85,6 +85,12 @@ const createHarness = ({ failureStatus = "pending", refundStatus = "paid" } = {}
         return json([order({ id, status: state.failureStatus })]);
       if (id === paidOrderId)
         return json([order({ id, status: state.refundStatus })]);
+      const status = url.searchParams.get("status")?.replace(/^eq\./, "");
+      if (status === "pending" && state.failureStatus === "pending")
+        return json([order({ id: pendingOrderId, status })]);
+      if (status === "paid" && state.refundStatus === "paid")
+        return json([order({ id: paidOrderId, status })]);
+      return json([]);
     }
     if (url.pathname === `/v1/payment_intents/${paidPaymentIntentId}`)
       return json(paymentIntent());
@@ -103,6 +109,21 @@ const createHarness = ({ failureStatus = "pending", refundStatus = "paid" } = {}
         url: state.webhookUrl,
       });
     }
+    if (url.pathname === "/v1/webhook_endpoints")
+      return json({
+        data: [
+          {
+            enabled_events: [
+              "payment_intent.payment_failed",
+              "charge.refunded",
+            ],
+            id: webhookEndpointId,
+            livemode: false,
+            status: "enabled",
+            url: state.webhookUrl,
+          },
+        ],
+      });
     throw new Error(`Unexpected request: ${request.method} ${url.pathname}`);
   };
   return { calls, fetchFn, state };
@@ -134,6 +155,19 @@ test("Production、live Stripe key、不正なwebhook endpointを外部操作前
   );
 });
 
+test("selector未指定を許可しても不正なPreview URLは拒否する", () => {
+  const environment = readyEnvironment();
+  delete environment.MANGAI_STAGING_PENDING_ORDER_ID;
+  delete environment.MANGAI_STAGING_PAID_ORDER_ID;
+  delete environment.MANGAI_STAGING_STRIPE_WEBHOOK_ENDPOINT_ID;
+  environment.MANGAI_STAGING_PREVIEW_URL = "https://app.mang-ai.com";
+
+  assert.throws(
+    () => resolveMarketplaceFailureRefundEnvironment(environment),
+    /branch Vercel deployment/,
+  );
+});
+
 test("preflightはStaging注文とStripe test PaymentIntentを読むだけである", async () => {
   const { calls, fetchFn } = createHarness();
   const report = await runMarketplaceFailureRefundAcceptance({
@@ -157,6 +191,76 @@ test("preflightはStaging注文とStripe test PaymentIntentを読むだけであ
     ).url.searchParams.get("expand[]"),
     "latest_charge",
   );
+});
+
+test("selector未指定時は唯一のpending・paid注文とtest endpointを自動選択する", async () => {
+  const environment = readyEnvironment();
+  delete environment.MANGAI_STAGING_PENDING_ORDER_ID;
+  delete environment.MANGAI_STAGING_PAID_ORDER_ID;
+  delete environment.MANGAI_STAGING_STRIPE_WEBHOOK_ENDPOINT_ID;
+  const { calls, fetchFn } = createHarness();
+
+  const report = await runMarketplaceFailureRefundAcceptance({
+    environment,
+    fetchFn,
+    operation: "preflight",
+  });
+
+  assert.ok(Object.values(report.checks).every(Boolean));
+  assert.equal(calls.length, 4);
+  assert.ok(calls.every(({ method }) => method === "GET"));
+  assert.ok(
+    calls.some(
+      ({ url }) =>
+        url.pathname === "/rest/v1/orders" &&
+        url.searchParams.get("status") === "eq.pending",
+    ),
+  );
+  assert.ok(
+    calls.some(
+      ({ url }) =>
+        url.pathname === "/rest/v1/orders" &&
+        url.searchParams.get("status") === "eq.paid",
+    ),
+  );
+  assert.ok(
+    calls.some(
+      ({ url }) =>
+        url.pathname === "/v1/webhook_endpoints" &&
+        url.searchParams.get("limit") === "100",
+    ),
+  );
+});
+
+test("自動選択候補が複数なら外部更新前に停止する", async () => {
+  const environment = readyEnvironment();
+  delete environment.MANGAI_STAGING_PENDING_ORDER_ID;
+  const harness = createHarness();
+  const fetchFn = async (input, init = {}) => {
+    const url = new URL(input);
+    if (
+      url.pathname === "/rest/v1/orders" &&
+      url.searchParams.get("status") === "eq.pending"
+    )
+      return json([
+        order({ id: pendingOrderId, status: "pending" }),
+        order({
+          id: "66666666-6666-4666-8666-666666666666",
+          status: "pending",
+        }),
+      ]);
+    return harness.fetchFn(input, init);
+  };
+
+  await assert.rejects(
+    runMarketplaceFailureRefundAcceptance({
+      environment,
+      fetchFn,
+      operation: "preflight",
+    }),
+    /exactly one pending staging test order/,
+  );
+  assert.ok(harness.calls.every(({ method }) => method === "GET"));
 });
 
 test("Stripe自身がPreviewへ配送したpayment_intent.payment_failedでfailedを確認する", async () => {
