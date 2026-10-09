@@ -4,6 +4,7 @@
 
 - 状態: `E04_PASS / E05_PASS / E06_ANONYMOUS_GUARD_PASS_AUTHENTICATED_OTHER_BUYER_PENDING / FIXTURE_RESTORED`
 - Branch: `codex/marketplace-staging-access-guards-20261009`
+- Draft PR: [#631](https://github.com/team478a/manga/pull/631)
 - PR #630 merge commit `6efe1ec512c0d4a8048afdd2c309f159e354e0f5`を基準ブランチで確認し、最新`origin/feature/manga-canvas-mvp`から分離して開始した。
 - 隔離Previewの合成paid／test注文に紐づく作品と商品だけを対象に、商品を一時`paused`、作品を一時非公開へ変更して実画面の拒否を確認した。商品は購入画面404、公開作品ページから購入導線消失。非公開作品は直接URLで404相当となり作品情報を返さなかった。
 - 変更は条件付きPATCHと`finally`で復元し、終了時に商品`active`、作品公開、paid注文status／payment mode／download count不変を再確認した。匿名の購入file直接取得も拒否された。

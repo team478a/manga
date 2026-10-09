@@ -2,7 +2,7 @@
 
 ## 2026-10-09 Codex: Marketplace隔離Preview access guard E2E
 
-- Branch `codex/marketplace-staging-access-guards-20261009`。PR #630 merge commit `6efe1ec512c0d4a8048afdd2c309f159e354e0f5`から開始した。
+- Branch `codex/marketplace-staging-access-guards-20261009`、Draft PR [#631](https://github.com/team478a/manga/pull/631)。PR #630 merge commit `6efe1ec512c0d4a8048afdd2c309f159e354e0f5`から開始した。
 - 隔離Preview限定で合成商品を一時`paused`、合成作品を一時非公開にし、購入画面404、作品ページから商品導線消失、非公開作品の直接URL拒否を確認した。E-04とE-05をPASSとした。
 - 匿名のpaid注文download直接URLは拒否され、download count不変。認証済み別Buyerの拒否は未実施のためE-06はBLOCKEDを維持する。
 - 条件付きPATCHと`finally`復元を持つ`marketplace:staging:access-guards`を追加し、実行後に商品`active`、作品公開、注文不変を再確認した。
