@@ -1,5 +1,20 @@
 # MANGAI Current Task
 
+## 2026-10-09 外部作品持ち込み出品 Gap Analysis
+
+- 状態: `ANALYSIS_COMPLETE / DESIGN_ONLY / PRODUCTION_NOT_CHANGED`
+- Branch: `codex/external-seller-gap-analysis-20261009`
+- Base: `origin/feature/manga-canvas-mvp`@`8032a06a2a113508ec2e18de249689053f226340`
+- 手動作品・商品登録、Cloud import／asset、固定版Publication、Reader、Checkout、購入権限、管理画面、売上表示、Storage／RLSを最新コードから読み取り専用で調査した。
+- 既存の作品・商品・決済・本棚・Readerは再利用できる。一方、PDF／ZIP／複数画像の安全な本文取り込み、ページ順、権利申告、Marketplace審査、管理者強制停止、精算は未実装。
+- 現行の手動登録には、完成版Publicationと審査を経ずに公開・active化できる経路がある。外部出品は隔離upload、検証済み固定版、審査承認をDBで必須にするfail-closedな別フローとする。
+- 推奨MVPは招待制・一般向け・100ページ以下・1作品1商品・管理者審査あり・送金機能なし。P0実装は概算30〜50実装日。
+- 関連61/61、Hub 1262/1262、Canvas 26/26、AI 50/50、Desktop 407/407、migration 96/96、型検査、lint、依存境界、Hub／Desktop build、diff check成功。
+- Production、DB、Storage、公開、販売、注文、決済、Provider、credit、成人向けMarketplaceは変更していない。
+- 詳細: `docs/marketplace/EXTERNAL_SELLER_GAP_ANALYSIS.md`
+
+---
+
 ## 2026-10-08 Cloud制作 ステップ別動画マニュアル
 
 - 状態: `IMPLEMENTED / 8_VIDEOS_RENDERED / FULL_TESTS_PASSED / PRODUCTION_NOT_CHANGED`
