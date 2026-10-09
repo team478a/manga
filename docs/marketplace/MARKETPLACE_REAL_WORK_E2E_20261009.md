@@ -2,7 +2,16 @@
 
 作成日: 2026-10-09  
 対象: `feature/manga-canvas-mvp`  
-状態: `PREPARED / STAGING_SAFETY_GATE_BLOCKED / RUNTIME_NOT_STARTED`
+状態: `STAGING_READY / FIXTURE_READY / PUBLIC_LIST_SMOKE_PASS / AUTHENTICATED_E2E_NOT_STARTED`
+
+### 2026-10-09 隔離Preview実行準備の結果
+
+- strict preflightはSupabase isolation、Checkout test mode、Stripe test credentialsの3/3が`READY`。
+- Stripe test webhookの実配送はHTTP 200。Stripe live request、実決済、注文作成は0件。
+- Preview Branchだけへ必要な12 migrationを適用し、再dry-runでup to dateを確認した。Production DBは変更していない。
+- 合成Seller／Buyer／未購入者、一般向け非公開2ページ作品、release checkpoint、固定Publication、paused 100円商品、注文0件を準備した。fixture監査は8/8 `READY`、再実行も同結果で冪等。
+- Vercel Previewのanon key不一致を修正して再deployした。`/works`は読込エラーから正常な「0件／公開作品はまだありません」へ復旧した。
+- 認証済みSeller／Buyer操作、公開、販売開始、Stripe test決済、Reader、download、異常系はまだ開始していない。Production、公開作品、販売、Provider、creditは変更していない。
 
 ### 2026-10-09 外部設定の再監査
 
@@ -18,15 +27,11 @@ preflightは今後、値を表示せずに`Preview:`／`Production:`付きで不
 
 ## 1. 結論
 
-Marketplace実作品E2Eの実行項目、証跡、停止条件を固定しました。Repository上のSeller、Buyer、Checkout、Reader、あとで読む、続きから読む、購入ファイル取得に関する集中テストは72/72成功しています。加えて、実E2E開始前の対象fixtureだけをGETで監査するscriptを追加し、単体テスト5/5が成功しました。
+Marketplace実作品E2Eの実行項目、証跡、停止条件を固定しました。Repository上のSeller、Buyer、Checkout、Reader、あとで読む、続きから読む、購入ファイル取得に関する集中テストは72/72成功しています。実E2E開始前の対象fixtureだけをGETで監査するscriptに加え、隔離Preview専用の冪等provisionerを追加しました。
 
-一方、Vercel Previewを用いたread-only preflightでは、次の3条件がすべて`PENDING`でした。
+Vercel PreviewはProductionと分離されたSupabase Branch、Checkout `test`、Stripe test資格情報の3条件を満たし、strict preflightは3/3 `READY`です。必要なmigrationと合成fixtureの準備も完了し、fixture監査は8/8 `READY`です。
 
-1. Productionと分離されたPreview Supabase。
-2. Previewだけが`test`となるCheckout mode。
-3. Stripe test Secret、Webhook Secret、Cancel Secret。
-
-したがって、実作品の登録、公開、販売開始、注文作成、Stripe test決済、Reader進捗保存は実施していません。Production PreviewがProduction DBへ接続している可能性を排除できない状態で、E2E用mutationを行わないためのfail-closed判定です。
+公開作品一覧の匿名smokeは正常空状態まで確認しました。認証済みSeller／Buyer E2E、公開、販売開始、注文作成、Stripe test決済、Reader進捗保存は未実施です。Production、Stripe live、実利用者データには触れていません。
 
 ## 2. 環境preflight
 
@@ -38,11 +43,11 @@ npm run marketplace:staging:preflight
 
 | 安全条件 | 結果 | 不足 |
 | --- | --- | --- |
-| Preview Supabase isolation | BLOCKED | PreviewとProductionで異なるURL、anon key、service-role key、およびStaging／親Project refの一致確認 |
-| Marketplace checkout mode | BLOCKED | Preview=`test`、Production=`test`以外 |
-| Stripe test credentials | BLOCKED | Preview限定test Secret、Webhook Secret、Cancel Secret |
+| Preview Supabase isolation | READY | Preview Branchと親Production refを分離し、URL／anon／service-roleを対象Branchへ限定 |
+| Marketplace checkout mode | READY | Preview=`test`。Production targetは変更なし |
+| Stripe test credentials | READY | Preview限定test Secret、Webhook Secret、Cancel Secret。test webhook HTTP 200 |
 
-設定値と秘密値は表示・文書化していません。preflightはProduction mutation、Stripe request、Payment作成を行っていません。
+設定値と秘密値は表示・文書化していません。preflight自体はProduction mutation、Stripe request、Payment作成を行いません。test webhookの配送確認はPreview endpointに対して1件だけ実施しました。
 
 実作品fixture監査コマンド:
 
@@ -82,12 +87,12 @@ Productionの既存非公開2ページ作品をStagingへ複製する場合は�
 
 | ID | 検証 | 状態 | 現在の証跡／未実施理由 |
 | --- | --- | --- | --- |
-| S-01 | 完成作品の確認 | BLOCKED | 隔離Stagingと対象作品が未確定 |
-| S-02 | 完成版Publicationの確認 | BLOCKED | 隔離Stagingと対象作品が未確定 |
-| S-03 | 販売用下書きの確認 | BLOCKED | 隔離Stagingと対象作品が未確定 |
-| S-04 | 表紙・タイトル・説明の確認 | BLOCKED | 実作品画面未確認 |
-| S-05 | 販売価格の確認 | BLOCKED | 実商品画面未確認 |
-| S-06 | 試し読みページの設定 | BLOCKED | Staging mutationを開始していない |
+| S-01 | 完成作品の確認 | NOT_RUN | fixture監査READY。Seller画面ログイン前 |
+| S-02 | 完成版Publicationの確認 | NOT_RUN | fixture監査READY。Seller画面ログイン前 |
+| S-03 | 販売用下書きの確認 | NOT_RUN | paused商品準備済み。Seller画面ログイン前 |
+| S-04 | 表紙・タイトル・説明の確認 | NOT_RUN | fixture準備済み。実画面未確認 |
+| S-05 | 販売価格の確認 | NOT_RUN | 100円fixture準備済み。実画面未確認 |
+| S-06 | 試し読みページの設定 | NOT_RUN | 1ページsample準備済み。実画面未確認 |
 | S-07 | 作品公開 | NOT_RUN | Staging安全Gate通過後に限る |
 | S-08 | 商品販売開始 | NOT_RUN | Staging安全Gate通過後に限る |
 | S-09 | Marketplaceへの掲載 | NOT_RUN | S-07、S-08成功後に実施 |
@@ -98,10 +103,10 @@ Productionの既存非公開2ページ作品をStagingへ複製する場合は�
 | --- | --- | --- | --- |
 | B-01 | Marketplaceで作品を探す | BLOCKED | 掲載対象がない |
 | B-02 | 作品詳細を開く | BLOCKED | 掲載対象がない |
-| B-03 | あとで読むに追加 | BLOCKED | Buyerログインと隔離DBが未準備 |
-| B-04 | 試し読み | BLOCKED | sample Publication未準備 |
-| B-05 | 購入画面へ進む | BLOCKED | Stripe test mode未準備 |
-| B-06 | Stripe test決済を完了 | NOT_RUN | test資格情報とWebhook未準備 |
+| B-03 | あとで読むに追加 | BLOCKED | Buyer未ログイン、作品未掲載 |
+| B-04 | 試し読み | BLOCKED | sampleは準備済みだが作品未掲載 |
+| B-05 | 購入画面へ進む | BLOCKED | Stripe test modeはREADY、商品未販売 |
+| B-06 | Stripe test決済を完了 | NOT_RUN | test資格情報とWebhookはREADY、商品未販売 |
 | B-07 | 本棚へ追加 | BLOCKED | paid test注文がない |
 | B-08 | Readerで本編を読む | BLOCKED | paid test注文がない |
 | B-09 | 途中で閲覧終了 | BLOCKED | Readerを開始していない |
@@ -205,10 +210,10 @@ Productionでの一般公開、販売開始、Stripe live決済、返金、送�
 
 1. 完了: Preview限定のisolated Supabase接続を設定した。
 2. 完了: Preview限定でCheckout modeを`test`にした。
-3. Preview限定のStripe test資格情報とWebhookを設定する。
+3. 完了: Preview限定のStripe test資格情報とWebhookを設定し、HTTP 200を確認した。
 4. 完了: Previewを再deployし、実行時設定が新しいdeploymentへ反映されたことを確認した。
-5. Staging用のSeller、Buyer、未購入者と非公開2ページ完成作品を用意する。
-6. strict preflightとfixture監査の両方が成功した後、この文書のS-01から実E2Eを開始する。
+5. 完了: Staging用のSeller、Buyer、未購入者と非公開2ページ完成作品を用意した。
+6. 完了: strict preflight 3/3、fixture監査8/8を成功させた。次はこの文書のS-01から認証済み実E2Eを開始する。
 
 ### 12.1 2026-10-09 Preview設定結果
 
@@ -216,7 +221,7 @@ Productionでの一般公開、販売開始、Stripe live決済、返金、送�
 - Supabase URL、anon key、service-role key、Preview／親ref、`MANGAI_DB_ENV=staging`、Checkout mode `test`の7件はVercel Preview専用で、git branch限定なし。
 - anon／service-role JWTは値を出力せず、roleとproject refだけを対象Branchと照合した。
 - Vercel Production、Production DB／Storage、Stripe、Webhook、fixture、注文、決済、公開・販売は変更していない。
-- runtime preflightはCheckout mode `READY`、Stripe test `PENDING`。Sensitive service-roleをCLIから再取得しないため、値比較を伴うSupabase isolation表示は`PENDING`を維持するが、設定名不足は0件である。
+- strict runtime preflightはSupabase isolation、Checkout mode、Stripe test credentialsの3/3が`READY`。Sensitive値を取得できない場合はPreview限定metadataで判定し、明示的なlive keyは拒否する。
 - PR #629のPreview deploymentは`Ready`で、Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功した。
 
 これらは外部設定またはStagingデータ変更を伴うため、対象環境と変更内容を示した実行時承認後に行います。

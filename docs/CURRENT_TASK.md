@@ -1,15 +1,16 @@
 # MANGAI Current Task
 
-## 2026-10-09 Marketplace隔離Preview環境設定
+## 2026-10-09 Marketplace隔離Preview E2E準備
 
-- 状態: `SUPABASE_PREVIEW_CONFIGURED / CHECKOUT_TEST_CONFIGURED / STRIPE_TEST_PENDING / RUNTIME_NOT_STARTED`
+- 状態: `PREFLIGHT_READY / FIXTURE_READY / PUBLIC_LIST_SMOKE_PASS / AUTHENTICATED_E2E_NOT_STARTED`
 - Branch: `codex/marketplace-staging-fixture-readiness-20261009`
-- 責任者の明示承認に基づき、Supabase Preview Branch `marketplace-e2e-20261009`のURL、anon key、service-role key、Preview／親Production ref、`MANGAI_DB_ENV=staging`、Checkout mode `test`をlinked Vercel project `mangai-hub-staging`のPreview環境だけへ設定した。
-- anon／service-role JWTは値を出力せず、roleとproject refが対象Preview Branchへ一致することを確認した。Vercel metadataでは7設定すべてが`target=preview`、branch限定なしで、service-roleだけSensitive、公開設定6件は取得可能なConfigとして存在する。Production環境変数は変更していない。
-- runtime preflightはCheckout modeが`READY`。Supabase設定名の不足は解消したが、Sensitive service-role値をVercel CLIから再取得しない安全契約のため、値比較を伴う隔離判定は`PENDING`表示を維持する。設定時のJWT ref／role照合とPreview限定metadataは成功している。
-- Stripe test Secret Key、Webhook Secret、Cancel Secretは未設定で、Stripe test資格情報は`PENDING`。PR #629のPreview deploymentは7設定を取り込んで`Ready`となった。Staging fixture、Webhook、Checkout、Payment、注文、公開・販売は開始していない。
-- Production DB／Storage／Vercel Production、Stripe live、実利用者データ、Provider、生成Job、credit、成人向けMarketplaceは変更していない。Supabase Preview computeは`$0.01344/hour`で継続中。
-- 集中9/9、diff check、Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsは成功。次はStripe test設定とPreview webhookを対象・停止条件付きで別承認し、strict preflightとfixture監査を実行する。
+- Preview限定のSupabase接続、Checkout `test`、Stripe test Secret／Webhook／Cancel Secretを設定し、test webhookの実配送HTTP 200を確認した。秘密値は表示・記録していない。
+- strict preflightは3/3 `READY`。Sensitive値を取得できないVercel Preview metadataを安全に扱い、明示的なlive keyを拒否する回帰テストを追加した。
+- Preview BranchだけへMarketplace系12 migrationを適用し、再dry-runでup to dateを確認した。Production DB／Vercel Production／Stripe liveは未変更。
+- 冪等provisionerで合成3アカウント、非公開一般向け2ページ完成作品、release checkpoint、固定Publication、paused 100円商品、注文0件を準備し、fixture監査8/8 `READY`。実利用者データ、公開、販売開始、決済、Provider、creditは未変更。
+- PreviewのSupabase anon keyが対象Branchと不一致だったため、Preview限定で修正して再deployした。`/works`は読込エラーから正常な0件空状態へ復旧した。
+- 集中15/15、対象ESLint、strict preflight、fixture冪等監査、diff checkが成功。e2e runnerはローカルNode `22.15.0`が必要最小版未満のため未使用で、既存Chromeで手動E2Eを進める。
+- 次: 合成アカウントでS-01から認証済み画面E2Eを開始する。資格情報をPreviewログインへ送信する直前にComputer Use確認を取得する。PR: [#629](https://github.com/team478a/manga/pull/629)。
 
 ---
 

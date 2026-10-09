@@ -1,5 +1,16 @@
 # MANGAI AI Handoff Log
 
+## 2026-10-09 Codex: Marketplace隔離Preview E2E準備
+
+- Branch `codex/marketplace-staging-fixture-readiness-20261009`、Draft PR [#629](https://github.com/team478a/manga/pull/629)。
+- Preview限定のSupabase／Checkout test／Stripe test設定、test webhook HTTP 200、strict preflight 3/3 READYを確認した。
+- Preview BranchだけへMarketplace系12 migrationを適用。合成3アカウント、非公開一般向け2ページ完成作品、固定Publication、paused 100円商品、注文0件を冪等に準備し、fixture監査8/8 READY。
+- Vercel Previewのanon key不一致を修正・再deployし、作品一覧の正常な0件空状態を確認した。
+- Production DB／Storage／Vercel Production、Stripe live、実利用者、公開・販売、注文・決済、Provider、creditは未変更。
+- 集中15/15、対象ESLint、strict preflight、fixture再監査、diff check成功。次は合成アカウントでS-01から認証済み画面E2Eを開始する。
+
+---
+
 ## 2026-10-09 Codex: Marketplace隔離Preview環境設定
 
 - Branch `codex/marketplace-staging-fixture-readiness-20261009`。Supabase Preview Branch `marketplace-e2e-20261009`は親Productionと異なるHealthy Branchとして作成済み。

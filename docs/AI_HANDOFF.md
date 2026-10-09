@@ -1,11 +1,13 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
-## 0.0 Marketplace隔離Preview環境設定（2026-10-09）
+## 0.0 Marketplace隔離Preview E2E準備（2026-10-09）
 
-- Supabase Preview Branch `marketplace-e2e-20261009`の接続3設定、Preview／親ref、`MANGAI_DB_ENV=staging`、Checkout mode `test`をVercel `mangai-hub-staging`のPreviewだけへ設定した。7件すべてPreview専用で、Production設定は変更していない。
-- anon／service-role JWTは値を記録せず、roleとproject refが対象Branchへ一致することを確認した。service-roleはSensitiveのまま、公開設定はConfigとして保持する。
-- Checkout modeは`READY`。PR #629のPreview deploymentは7設定を取り込んで`Ready`となり、全CI／Vercelも成功した。Stripe test Secret／Webhook／Cancel Secret、fixture、Stripe request、Payment、注文、公開・販売は未実施。
-- Production DB／Storage、Stripe live、実利用者、Provider、生成Job、creditは未変更。Preview computeは`$0.01344/hour`で継続中。次はStripe test設定を別承認し、strict preflightとfixture監査を行う。
+- Supabase Preview Branch `marketplace-e2e-20261009`とVercel Previewを分離接続した。Checkoutは`test`、Stripeはtest資格情報だけを設定し、test webhookの実配送がHTTP 200になった。秘密値は取得結果や文書へ記録していない。
+- strict preflightはSupabase isolation、Checkout mode、Stripe test credentialsの3/3が`READY`。VercelのSensitive値がCLIへ返らない場合も、Preview限定metadataを用いて安全に判定できるようにした。明示的なlive keyはmetadataがあっても拒否する。
+- Preview Branchへ不足していたMarketplace系12 migrationを適用し、再dry-runでup to dateを確認した。Production migrationは0件。
+- 隔離Previewに合成Seller／Buyer／未購入者、一般向け非公開2ページ作品、release checkpoint、固定Publication、paused 100円商品、注文0件を冪等に準備した。fixture監査は8/8 `READY`。Production、公開、販売開始、決済、Provider、creditは未変更。
+- Preview作品一覧でSupabase anon key不一致による読込エラーを発見し、Preview限定の正しいkeyへ更新して再deployした。再確認では「0件／公開作品はまだありません」の正常空状態を表示した。
+- 次は合成アカウントでS-01から画面E2Eを開始する。ログイン資格情報をブラウザへ送信する直前に、Computer Useの確認を得る。PRは[#629](https://github.com/team478a/manga/pull/629)。
 
 ---
 

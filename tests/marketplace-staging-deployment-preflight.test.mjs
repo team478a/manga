@@ -148,16 +148,26 @@ test("Sensitive値をpullできない場合はtarget限定metadataと明示ref�
   delete input.productionEnvironment.NEXT_PUBLIC_SUPABASE_URL;
   delete input.productionEnvironment.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   delete input.productionEnvironment.SUPABASE_SERVICE_ROLE_KEY;
+  delete input.previewEnvironment.SUPABASE_SERVICE_ROLE_KEY;
+  delete input.previewEnvironment.STRIPE_SECRET_KEY;
   delete input.previewEnvironment.STRIPE_WEBHOOK_SECRET;
+  delete input.previewEnvironment.CHECKOUT_CANCEL_SECRET;
   input.previewMetadata = [
     ...targetScopedMetadata("preview", [
       "NEXT_PUBLIC_SUPABASE_URL",
       "NEXT_PUBLIC_SUPABASE_ANON_KEY",
       "SUPABASE_SERVICE_ROLE_KEY",
     ]),
+    ...targetScopedMetadata("preview", [
+      "SUPABASE_SERVICE_ROLE_KEY",
+    ]),
     ...targetScopedMetadata(
       "preview",
-      ["STRIPE_WEBHOOK_SECRET"],
+      [
+        "STRIPE_SECRET_KEY",
+        "STRIPE_WEBHOOK_SECRET",
+        "CHECKOUT_CANCEL_SECRET",
+      ],
       "sensitive",
     ),
   ];
@@ -178,13 +188,19 @@ test("共有scopeのmetadataや通常型WebhookはSensitive値の代替にしな
   delete input.productionEnvironment.NEXT_PUBLIC_SUPABASE_URL;
   delete input.productionEnvironment.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   delete input.productionEnvironment.SUPABASE_SERVICE_ROLE_KEY;
+  delete input.previewEnvironment.STRIPE_SECRET_KEY;
   delete input.previewEnvironment.STRIPE_WEBHOOK_SECRET;
+  delete input.previewEnvironment.CHECKOUT_CANCEL_SECRET;
   input.previewMetadata = [
     ...["NEXT_PUBLIC_SUPABASE_URL", "NEXT_PUBLIC_SUPABASE_ANON_KEY"].map(
       (key) => ({ key, type: "encrypted", target: ["production", "preview"] }),
     ),
     ...targetScopedMetadata("preview", ["SUPABASE_SERVICE_ROLE_KEY"]),
-    ...targetScopedMetadata("preview", ["STRIPE_WEBHOOK_SECRET"]),
+    ...targetScopedMetadata("preview", [
+      "STRIPE_SECRET_KEY",
+      "STRIPE_WEBHOOK_SECRET",
+      "CHECKOUT_CANCEL_SECRET",
+    ]),
   ];
   input.productionMetadata = targetScopedMetadata("production", [
     "NEXT_PUBLIC_SUPABASE_URL",
@@ -199,6 +215,24 @@ test("共有scopeのmetadataや通常型WebhookはSensitive値の代替にしな
     report.checks.find((check) => check.id === "supabase-isolation").ready,
     false,
   );
+  assert.equal(
+    report.checks.find((check) => check.id === "stripe-test").ready,
+    false,
+  );
+});
+
+test("取得できたlive keyをSensitive metadataでtest扱いにしない", () => {
+  const input = readyEnvironments();
+  input.previewEnvironment.STRIPE_SECRET_KEY = fakeLiveSecret;
+  input.previewMetadata = targetScopedMetadata(
+    "preview",
+    ["STRIPE_SECRET_KEY"],
+    "sensitive",
+  );
+
+  const report = assessMarketplaceStagingDeployment(input);
+
+  assert.equal(report.passed, false);
   assert.equal(
     report.checks.find((check) => check.id === "stripe-test").ready,
     false,
