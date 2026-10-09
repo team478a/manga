@@ -1,5 +1,16 @@
 # MANGAI AI Handoff Log
 
+## 2026-10-09 Codex: Marketplace隔離Preview mobile E2E
+
+- Branch `codex/marketplace-staging-mobile-e2e-20261009`。PR #631 merge commit `337ad72eb978a1ee92276baa7311ceddf5b86688`から開始した。
+- Chrome実ブラウザを390x844に固定し、隔離Previewの合成BuyerでHome、検索、作品詳細、あとで読む、本棚、Reader、読書位置復帰、購入準備までを確認した。Home／一覧／詳細／あとで読む／本棚／Reader／Checkoutのdocument横overflowは0件。
+- Readerは既存進捗の2/2ページから再開し、1/2ページへ移動、本棚へ戻った後も`?page=1`で同じ位置へ復帰した。E-09をPASSとした。
+- 購入準備画面の税込100円、Stripe test、実請求なし表示まで確認し、購入確定ボタンは押していない。Production、Stripe request、Payment、注文、download、実利用者、Provider、creditの変更は0件。隔離Previewの合成Buyer読書進捗だけが1ページ目になった。
+- Marketplace UI／mobile navigation／Buyer導線の集中テスト32/32と`git diff --check`が成功した。
+- 次はE-06の認証済み別Buyer拒否。資格情報をPreviewへ送信する直前にaction-time確認を取得し、その後E-01〜E-03を別工程で扱う。
+
+---
+
 ## 2026-10-09 Codex: Marketplace隔離Preview access guard E2E
 
 - Branch `codex/marketplace-staging-access-guards-20261009`、Draft PR [#631](https://github.com/team478a/manga/pull/631)。PR #630 merge commit `6efe1ec512c0d4a8048afdd2c309f159e354e0f5`から開始した。
