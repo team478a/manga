@@ -1,5 +1,17 @@
 # MANGAI Current Task
 
+## 2026-10-09 Marketplace実作品E2E fixture監査
+
+- 状態: `IMPLEMENTED / UNIT_TESTS_PASSED / EXTERNAL_STAGING_SETTINGS_BLOCKED / RUNTIME_NOT_STARTED`
+- Branch: `codex/marketplace-real-work-e2e-20261009`
+- Phase Bの実操作を始める前に、隔離StagingのSeller、Buyer、未購入者、非公開2ページ完成作品、固定Publication、release checkpoint、paused商品、注文0件を対象ID限定のGETだけで監査するscriptを追加した。
+- 氏名、メール、作品名、Storage path、内部IDは報告へ出さず、Storage object取得、DB mutation、Stripe request、決済、Production接続を行わない。Production指定、同一Supabase ref、主体重複はfail closedで拒否する。
+- 追加単体5/5、Marketplace全183/183、Hub全1267/1267、Hub／Desktop型検査、全lint、migration 96件検証、依存境界、Production build、diff checkが成功。既存Preview preflightはSupabase分離、Checkout test mode、Stripe test資格情報の3条件がPENDINGのため、実作品E2Eは開始していない。
+- 次: 外部設定後に`marketplace:staging:preflight:strict`と`marketplace:staging:fixture:audit`を成功させ、S-01から実E2Eを開始する。
+- 詳細: `docs/marketplace/MARKETPLACE_REAL_WORK_E2E_20261009.md`
+
+---
+
 ## 2026-10-08 Cloud制作 ステップ別動画マニュアル
 
 - 状態: `IMPLEMENTED / 8_VIDEOS_RENDERED / FULL_TESTS_PASSED / PRODUCTION_NOT_CHANGED`
