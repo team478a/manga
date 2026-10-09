@@ -71,8 +71,10 @@ Schedulerを実行する前にProduction側で次を確認します。
 ## 停止・復旧
 
 通常停止はRepository variableを`false`または未設定にします。即時停止が必要な場合はVercelの
-`MANGAI_CLOUD_EXPORT_WORKER_ENABLED=false`を先に設定します。既存Jobは削除されず、`queued`または
-lease切れ後の`running`として再開できます。
+`MANGAI_CLOUD_EXPORT_WORKER_ENABLED=false`を設定し、その値を反映するProduction redeployを実施します。
+Vercel環境変数の変更だけでは既存deploymentへ反映されません。既存Jobは削除されず、`queued`または
+lease切れ後の`running`として再開できます。設定変更、redeploy、Job再開はいずれも実行時の明示承認を
+得てから行います。
 
 失敗時は同一workflow内で再試行しません。次回scheduled実行でDBの`max_attempts`範囲内だけ再claim
 されます。最大試行後は`failed`となり、利用者の明示的な「失敗箇所から再開」を待ちます。

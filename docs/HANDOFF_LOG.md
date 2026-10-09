@@ -1,5 +1,19 @@
 # MANGAI AI Handoff Log
 
+## 2026-10-09 Codex: PDF Export Production受入れ準備
+
+- 最新`origin/feature/manga-canvas-mvp`から`codex/pdf-export-production-acceptance-20261009`を作成し、PR #623／#624のmergeと全check成功を再確認した。
+- GitHub Actionsの設定名だけをread-only監査した。Export用Repository VariableとActions Secret 2件は未設定で、scheduled run 8件はすべて`skipped`。Production処理は起動していない。
+- Vercel Productionは`Ready`で、Worker／Supabase関連の必要設定名は存在した。秘密値を取得・表示・記録せず、値の正当性とSecret一致は未確認のまま扱う。Worker endpointは認証なしPOSTをDB処理前に`401`で拒否した。
+- 既存2ページJobのlive状態はブラウザー接続を確立できず未照会。過去記録を現在値として流用せず、受入れ直前のread-only SQLを必須Gateにした。
+- Schedulerは1 workflow最大3 segmentで、2ページJob完了後に別Jobもclaimし得る。このため、claim可能Jobが対象1件だけでない場合はcanaryを開始しない停止条件を追加した。
+- `docs/cloud/CLOUD_EXPORT_PRODUCTION_ACCEPTANCE_PLAN.md`を作成し、設定状況、不足設定、状態遷移、停止条件、rollback、Production影響、承認事項を記録した。`docs/cloud/CLOUD_EXPORT_WORKER_SCHEDULER.md`の緊急停止手順へProduction redeploy要件を追記した。
+- Scheduler無効時preflight、Export集中24/24、Hub 1262/1262、Canvas 26/26、AI 50/50、migration静的96/96、Desktop単独407/407、Desktop a11y違反0、Hub／Desktop build、型検査、lint、依存境界error 0（既知warning 2）を確認した。Desktop初回はHub buildとの同時実行で1件timeoutし、単独再実行では407/407成功した。
+- RC preflightはrepository structure `READY`。Staging／Stripe等の外部資格情報はローカル未設定のため、外部設定と手動E2Eは`PENDING`として残した。
+- Production DB、Vercel環境変数、GitHub Secret／Variable、Scheduler、Job、Storage、作品、Marketplace、決済、Provider、creditは変更していない。
+
+---
+
 ## 2026-10-08 Codex: Cloud制作 ステップ別動画マニュアル
 
 - 購入者の「最初から実画面に沿って、ステップごとに見たい」という報告に対応し、市場分析から収益管理までを8本の独立動画へ分割した。

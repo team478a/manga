@@ -1,5 +1,21 @@
 # MANGAI Current Task
 
+## 2026-10-09 PDF Export Production受入れ準備
+
+- 状態: `PLAN_COMPLETE / PRODUCTION_CHANGE_NOT_STARTED / LIVE_JOB_RECHECK_REQUIRED`
+- Branch: `codex/pdf-export-production-acceptance-20261009`
+- Base: `origin/feature/manga-canvas-mvp`@`8032a06a2a113508ec2e18de249689053f226340`
+- PR #623はmerge済み。GitHubのExport Scheduler workflowは存在し、定期実行履歴8件はVariable未設定のためすべて`skipped`。Export用GitHub Variable 1件とSecret 2件は未設定だった。
+- Vercel ProductionにはWorker有効化、Worker Secret、Worker ID、Supabase URL、Service Roleの設定名が存在し、deploymentは`Ready`。値は取得しておらず、有効値とGitHub Secret一致は未確認。Production endpointは資格情報なしPOSTを`401`で拒否した。
+- 手動canaryは最大3 segmentを連続処理できるため、実行直前にclaim可能Jobが対象の非公開2ページPDF 1件だけであることを必須Gateとした。
+- 既存2ページJobの現在状態はlive再照会が必要。過去の`queued 0/2`記録を現在状態とはみなさない。Production設定、Job、Storage、Schedulerは変更していない。
+- 停止手順を補正し、Vercel環境変数の緊急停止値を既存deploymentへ反映するにはProduction redeployが必要であることを明記した。
+- 検証: Scheduler無効時preflight成功、Export集中24/24、Hub 1262/1262、Canvas 26/26、AI 50/50、migration静的96/96、Desktop単独407/407、Desktop a11y違反0、Hub／Desktop build、型検査、lint、依存境界error 0（既知warning 2）成功。Desktop初回はHub buildとの同時実行で1件timeoutしたが、単独再実行で全件成功した。
+- RC preflightはrepository structure `READY`。ローカルにStaging／Stripe等の外部資格情報がないため外部設定と手動E2Eは`PENDING`で、Phase Bの成功とは扱わない。
+- 詳細: `docs/cloud/CLOUD_EXPORT_PRODUCTION_ACCEPTANCE_PLAN.md`
+
+---
+
 ## 2026-10-08 Cloud制作 ステップ別動画マニュアル
 
 - 状態: `IMPLEMENTED / 8_VIDEOS_RENDERED / FULL_TESTS_PASSED / PRODUCTION_NOT_CHANGED`
