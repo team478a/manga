@@ -1,5 +1,18 @@
 # MANGAI Current Task
 
+## 2026-10-09 Marketplace隔離Preview E-01決済失敗preflight改善
+
+- 状態: `E01_PREFLIGHT_AUTODISCOVERY_READY / EXTERNAL_EXECUTION_PENDING / PRODUCTION_UNCHANGED`
+- Branch: `codex/marketplace-staging-payment-failure-e2e-20261009`
+- PR #633 merge commit `53299f66`を基準ブランチで確認し、最新`origin/feature/manga-canvas-mvp`から分離して開始した。
+- `marketplace:staging:failure-refund`は、注文IDとStripe test webhook endpoint IDを省略した場合、pending／paidのtest注文と互換endpointが各1件だけ存在するときに限り自動選択する。0件または複数件なら外部更新前に停止する。
+- 非secretのbranch Preview URLだけは`--preview-url=`で明示できる。Production URL、live key、同一Supabase ref、複数候補は従来どおりfail closedで拒否する。
+- Preview設定名はSupabase分離、Checkout test、Stripe test、Webhook、Cancel secretを含めて存在する。ただしVercel CLIの`env run`は`SUPABASE_SERVICE_ROLE_KEY`を子processへ渡さないため、実Previewのread-only preflightは安全停止した。秘密値の回避取得は行っていない。
+- 集中8/8、決済関連9/9、Hub全1285/1285、Hub型検査、全lintが成功。Stripe request、Payment、注文、Webhook endpoint、Production、Provider、creditの変更は0件。
+- 次: ブラウザ操作が利用可能になったら、隔離Preview／Stripe testを再確認し、action-time承認後に拒否PaymentIntentを1件だけ実行してE-01を判定する。
+
+---
+
 ## 2026-10-09 Marketplace隔離Preview 認証済み別Buyer download E2E
 
 - 状態: `E06_PASS / TEMP_BUYER_REMOVED / PAID_ORDER_UNCHANGED / E01_E03_PENDING`

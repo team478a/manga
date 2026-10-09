@@ -1,5 +1,15 @@
 # MANGAI AI Handoff Log
 
+## 2026-10-09 Codex: Marketplace隔離Preview E-01決済失敗preflight改善
+
+- Branch `codex/marketplace-staging-payment-failure-e2e-20261009`。PR #633 merge commit `53299f66`から開始した。
+- failure/refund harnessの注文ID・Stripe test webhook endpoint IDを任意化し、各候補がちょうど1件の場合だけ自動選択するfail-closed preflightへ改善した。非secretのPreview URLはCLI引数で指定できる。
+- Preview設定名は揃っているが、Vercel CLIの`env run`では`SUPABASE_SERVICE_ROLE_KEY`が子processへ渡らず、実preflightは外部接続前に安全停止した。秘密値の取得・表示・保存・回避取得は行っていない。
+- 集中8/8、決済関連9/9、Hub全1285/1285、Hub型検査、全lint成功。Production、Stripe request、Payment、注文、Webhook endpoint、Provider、creditは未変更。
+- E-01は未実行。ブラウザ接続復旧後、隔離PreviewとStripe testを確認し、action-time承認後に拒否PaymentIntent 1件を実行する。
+
+---
+
 ## 2026-10-09 Codex: Marketplace隔離Preview 認証済み別Buyer download E2E
 
 - Branch `codex/marketplace-staging-other-buyer-e2e-20261009`。PR #632 merge commit `4ff9be4d`から開始した。

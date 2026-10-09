@@ -138,6 +138,8 @@ Productionの既存非公開2ページ作品をStagingへ複製する場合は�
 
 異常系用に合成未購入者の`pending`／`test`／100円注文を1件だけ隔離Previewへ準備しました。改ざんcancel tokenは拒否され、前後で注文状態は不変です。これはE-02の正規Checkout離脱とは別の認可境界証跡であり、E-02は未実施のままです。Failure／refundのread-only preflightは、VercelのSensitive値がCLIへ返らないため停止し、Secretの回避取得や外部操作は行っていません。
 
+E-01用のfailure/refund harnessは、注文IDとStripe test webhook endpoint IDが未指定の場合、pending／paidのtest注文と互換endpointが各1件だけ存在するときに限り自動選択するよう改善しました。0件・複数件、Production URL、live key、同一Supabase refでは外部更新前に停止します。Preview設定名は揃っていますが、Vercel CLIの`env run`では`SUPABASE_SERVICE_ROLE_KEY`が子processへ渡らないため、最新環境のread-only preflightは安全停止しました。秘密値の回避取得、Stripe request、Payment・注文・endpoint変更は行っていないため、E-01は引き続きBLOCKEDです。
+
 E-04／E-05はdeployment `dpl_GxV3w4jDFG54Eg4b4QKrM1JyeJ5c`に対し、`marketplace:staging:access-guards`で実施しました。実行前に隔離Supabase refと親Production refが異なること、Checkoutが`test`であること、paid注文が`test`であることをfail closedで確認しています。商品と作品は条件付きPATCHで一時変更し、失敗時を含む`finally`復元後に`active`／公開へ戻ったことを再読込しました。注文status、payment mode、download countは実行前後で不変でした。Stripe request、Payment作成、Production変更は0件です。
 
 E-06はdeployment `dpl_GxV3w4jDFG54Eg4b4QKrM1JyeJ5c`で確認しました。CLIへSensitive値が返らないためSecretの回避取得は行わず、責任者承認後に隔離Previewだけへ一時的な認証済み未購入Buyerを作成しました。Buyer Aのdownload URLへの直接アクセスは購入履歴へ`download_error=RESOURCE_NOT_FOUND`付きで戻り、本棚は0件でした。実行前後で対象注文は`paid`／`test`／download count 1のまま不変です。ログアウト後に一時Auth userを削除し、profileのcascade削除と対象注文不変を再確認しました。Production、Stripe request、Payment、Provider、creditの変更は0件です。
@@ -177,7 +179,15 @@ fixture監査の追加テスト:
 
 実行結果: `PASS 5 / FAIL 0 / SKIPPED 0`
 
-さらにMarketplace名を含む38 test fileを標準のTypeScript stripping付きで一括実行し、`PASS 183 / FAIL 0 / SKIPPED 0`でした。最新Hub全体は`PASS 1282 / FAIL 0 / SKIPPED 0`、Hub型検査、全lint、`git diff --check`も成功しています。既存のmigration 96件検証、依存境界、Production build、Desktop型検査も成功済みです。依存境界は既知warning 2件、新規error 0件です。
+E-01 failure/refund harnessの改善テスト:
+
+- selector未指定時は唯一のpending／paid test注文と互換test webhook endpointだけを自動選択。
+- 候補0件・複数件、Production URL、live key、不正endpointを外部更新前に拒否。
+- 明示selectorの従来契約、拒否PaymentIntent、全額返金、完了済み再実行の冪等性を維持。
+
+実行結果: `PASS 8 / FAIL 0 / SKIPPED 0`
+
+さらにMarketplace名を含む38 test fileを標準のTypeScript stripping付きで一括実行し、`PASS 183 / FAIL 0 / SKIPPED 0`でした。最新Hub全体は`PASS 1285 / FAIL 0 / SKIPPED 0`、Hub型検査、全lint、`git diff --check`も成功しています。既存のmigration 96件検証、依存境界、Production build、Desktop型検査も成功済みです。依存境界は既知warning 2件、新規error 0件です。
 
 これはコード上の契約確認であり、実作品E2EのPASSには数えません。
 
