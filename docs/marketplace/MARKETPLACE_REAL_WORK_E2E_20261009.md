@@ -125,9 +125,9 @@ Productionの既存非公開2ページ作品をStagingへ複製する場合は�
 | E-01 | 決済失敗 | BLOCKED | Stripe公式の拒否用test PaymentMethodだけを使用 |
 | E-02 | 決済処理中の離脱 | BLOCKED | Checkout cancelへ戻り、pending注文の再利用を確認 |
 | E-03 | 同一注文の重複通知 | BLOCKED | 同一test eventの再配送で状態と権限が重複しないことを確認 |
-| E-04 | 非公開作品への直接アクセス | BLOCKED | 未購入・非所有アカウントで404または拒否を確認 |
-| E-05 | 販売停止商品の購入防止 | BLOCKED | `paused`へ戻した後、Sessionを作成できないことを確認 |
-| E-06 | 他人の購入ファイルへのアクセス拒否 | BLOCKED | Buyer AのdownloadをBuyer Bが取得できないことを確認 |
+| E-04 | 非公開作品への直接アクセス | PASS | 隔離Previewで合成作品を一時的に非公開化し、匿名の直接URLが404相当（soft 404を含む）となり、作品名を返さないことを確認。直後に公開状態へ復元 |
+| E-05 | 販売停止商品の購入防止 | PASS | 合成商品を一時的に`paused`へ戻し、購入画面が404、公開作品ページから商品・Checkout導線が消えることを確認。Server Actionの既存集中テストで注文作成・Stripeより前のstatus再検査も確認し、直後に`active`へ復元 |
+| E-06 | 他人の購入ファイルへのアクセス拒否 | BLOCKED | 匿名のpaid注文download直接URLは拒否され、download countも不変。別の認証済みBuyerによる拒否は未実施 |
 | E-07 | Readerの権限確認 | PASS | Seller所有者は全2ページ、未購入Buyerはsample 1ページのみ、支払済みBuyerは全2ページを実画面確認 |
 | E-08 | PDF download失敗 | PASS | 新規5分署名URLは直後のRange取得に成功し、実時間失効後は同じURLの取得を拒否。元の購入fileと注文は変更なし |
 | E-09 | スマートフォン操作 | BLOCKED | 390x844相当で検索、詳細、試読、Checkout復帰、本棚、Readerを確認 |
@@ -135,6 +135,10 @@ Productionの既存非公開2ページ作品をStagingへ複製する場合は�
 過去のStaging決済失敗／返金E2E証跡は参考にしますが、2026-10-09の最新環境結果として流用しません。
 
 異常系用に合成未購入者の`pending`／`test`／100円注文を1件だけ隔離Previewへ準備しました。改ざんcancel tokenは拒否され、前後で注文状態は不変です。これはE-02の正規Checkout離脱とは別の認可境界証跡であり、E-02は未実施のままです。Failure／refundのread-only preflightは、VercelのSensitive値がCLIへ返らないため停止し、Secretの回避取得や外部操作は行っていません。
+
+E-04／E-05はdeployment `dpl_GxV3w4jDFG54Eg4b4QKrM1JyeJ5c`に対し、`marketplace:staging:access-guards`で実施しました。実行前に隔離Supabase refと親Production refが異なること、Checkoutが`test`であること、paid注文が`test`であることをfail closedで確認しています。商品と作品は条件付きPATCHで一時変更し、失敗時を含む`finally`復元後に`active`／公開へ戻ったことを再読込しました。注文status、payment mode、download countは実行前後で不変でした。Stripe request、Payment作成、Production変更は0件です。
+
+E-06は匿名主体の拒否だけを部分証跡とし、要件どおり「Buyer Aのfileを認証済みBuyer Bが取得できない」確認が済むまではPASSにしません。
 
 ## 7. Repository集中テスト
 
@@ -220,7 +224,8 @@ Productionでの一般公開、販売開始、Stripe live決済、返金、送�
 5. 完了: Staging用のSeller、Buyer、未購入者と非公開2ページ完成作品を用意した。
 6. 完了: strict preflight 3/3、fixture監査8/8、S-01〜S-09、B-01〜B-11、E-07を成功させた。
 7. 完了: E-08の新規5分署名URL即時取得と実時間失効後の取得拒否、改ざんcancel token拒否、注文不変を確認した。
-8. 次: E-01〜E-06、E-09を隔離Previewで実施する。正常系fixtureを壊す販売停止、拒否決済はそれぞれ独立したtest対象で行う。
+8. 完了: E-04非公開直接アクセスとE-05販売停止購入防止を隔離PreviewでPASS。匿名download拒否を部分確認し、fixtureを元の公開／active状態へ復元した。
+9. 次: E-01決済失敗、E-02正規Checkout離脱、E-03重複通知、E-06認証済み別Buyer、E-09スマートフォン操作を隔離Previewで実施する。
 
 ### 12.1 2026-10-09 Preview設定結果
 

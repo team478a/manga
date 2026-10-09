@@ -1,5 +1,16 @@
 # MANGAI AI Handoff Log
 
+## 2026-10-09 Codex: Marketplace隔離Preview access guard E2E
+
+- Branch `codex/marketplace-staging-access-guards-20261009`。PR #630 merge commit `6efe1ec512c0d4a8048afdd2c309f159e354e0f5`から開始した。
+- 隔離Preview限定で合成商品を一時`paused`、合成作品を一時非公開にし、購入画面404、作品ページから商品導線消失、非公開作品の直接URL拒否を確認した。E-04とE-05をPASSとした。
+- 匿名のpaid注文download直接URLは拒否され、download count不変。認証済み別Buyerの拒否は未実施のためE-06はBLOCKEDを維持する。
+- 条件付きPATCHと`finally`復元を持つ`marketplace:staging:access-guards`を追加し、実行後に商品`active`、作品公開、注文不変を再確認した。
+- 実環境6/6、集中28/28、Hub 1277/1277、依存境界、型検査、全lint、migration 96件、Production build、diff check成功。
+- Production、Stripe request、Payment、実利用者、Provider、creditは変更していない。次はE-06認証済み別Buyer、E-09 mobile、その後E-01〜E-03。
+
+---
+
 ## 2026-10-09 Codex: Marketplace隔離Preview 異常系E2E
 
 - PR #629のmerge commit `9f1d4f9a08060cbfaf1b2f011431db318f16e398`からBranch `codex/marketplace-staging-abnormal-e2e-20261009`を作成した。
