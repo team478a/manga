@@ -1,5 +1,18 @@
 # MANGAI AI Handoff Log
 
+## 2026-10-09 Codex: 外部作品持ち込み出品 Gap Analysis
+
+- 最新コードを正本として、手動Marketplace登録、Cloud固定版、Storage、Reader、Checkout、権限、管理、売上を読み取り専用で調査した。
+- 既存の`works`、`digital_products`、Checkout、購入権限、本棚、Reader、読書進捗、購入file取得は再利用可能。Cloud固定版はProject／Checkpoint必須のため、source種別を後方互換追加して外部submissionを参照できるよう一般化する案を採用した。
+- 外部出品に不足するP0は、隔離uploadと実体検証、PDF／ZIP展開、複数page順序、権利申告、seller eligibility、審査、固定版化、admin強制停止、審査済み公開gateである。
+- 現行の手動作品／商品は完成版・審査を迂回して公開／active化できるため、外部出品には使用せず、approved publication一致をDBと専用RPCで必須にする。
+- 推奨MVPは招待制、一般向け、100ページ以下、1作品1商品、管理者審査あり、精算・送金なし。概算P0は30〜50実装日。
+- 関連61/61、Hub 1262/1262、Canvas 26/26、AI 50/50、Desktop 407/407、migration 96/96、型検査、lint、依存境界、Hub／Desktop build、diff check成功。
+- 調査・設計のみ。Production、DB、Storage、公開、販売、決済、Provider、credit、成人向けMarketplaceの変更はない。
+- 詳細: `docs/marketplace/EXTERNAL_SELLER_GAP_ANALYSIS.md`
+
+---
+
 ## 2026-10-09 Codex: PDF Export Production受入れ準備
 
 - 最新`origin/feature/manga-canvas-mvp`から`codex/pdf-export-production-acceptance-20261009`を作成し、PR #623／#624のmergeと全check成功を再確認した。
