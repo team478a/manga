@@ -2,7 +2,7 @@
 
 作成日: 2026-10-09  
 対象: `feature/manga-canvas-mvp`  
-状態: `STAGING_READY / FIXTURE_READY / SELLER_S01_S09_PASS / BUYER_B01_B11_PASS / READER_E07_PASS / DOWNLOAD_E08_PASS / ABNORMAL_CASES_PENDING`
+状態: `STAGING_READY / FIXTURE_READY / SELLER_S01_S09_PASS / BUYER_B01_B11_PASS / READER_E07_PASS / DOWNLOAD_E08_PASS / MOBILE_E09_PASS / ABNORMAL_CASES_PENDING`
 
 ### 2026-10-09 隔離Preview実行準備の結果
 
@@ -15,6 +15,7 @@
 - 責任者のaction-time承認後、隔離PreviewでS-07〜S-09を実行してPASSとした。Marketplace一覧1件、作品詳細の税込100円テスト販売、売上管理の注文0件・売上0円を確認した。
 - 合成Buyerで検索、作品詳細、あとで読む、試し読み、購入準備を確認し、S-06とB-01〜B-05をPASSとした。未購入状態で2ページ目を直接指定してもサンプル1ページ目に制限された。
 - 責任者のaction-time承認後、Stripe Sandboxの100円テスト支払いを確定した。実請求なしの完了画面、注文1件の`paid`／`test`／100円遷移、本棚1冊、Reader全2ページ、2ページ目からの再開、購入履歴経由の2ページPDF downloadを確認し、B-06〜B-11をPASSとした。Seller所有者、未購入者sample-only、支払済みBuyerの3主体でE-07もPASS。Production、Stripe live、実利用者、Provider、creditは変更していない。
+- Chromeの実ブラウザを390x844 viewportに固定し、合成BuyerでHome、タイトル検索、作品詳細、あとで読む、本棚、Reader、読書位置の保存・復帰、購入準備画面までを確認した。全画面でdocumentの横overflowはなく、mobile navigationから主要導線へ遷移できた。購入確定ボタンは押しておらず、決済・注文・downloadは発生していない。E-09をPASSとした。
 
 ### 2026-10-09 外部設定の再監査
 
@@ -130,7 +131,7 @@ Productionの既存非公開2ページ作品をStagingへ複製する場合は�
 | E-06 | 他人の購入ファイルへのアクセス拒否 | BLOCKED | 匿名のpaid注文download直接URLは拒否され、download countも不変。別の認証済みBuyerによる拒否は未実施 |
 | E-07 | Readerの権限確認 | PASS | Seller所有者は全2ページ、未購入Buyerはsample 1ページのみ、支払済みBuyerは全2ページを実画面確認 |
 | E-08 | PDF download失敗 | PASS | 新規5分署名URLは直後のRange取得に成功し、実時間失効後は同じURLの取得を拒否。元の購入fileと注文は変更なし |
-| E-09 | スマートフォン操作 | BLOCKED | 390x844相当で検索、詳細、試読、Checkout復帰、本棚、Readerを確認 |
+| E-09 | スマートフォン操作 | PASS | Chrome実ブラウザを390x844に固定し、Home、検索、詳細、あとで読む、本棚、Reader、読書位置の保存・復帰、購入準備を確認。全画面で横overflowなし。購入確定は未実行 |
 
 過去のStaging決済失敗／返金E2E証跡は参考にしますが、2026-10-09の最新環境結果として流用しません。
 
@@ -139,6 +140,8 @@ Productionの既存非公開2ページ作品をStagingへ複製する場合は�
 E-04／E-05はdeployment `dpl_GxV3w4jDFG54Eg4b4QKrM1JyeJ5c`に対し、`marketplace:staging:access-guards`で実施しました。実行前に隔離Supabase refと親Production refが異なること、Checkoutが`test`であること、paid注文が`test`であることをfail closedで確認しています。商品と作品は条件付きPATCHで一時変更し、失敗時を含む`finally`復元後に`active`／公開へ戻ったことを再読込しました。注文status、payment mode、download countは実行前後で不変でした。Stripe request、Payment作成、Production変更は0件です。
 
 E-06は匿名主体の拒否だけを部分証跡とし、要件どおり「Buyer Aのfileを認証済みBuyer Bが取得できない」確認が済むまではPASSにしません。
+
+E-09は隔離Preview deployment `dpl_GxV3w4jDFG54Eg4b4QKrM1JyeJ5c`と合成Buyerを使用しました。viewportは390x844、Scrollbarを除くdocument client widthは375pxで、Home、作品一覧、作品詳細、本棚、Reader、あとで読む、購入準備の各画面に`scrollWidth > clientWidth`はありませんでした。Readerは開始時に前回の2/2ページへ復帰し、1/2ページへ移動後に本棚へ戻ると読書linkが`?page=1`を保持し、同じ1/2ページへ復帰しました。Checkoutは税込100円・Stripe test・実請求なし表示までを確認し、「テスト購入へ進む」は押していません。
 
 ## 7. Repository集中テスト
 
@@ -225,7 +228,8 @@ Productionでの一般公開、販売開始、Stripe live決済、返金、送�
 6. 完了: strict preflight 3/3、fixture監査8/8、S-01〜S-09、B-01〜B-11、E-07を成功させた。
 7. 完了: E-08の新規5分署名URL即時取得と実時間失効後の取得拒否、改ざんcancel token拒否、注文不変を確認した。
 8. 完了: E-04非公開直接アクセスとE-05販売停止購入防止を隔離PreviewでPASS。匿名download拒否を部分確認し、fixtureを元の公開／active状態へ復元した。
-9. 次: E-01決済失敗、E-02正規Checkout離脱、E-03重複通知、E-06認証済み別Buyer、E-09スマートフォン操作を隔離Previewで実施する。
+9. 完了: E-09スマートフォン操作を390x844の実ブラウザでPASSとし、購入確定なしで主要導線と読書位置復帰を確認した。
+10. 次: E-06認証済み別Buyer、E-01決済失敗、E-02正規Checkout離脱、E-03重複通知を隔離Previewで実施する。
 
 ### 12.1 2026-10-09 Preview設定結果
 

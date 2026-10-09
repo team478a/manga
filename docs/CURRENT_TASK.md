@@ -1,5 +1,18 @@
 # MANGAI Current Task
 
+## 2026-10-09 Marketplace隔離Preview mobile E2E
+
+- 状態: `E09_PASS / E06_AUTHENTICATED_OTHER_BUYER_PENDING / E01_E03_PENDING`
+- Branch: `codex/marketplace-staging-mobile-e2e-20261009`
+- PR #631 merge commit `337ad72eb978a1ee92276baa7311ceddf5b86688`を基準ブランチで確認し、最新`origin/feature/manga-canvas-mvp`から分離して開始した。
+- Chrome実ブラウザを390x844 viewportに固定し、隔離Previewの合成BuyerでHome、タイトル検索、作品詳細、あとで読む、本棚、Reader、読書位置の保存・復帰、購入準備画面を確認した。各画面は横overflowなし。
+- Readerは前回の2/2ページから再開し、1/2ページへ移動後、本棚の読書linkが`?page=1`を保持して同じ位置へ復帰した。購入準備は税込100円、Stripe test、実請求なし表示まで確認し、購入確定ボタンは押していない。
+- E-09はPASS。Production、Stripe request、Payment、注文、download、実利用者、Provider、creditは変更していない。合成BuyerのPreview読書進捗だけを1ページ目へ更新した。
+- Marketplace Home／mobile navigation／responsive／作品詳細／あとで読む／本棚／続きから読む／Buyer導線の集中テスト32/32と`git diff --check`が成功した。
+- 次: E-06を認証済み別Buyerで確認する。合成資格情報をPreviewへ送信する直前にaction-time確認を分離する。その後E-01〜E-03のStripe test異常系を扱う。
+
+---
+
 ## 2026-10-09 Marketplace隔離Preview access guard E2E
 
 - 状態: `E04_PASS / E05_PASS / E06_ANONYMOUS_GUARD_PASS_AUTHENTICATED_OTHER_BUYER_PENDING / FIXTURE_RESTORED`
