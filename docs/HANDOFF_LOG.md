@@ -11,8 +11,10 @@
 - 責任者のaction-time承認後、隔離Previewで合成作品1件を公開・販売中へ変更した。S-07〜S-09はPASS。Marketplace一覧1件、作品詳細の税込100円テスト販売、売上管理の注文0件・売上0円を確認した。
 - Production DB／Storage／Vercel Production、Stripe live、実利用者、注文・決済、Provider、creditは未変更。
 - 責任者承認後、合成Buyer資格情報を隔離Previewログインへ送信した。検索1件、作品詳細、あとで読む1件、試し読み1/2ページ、未購入の2ページ目直接指定が1ページ目へ制限されること、税込100円のテスト購入準備画面を確認し、S-06とB-01〜B-05をPASSとした。
-- 責任者承認後、「テスト購入へ進む」を実行した。Stripe Sandboxへ正常遷移し、対象商品に`pending`／`test`／100円の注文1件を確認した。テストカード入力済み、支払い確定は未実行。
-- 集中18/18、対象ESLint、strict preflight、fixture再監査、diff check成功。次はStripe Sandboxの支払い確定action-time確認後、B-06以降を実施する。
+- 責任者のaction-time承認後、Stripe Sandboxの100円テスト支払いを確定した。完了画面の実請求なし表示と、注文1件が`paid`／`test`／100円へ遷移したことをread-only監査で確認した。
+- Buyer本棚1冊、Reader全2ページ、2ページ目で中断後の「続きから読む（2ページ）」復帰を確認し、B-06〜B-10をPASSとした。Seller所有者、未購入者sample-only、支払済みBuyerの3主体でE-07もPASS。
+- 購入履歴からPDF downloadを実行し、download count 1、PDF 1.7・111,076 bytes・2ページを確認してB-11をPASSとした。Production、Stripe live、実利用者、Provider、creditは変更していない。
+- 集中18/18、対象ESLint、strict preflight、fixture再監査、diff check成功。次はE-01〜E-06、E-08、E-09の隔離Preview異常系を実施する。
 
 ---
 

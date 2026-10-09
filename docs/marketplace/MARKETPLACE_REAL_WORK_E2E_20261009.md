@@ -2,7 +2,7 @@
 
 作成日: 2026-10-09  
 対象: `feature/manga-canvas-mvp`  
-状態: `STAGING_READY / FIXTURE_READY / SELLER_S01_S09_PASS / BUYER_B01_B05_PASS / TEST_PAYMENT_CONFIRMATION_PENDING`
+状態: `STAGING_READY / FIXTURE_READY / SELLER_S01_S09_PASS / BUYER_B01_B11_PASS / READER_E07_PASS / ABNORMAL_CASES_PENDING`
 
 ### 2026-10-09 隔離Preview実行準備の結果
 
@@ -14,7 +14,7 @@
 - 認証済みSeller画面でS-01〜S-05をPASSとし、制作進捗100%、固定版v1・2ページ、Reader全2ページ、paused商品、税込100円を確認した。
 - 責任者のaction-time承認後、隔離PreviewでS-07〜S-09を実行してPASSとした。Marketplace一覧1件、作品詳細の税込100円テスト販売、売上管理の注文0件・売上0円を確認した。
 - 合成Buyerで検索、作品詳細、あとで読む、試し読み、購入準備を確認し、S-06とB-01〜B-05をPASSとした。未購入状態で2ページ目を直接指定してもサンプル1ページ目に制限された。
-- 責任者承認後、Stripe Sandboxへ遷移し、`pending`／`test`／100円の注文1件を確認した。テストカード入力済みで、支払い確定はaction-time確認待ち。購入後Reader、download、残りの異常系は未実施。Production、Stripe live、実利用者、Provider、creditは変更していない。
+- 責任者のaction-time承認後、Stripe Sandboxの100円テスト支払いを確定した。実請求なしの完了画面、注文1件の`paid`／`test`／100円遷移、本棚1冊、Reader全2ページ、2ページ目からの再開、購入履歴経由の2ページPDF downloadを確認し、B-06〜B-11をPASSとした。Seller所有者、未購入者sample-only、支払済みBuyerの3主体でE-07もPASS。Production、Stripe live、実利用者、Provider、creditは変更していない。
 
 ### 2026-10-09 外部設定の再監査
 
@@ -34,7 +34,7 @@ Marketplace実作品E2Eの実行項目、証跡、停止条件を固定しまし
 
 Vercel PreviewはProductionと分離されたSupabase Branch、Checkout `test`、Stripe test資格情報の3条件を満たし、strict preflightは3/3 `READY`です。必要なmigrationと合成fixtureの準備も完了し、fixture監査は8/8 `READY`です。
 
-公開作品一覧の匿名smokeは正常空状態まで確認しました。認証済みSeller／Buyer E2E、公開、販売開始、注文作成、Stripe test決済、Reader進捗保存は未実施です。Production、Stripe live、実利用者データには触れていません。
+認証済みSeller／Buyerの正常系E2EはS-01〜S-09、B-01〜B-11をPASSしました。隔離Previewでのみ作品公開、販売開始、Stripe test注文1件、Reader進捗保存、購入PDF取得を実施しています。Production、Stripe live、実利用者データには触れていません。
 
 ## 2. 環境preflight
 
@@ -109,14 +109,14 @@ Productionの既存非公開2ページ作品をStagingへ複製する場合は�
 | B-03 | あとで読むに追加 | PASS | 追加成功表示と「あとで読む」一覧1件を確認 |
 | B-04 | 試し読み | PASS | サンプル1/2ページを表示。2ページ目直接指定は1ページ目へ制限 |
 | B-05 | 購入画面へ進む | PASS | 税込100円、Stripe test、Buyerメール、実請求なしの購入準備画面を確認 |
-| B-06 | Stripe test決済を完了 | NOT_RUN | Stripe Sandbox遷移、pending test注文1件、テストカード入力まで完了。支払い確定のaction-time確認待ち |
-| B-07 | 本棚へ追加 | BLOCKED | paid test注文がない |
-| B-08 | Readerで本編を読む | BLOCKED | paid test注文がない |
-| B-09 | 途中で閲覧終了 | BLOCKED | Readerを開始していない |
-| B-10 | 続きから読むで復帰 | BLOCKED | Staging進捗rowを作成していない |
-| B-11 | 購入ファイルをdownload | BLOCKED | paid test注文がない |
+| B-06 | Stripe test決済を完了 | PASS | action-time承認後に100円Sandbox決済を確定。実請求なし完了画面と`paid`／`test`／100円の注文1件を確認 |
+| B-07 | 本棚へ追加 | PASS | Buyer本棚にテスト購入作品1冊、税込100円を確認 |
+| B-08 | Readerで本編を読む | PASS | 購入済みBuyerが1/2・2/2ページを閲覧できることを確認 |
+| B-09 | 途中で閲覧終了 | PASS | 2ページ目表示後に本棚へ戻り、閲覧を終了 |
+| B-10 | 続きから読むで復帰 | PASS | 本棚に「続きから読む（2ページ）」が表示され、2/2ページへ復帰。進捗rowもpage 2を確認 |
+| B-11 | 購入ファイルをdownload | PASS | 購入履歴から署名URLを再発行して取得。download count 1、PDF 1.7・111,076 bytes・2ページを確認 |
 
-未購入Buyerの有料本文拒否はB-04で実画面確認済みです。支払い済み購入者および別の未購入者との3主体比較はB-06後に続行します。Repository契約テストは権限境界を確認済みですが、実環境結果の代用にはしません。
+未購入Buyerの有料本文拒否はB-04、支払済みBuyerの全2ページ閲覧はB-08、Seller所有者の全2ページ閲覧はS-02で実画面確認済みです。これら3主体の結果をE-07の証跡とします。
 
 ## 6. 異常系
 
@@ -128,7 +128,7 @@ Productionの既存非公開2ページ作品をStagingへ複製する場合は�
 | E-04 | 非公開作品への直接アクセス | BLOCKED | 未購入・非所有アカウントで404または拒否を確認 |
 | E-05 | 販売停止商品の購入防止 | BLOCKED | `paused`へ戻した後、Sessionを作成できないことを確認 |
 | E-06 | 他人の購入ファイルへのアクセス拒否 | BLOCKED | Buyer AのdownloadをBuyer Bが取得できないことを確認 |
-| E-07 | Readerの権限確認 | NOT_RUN | 未購入Buyerのsample-onlyはPASS。支払い済み購入者・所有者を含む3主体比較はB-06後 |
+| E-07 | Readerの権限確認 | PASS | Seller所有者は全2ページ、未購入Buyerはsample 1ページのみ、支払済みBuyerは全2ページを実画面確認 |
 | E-08 | PDF download失敗 | BLOCKED | Storage取得失敗を安全に再現できる隔離fixtureを使用 |
 | E-09 | スマートフォン操作 | BLOCKED | 390x844相当で検索、詳細、試読、Checkout復帰、本棚、Readerを確認 |
 
@@ -216,7 +216,8 @@ Productionでの一般公開、販売開始、Stripe live決済、返金、送�
 3. 完了: Preview限定のStripe test資格情報とWebhookを設定し、HTTP 200を確認した。
 4. 完了: Previewを再deployし、実行時設定が新しいdeploymentへ反映されたことを確認した。
 5. 完了: Staging用のSeller、Buyer、未購入者と非公開2ページ完成作品を用意した。
-6. 完了: strict preflight 3/3、fixture監査8/8を成功させた。次はこの文書のS-01から認証済み実E2Eを開始する。
+6. 完了: strict preflight 3/3、fixture監査8/8、S-01〜S-09、B-01〜B-11、E-07を成功させた。
+7. 次: E-01〜E-06、E-08、E-09を隔離Previewで実施する。正常系fixtureを壊す販売停止、破損ファイル、拒否決済はそれぞれ独立したtest対象で行う。
 
 ### 12.1 2026-10-09 Preview設定結果
 
