@@ -6,7 +6,7 @@
 
 ## 1. 結論
 
-Marketplace実作品E2Eの実行項目、証跡、停止条件を固定しました。Repository上のSeller、Buyer、Checkout、Reader、あとで読む、続きから読む、購入ファイル取得に関する集中テストは72/72成功しています。
+Marketplace実作品E2Eの実行項目、証跡、停止条件を固定しました。Repository上のSeller、Buyer、Checkout、Reader、あとで読む、続きから読む、購入ファイル取得に関する集中テストは72/72成功しています。加えて、実E2E開始前の対象fixtureだけをGETで監査するscriptを追加し、単体テスト5/5が成功しました。
 
 一方、Vercel Previewを用いたread-only preflightでは、次の3条件がすべて`PENDING`でした。
 
@@ -32,6 +32,22 @@ npm run marketplace:staging:preflight
 
 設定値と秘密値は表示・文書化していません。preflightはProduction mutation、Stripe request、Payment作成を行っていません。
 
+実作品fixture監査コマンド:
+
+```text
+npm run marketplace:staging:fixture:audit
+```
+
+この監査は次の環境変数名だけを入力とし、値を出力しません。
+
+- `MANGAI_STAGING_SELLER_PROFILE_ID`
+- `MANGAI_STAGING_BUYER_PROFILE_ID`
+- `MANGAI_STAGING_UNPURCHASED_PROFILE_ID`
+- `MANGAI_STAGING_E2E_WORK_ID`
+- `MANGAI_STAGING_E2E_PRODUCT_ID`
+
+隔離Staging、Checkout test mode、3主体の分離をfail closedで検証した後、対象行だけをGETします。作品・商品・Publication・checkpoint・ページ・注文の内部ID、氏名、メール、作品名、Storage pathは報告へ出しません。Storage objectの取得、ファイルdownload、DB mutation、Stripe requestは行いません。
+
 ## 3. テストデータ条件
 
 StagingをREADYにした後、隔離DB内だけに次を用意します。
@@ -45,6 +61,8 @@ StagingをREADYにした後、隔離DB内だけに次を用意します。
 - 販売下書きは`paused`、価格はStripe testの最小安全額以上であること。
 - 試し読みページを1ページだけ設定できること。
 - 実行前の対象注文が0件であること。
+
+fixture監査は、上記に加えてCloud Projectの所有者、作品・Publication・release checkpointの所有者、2ページの順序、重複しないStorage path、Publication PDFとpaused商品の参照一致、価格50〜1,000円、試し読み0〜1ページを確認します。試し読み1ページへの変更自体はS-06としてUIから実施するため、監査は変更しません。
 
 Productionの既存非公開2ページ作品をStagingへ複製する場合は、画像以外の個人情報、注文、決済、生成Job、credit台帳をコピーしません。Storage objectも隔離Staging bucketに置きます。
 
@@ -109,6 +127,18 @@ Productionの既存非公開2ページ作品をStagingへ複製する場合は�
 
 実行結果: `PASS 72 / FAIL 0 / SKIPPED 0`
 
+fixture監査の追加テスト:
+
+- Production指定、同一Supabase ref、同一主体をfail closedで拒否。
+- 正常な非公開2ページ完成版、paused商品、注文0件をREADY判定。
+- 公開済み作品、active商品、既存注文を拒否。
+- 所有者、release checkpoint、ページ構成の不一致を拒否。
+- 結果へ識別子を含めず、全requestがGETで個人情報列を選択しないことを確認。
+
+実行結果: `PASS 5 / FAIL 0 / SKIPPED 0`
+
+さらにMarketplace名を含む38 test fileを標準のTypeScript stripping付きで一括実行し、`PASS 183 / FAIL 0 / SKIPPED 0`でした。Hub全体は`PASS 1267 / FAIL 0 / SKIPPED 0`、Hub／Desktop型検査、全lint、migration 96件検証、依存境界、Production build、`git diff --check`も成功しています。依存境界は既知warning 2件、新規error 0件です。
+
 これはコード上の契約確認であり、実作品E2EのPASSには数えません。
 
 ## 8. 実行順序
@@ -117,7 +147,7 @@ Productionの既存非公開2ページ作品をStagingへ複製する場合は�
 2. `marketplace:staging:preflight:strict`を成功させる。
 3. Preview deployment URLとisolated Supabase refを記録する。資格情報は記録しない。
 4. Seller、Buyer、未購入者の3アカウントを用意する。
-5. 非公開2ページ完成作品、Publication、`paused`商品、注文0件をread-only確認する。
+5. 対象IDをrepository外の一時環境ファイルへ設定し、`npm run marketplace:staging:fixture:audit -- --candidate <絶対path>`で非公開2ページ完成作品、Publication、`paused`商品、注文0件をread-only確認する。
 6. S-01からS-06を確認する。
 7. Staging内でS-07、S-08を実施し、S-09を確認する。
 8. B-01からB-11を順番に実施する。
@@ -165,6 +195,6 @@ Productionでの一般公開、販売開始、Stripe live決済、返金、送�
 2. Preview限定でCheckout modeを`test`にする。
 3. Preview限定のStripe test資格情報とWebhookを設定する。
 4. Staging用のSeller、Buyer、未購入者と非公開2ページ完成作品を用意する。
-5. strict preflight成功後、この文書のS-01から実E2Eを開始する。
+5. strict preflightとfixture監査の両方が成功した後、この文書のS-01から実E2Eを開始する。
 
 これらは外部設定またはStagingデータ変更を伴うため、対象環境と変更内容を示した実行時承認後に行います。

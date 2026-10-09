@@ -115,6 +115,7 @@
     "marketplace:staging:preflight": "node scripts/check-marketplace-staging-deployment.mjs",
     "marketplace:staging:preflight:strict": "node scripts/check-marketplace-staging-deployment.mjs --strict",
     "marketplace:staging:candidate:validate": "node scripts/check-marketplace-staging-deployment.mjs --strict --candidate",
+    "marketplace:staging:fixture:audit": "node scripts/check-marketplace-real-work-staging-fixture.mjs",
     "marketplace:production:preflight": "node scripts/check-marketplace-production-readiness.mjs",
     "marketplace:production:preflight:strict": "node scripts/check-marketplace-production-readiness.mjs --strict",
     "marketplace:production:preflight:injected": "node scripts/check-marketplace-production-readiness.mjs --injected",
