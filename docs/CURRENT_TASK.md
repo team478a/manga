@@ -1,5 +1,18 @@
 # MANGAI Current Task
 
+## 2026-10-09 Marketplace Staging E2E外部設定監査
+
+- 状態: `READ_ONLY_AUDIT_COMPLETE / SETTINGS_MISSING / RUNTIME_NOT_STARTED`
+- Branch: `codex/marketplace-staging-e2e-runtime-20261009`
+- linked Vercel project `mangai-hub-staging`のPreview／Production metadata、GitHub Repository／Preview／ProductionのSecret・Variable名を読み取り専用で監査した。
+- Previewには隔離Supabase、Staging ref、Checkout test mode、Stripe test、fixture用設定名が存在しない。preflightは3項目すべて`PENDING`。Production mutation、Stripe request、Payment作成は行っていない。
+- preflightへtarget付き不足設定名の安全な表示を追加した。値、末尾、内部ID、Project refは出力しない。隔離条件やkey prefix検証は従来どおりfail closedを維持する。
+- 集中9/9、Hub全1268/1268、Hub／Desktop型検査、全lint、依存境界error 0（既知warning 2）、Production build、diff check成功。
+- Supabase Project一覧はブラウザ連携エラーで未確認。隔離Projectの特定または作成、Preview環境変数設定、Staging fixture作成は対象を示した実行時承認待ち。
+- 詳細: `docs/marketplace/MARKETPLACE_REAL_WORK_E2E_20261009.md`
+
+---
+
 ## 2026-10-09 外部作品持ち込み出品 Gap Analysis
 
 - 状態: `ANALYSIS_COMPLETE / DESIGN_ONLY / PRODUCTION_NOT_CHANGED`

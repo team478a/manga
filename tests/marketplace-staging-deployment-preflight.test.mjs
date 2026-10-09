@@ -57,12 +57,51 @@ test("隔離SupabaseとStripe test設定が揃った場合だけREADYにする",
 
   assert.equal(report.passed, true);
   assert.ok(report.checks.every((check) => check.ready));
+  assert.ok(report.checks.every((check) => check.missingSettings.length === 0));
   assert.deepEqual(report.safety, {
     environmentValuesPrinted: false,
     productionMutation: false,
     stripeRequest: false,
     paymentCreated: false,
   });
+});
+
+test("不足設定名だけをtarget付きで報告し値を含めない", () => {
+  const report = assessMarketplaceStagingDeployment({
+    previewEnvironment: {},
+    productionEnvironment: {},
+  });
+
+  assert.equal(report.passed, false);
+  assert.deepEqual(
+    report.checks.find((check) => check.id === "supabase-isolation")
+      .missingSettings,
+    [
+      "Preview:NEXT_PUBLIC_SUPABASE_URL",
+      "Preview:NEXT_PUBLIC_SUPABASE_ANON_KEY",
+      "Preview:SUPABASE_SERVICE_ROLE_KEY",
+      "Production:NEXT_PUBLIC_SUPABASE_URL",
+      "Production:NEXT_PUBLIC_SUPABASE_ANON_KEY",
+      "Production:SUPABASE_SERVICE_ROLE_KEY",
+      "Preview:MANGAI_STAGING_PROJECT_REF",
+      "Preview:MANGAI_STAGING_PARENT_PROJECT_REF",
+    ],
+  );
+  assert.deepEqual(
+    report.checks.find((check) => check.id === "checkout-mode")
+      .missingSettings,
+    ["Preview:MANGAI_MARKETPLACE_CHECKOUT_MODE"],
+  );
+  assert.deepEqual(
+    report.checks.find((check) => check.id === "stripe-test")
+      .missingSettings,
+    [
+      "Preview:STRIPE_SECRET_KEY",
+      "Preview:STRIPE_WEBHOOK_SECRET",
+      "Preview:CHECKOUT_CANCEL_SECRET",
+    ],
+  );
+  assert.doesNotMatch(JSON.stringify(report), /sk_test_|whsec_/);
 });
 
 test("PreviewとProductionのSupabase資格情報共有を拒否する", () => {

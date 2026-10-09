@@ -4,6 +4,18 @@
 対象: `feature/manga-canvas-mvp`  
 状態: `PREPARED / STAGING_SAFETY_GATE_BLOCKED / RUNTIME_NOT_STARTED`
 
+### 2026-10-09 外部設定の再監査
+
+- linked Vercel projectは`mangai-hub-staging`。
+- Preview targetには、隔離Supabase、Staging ref、Checkout test mode、Stripe test、fixture識別子に必要な設定名が存在しない。
+- Production targetにはSupabase URL、anon key、service-role key、Cancel Secretの設定名が存在する。値は取得・表示・記録していない。
+- GitHubのRepository、Preview environment、Production environmentにも、該当するStaging／Stripe／Marketplace用Secret・Variable名は存在しない。
+- `marketplace:staging:preflight`は3項目すべて`PENDING`を再確認した。Production mutation、Stripe request、Payment作成は0件。
+- Supabase管理画面はブラウザ連携エラーのためProject一覧を確認できず、隔離Projectが既存か新規作成が必要かは未確定。
+- 改善後の集中テスト9/9、Hub全1268/1268、Hub／Desktop型検査、全lint、依存境界error 0（既知warning 2）、Production build、diff checkが成功した。
+
+preflightは今後、値を表示せずに`Preview:`／`Production:`付きで不足設定名を表示する。設定値が存在しても分離条件やprefixが不正な場合は、従来どおり一般化した検証理由だけを表示する。
+
 ## 1. 結論
 
 Marketplace実作品E2Eの実行項目、証跡、停止条件を固定しました。Repository上のSeller、Buyer、Checkout、Reader、あとで読む、続きから読む、購入ファイル取得に関する集中テストは72/72成功しています。加えて、実E2E開始前の対象fixtureだけをGETで監査するscriptを追加し、単体テスト5/5が成功しました。
