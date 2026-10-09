@@ -1,5 +1,16 @@
 # MANGAI AI Handoff Log
 
+## 2026-10-09 Codex: Marketplace隔離Preview環境設定
+
+- Branch `codex/marketplace-staging-fixture-readiness-20261009`。Supabase Preview Branch `marketplace-e2e-20261009`は親Productionと異なるHealthy Branchとして作成済み。
+- 責任者承認後、Supabase URL／anon key／service-role key、Preview／親ref、`MANGAI_DB_ENV=staging`、Marketplace Checkout mode `test`の7件をVercel project `mangai-hub-staging`のPreviewだけへ登録した。Production targetは変更していない。
+- JWT本体をログ・文書・Gitへ残さず、anon／service-roleのroleとrefが対象Branchに一致することを確認した。Vercel metadataは7/7がPreview専用、git branch限定なし。service-roleはSensitive、公開設定はConfigとして保持する。
+- `marketplace:staging:preflight`はCheckout mode `READY`、Supabase設定名の不足0件。Sensitive service-roleを再取得しないため値比較ベースのSupabase isolation表示は`PENDING`。Stripe test Secret／Webhook／Cancel Secretは未設定で`PENDING`。
+- Preview再deploy、fixture作成、Webhook、Stripe request、Payment、注文、公開・販売は未実施。Production DB／Storage／Vercel Production、Stripe live、実利用者、Provider、生成Job、creditは変更していない。
+- Supabase Preview computeは`$0.01344/hour`で継続中。次はStripe test設定とWebhookを別承認で行い、Preview再deploy後にstrict preflightとfixture監査を実行する。
+
+---
+
 ## 2026-10-09 Codex: Marketplace Staging E2E外部設定監査
 
 - 最新`origin/feature/manga-canvas-mvp`から`codex/marketplace-staging-e2e-runtime-20261009`を作成した。

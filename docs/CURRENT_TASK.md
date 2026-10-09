@@ -1,5 +1,18 @@
 # MANGAI Current Task
 
+## 2026-10-09 Marketplace隔離Preview環境設定
+
+- 状態: `SUPABASE_PREVIEW_CONFIGURED / CHECKOUT_TEST_CONFIGURED / STRIPE_TEST_PENDING / RUNTIME_NOT_STARTED`
+- Branch: `codex/marketplace-staging-fixture-readiness-20261009`
+- 責任者の明示承認に基づき、Supabase Preview Branch `marketplace-e2e-20261009`のURL、anon key、service-role key、Preview／親Production ref、`MANGAI_DB_ENV=staging`、Checkout mode `test`をlinked Vercel project `mangai-hub-staging`のPreview環境だけへ設定した。
+- anon／service-role JWTは値を出力せず、roleとproject refが対象Preview Branchへ一致することを確認した。Vercel metadataでは7設定すべてが`target=preview`、branch限定なしで、service-roleだけSensitive、公開設定6件は取得可能なConfigとして存在する。Production環境変数は変更していない。
+- runtime preflightはCheckout modeが`READY`。Supabase設定名の不足は解消したが、Sensitive service-role値をVercel CLIから再取得しない安全契約のため、値比較を伴う隔離判定は`PENDING`表示を維持する。設定時のJWT ref／role照合とPreview限定metadataは成功している。
+- Stripe test Secret Key、Webhook Secret、Cancel Secretは未設定で、Stripe test資格情報は`PENDING`。Preview再deploy、Staging fixture、Webhook、Checkout、Payment、注文、公開・販売は開始していない。
+- Production DB／Storage／Vercel Production、Stripe live、実利用者データ、Provider、生成Job、credit、成人向けMarketplaceは変更していない。Supabase Preview computeは`$0.01344/hour`で継続中。
+- 次: Stripe test設定とPreview webhookを対象・停止条件付きで別承認し、Previewを再deployした後、strict preflightとfixture監査を実行する。
+
+---
+
 ## 2026-10-09 Marketplace Staging E2E外部設定監査
 
 - 状態: `READ_ONLY_AUDIT_COMPLETE / SETTINGS_MISSING / RUNTIME_NOT_STARTED`

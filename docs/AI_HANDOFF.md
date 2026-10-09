@@ -1,5 +1,14 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Marketplace隔離Preview環境設定（2026-10-09）
+
+- Supabase Preview Branch `marketplace-e2e-20261009`の接続3設定、Preview／親ref、`MANGAI_DB_ENV=staging`、Checkout mode `test`をVercel `mangai-hub-staging`のPreviewだけへ設定した。7件すべてPreview専用で、Production設定は変更していない。
+- anon／service-role JWTは値を記録せず、roleとproject refが対象Branchへ一致することを確認した。service-roleはSensitiveのまま、公開設定はConfigとして保持する。
+- Checkout modeは`READY`。Stripe test Secret／Webhook／Cancel Secretは未設定。Preview再deploy、fixture、Stripe request、Payment、注文、公開・販売は未実施。
+- Production DB／Storage、Stripe live、実利用者、Provider、生成Job、creditは未変更。Preview computeは`$0.01344/hour`で継続中。次はStripe test設定を別承認し、再deploy後にstrict preflightとfixture監査を行う。
+
+---
+
 ## 0.0 Cloud制作 ステップ別動画マニュアル（2026-10-08）
 
 - Branch `codex/cloud-operation-video-manual-20261008`。市場分析から収益管理までを、実画面に沿った匿名化表示の8本の独立動画へ分割した。

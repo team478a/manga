@@ -203,10 +203,19 @@ Productionでの一般公開、販売開始、Stripe live決済、返金、送�
 
 ## 12. 次に必要な操作
 
-1. Preview限定のisolated Supabase接続を設定する。
-2. Preview限定でCheckout modeを`test`にする。
+1. 完了: Preview限定のisolated Supabase接続を設定した。
+2. 完了: Preview限定でCheckout modeを`test`にした。
 3. Preview限定のStripe test資格情報とWebhookを設定する。
-4. Staging用のSeller、Buyer、未購入者と非公開2ページ完成作品を用意する。
-5. strict preflightとfixture監査の両方が成功した後、この文書のS-01から実E2Eを開始する。
+4. Previewを再deployし、実行時設定が新しいdeploymentへ反映されたことを確認する。
+5. Staging用のSeller、Buyer、未購入者と非公開2ページ完成作品を用意する。
+6. strict preflightとfixture監査の両方が成功した後、この文書のS-01から実E2Eを開始する。
+
+### 12.1 2026-10-09 Preview設定結果
+
+- Supabase Preview Branch `marketplace-e2e-20261009`を接続先とし、親Productionとは異なるBranchであることを確認した。
+- Supabase URL、anon key、service-role key、Preview／親ref、`MANGAI_DB_ENV=staging`、Checkout mode `test`の7件はVercel Preview専用で、git branch限定なし。
+- anon／service-role JWTは値を出力せず、roleとproject refだけを対象Branchと照合した。
+- Vercel Production、Production DB／Storage、Stripe、Webhook、fixture、注文、決済、公開・販売は変更していない。
+- runtime preflightはCheckout mode `READY`、Stripe test `PENDING`。Sensitive service-roleをCLIから再取得しないため、値比較を伴うSupabase isolation表示は`PENDING`を維持するが、設定名不足は0件である。
 
 これらは外部設定またはStagingデータ変更を伴うため、対象環境と変更内容を示した実行時承認後に行います。
