@@ -4,6 +4,7 @@
 
 - 状態: `E02_PASS / SIGNED_CANCEL_RETURN_CONFIRMED / PURCHASE_ENTITLEMENT_UNCHANGED / PRODUCTION_UNCHANGED`
 - Branch: `codex/marketplace-e02-checkout-abandonment-20261009`
+- Draft PR: [#636](https://github.com/team478a/manga/pull/636)（base=`codex/marketplace-e01-declined-payment-pass-20261009`、PR #635にstacked）
 - PR #635 head `893d3c56`を起点に開始した。PR #635はOpen／非Draft／mergeable、保護ルール待ちの`BLOCKED`で、Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功している。PR自体のmerge・base・履歴は変更していない。
 - 責任者のaction-time承認後、隔離Previewで既に認証済みの合成Buyerを使い、税込100円のStripe Sandbox Checkoutを1回だけ開始した。カード番号、有効期限、CVC、氏名は入力せず、支払い確定操作も行っていない。
 - Stripe Checkoutから「Stock Business LLC に戻る」で離脱し、新規test注文`bd634acb-f661-46f9-a7e8-93bdcd212491`と同じ注文IDを含む署名付きcancel URLへ戻った。画面に「決済はキャンセルされ、仮注文をキャンセル状態にしました。」が表示された。

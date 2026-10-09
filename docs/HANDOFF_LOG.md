@@ -2,7 +2,7 @@
 
 ## 2026-10-09 Codex: Marketplace隔離Preview E-02 Checkout途中離脱 E2E
 
-- Branch `codex/marketplace-e02-checkout-abandonment-20261009`。PR #635 head `893d3c56`から開始した。PR #635はOpen／非Draft／mergeable、保護ルール待ちで、5 checksはすべて成功。PR自体は変更していない。
+- Branch `codex/marketplace-e02-checkout-abandonment-20261009`、Draft PR [#636](https://github.com/team478a/manga/pull/636)（PR #635へstacked）。PR #635 head `893d3c56`から開始した。PR #635はOpen／非Draft／mergeable、保護ルール待ちで、5 checksはすべて成功。PR自体は変更していない。
 - 責任者のaction-time承認後、隔離Previewの認証済み合成Buyerで税込100円のStripe Sandbox Checkoutを1回だけ開始した。カード情報は入力せず、支払い確定操作は行っていない。
 - Checkoutから正規の戻る導線で離脱し、新規test注文`bd634acb-f661-46f9-a7e8-93bdcd212491`と同じ注文IDの署名付きcancel URLへ戻った。cancel成功表示を確認した。
 - 本棚は既存test購入1冊、download count 1のままで、新しい購入権限はない。test modeは新規pending作成、live modeだけがpending再利用であるため、同一注文IDのcancel処理と権限非付与でE-02をPASSとした。
