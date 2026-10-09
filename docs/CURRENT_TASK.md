@@ -1,5 +1,20 @@
 # MANGAI Current Task
 
+## 2026-10-10 Marketplace隔離Preview E-03 重複Webhook preflight
+
+- 状態: `E03_READ_ONLY_PREFLIGHT_COMPLETE / EXTERNAL_REPLAY_PENDING / PRODUCTION_UNCHANGED`
+- Branch: `codex/marketplace-e03-duplicate-webhook-20261010`
+- PR #636がPR #635のhead branchへmergeされたcommit `89666c1a`から分離した。PR #635はOpen／非Draft／mergeable、保護ルール待ちで、Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功している。PR #635のmerge・base・履歴は変更していない。
+- PR #635 headのVercel Preview deploymentが成功し、GitHub deployment metadataで`production_environment=false`を確認した。
+- webhook実装は`checkout.session.completed`／`checkout.session.async_payment_succeeded`を`markCheckoutSessionPaid`へ渡す。注文更新は同じorder／product／payment modeの`pending`だけに限定し、既に`paid`なら再更新せずpaid注文の存在確認だけを返す。このため同一event再配送時に`paid_at`や権限を増やさない契約になっている。
+- strict preflightはVercel Sensitive値をCLIへ渡せず安全停止した。ローカル環境にもStripe／隔離Supabase資格情報はなく、Stripe CLIも未導入。秘密値の回避取得や新規CLI導入は行っていない。
+- Stripe Dashboard／隔離Supabaseを開いていたChrome profileへのUI接続が複数回応答せず、test eventとpaid注文のread-only前後値を画面で確定できていない。このためStripe test eventの再配送はまだ実行していない。
+- 決済event／Checkout repositoryの集中17/17と`git diff --check`が成功した。最初の素の`node --test`は`.ts`を解釈できず1 fileだけ失敗したが、repository標準の`--experimental-strip-types`付きで全17件成功を確認した。
+- 次: Stripe Dashboard test EventsとSupabase Preview Branchを開いたChrome profileの操作接続を復旧し、対象event／注文、`paid_at`、download count、本棚冊数をread-onlyで確定する。その後、同一test eventを1回だけ再配送する直前にaction-time確認を取り、前後不変とHTTP成功を判定する。
+- Production、Stripe live、実請求、注文、権限、Webhook endpoint、Provider、生成Job、creditへの変更は0件。
+
+---
+
 ## 2026-10-09 Marketplace隔離Preview E-02 Checkout途中離脱 E2E
 
 - 状態: `E02_PASS / SIGNED_CANCEL_RETURN_CONFIRMED / PURCHASE_ENTITLEMENT_UNCHANGED / PRODUCTION_UNCHANGED`

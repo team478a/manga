@@ -1,5 +1,17 @@
 # MANGAI AI Handoff Log
 
+## 2026-10-10 Codex: Marketplace隔離Preview E-03 重複Webhook preflight
+
+- Branch `codex/marketplace-e03-duplicate-webhook-20261010`。PR #636 merge commit `89666c1a`から開始した。PR #635はOpen／非Draft／mergeable、5 checks成功、保護ルール待ち。PR自体は変更していない。
+- PR #635 headのVercel Previewは成功し、GitHub deployment metadataでProductionではないことを確認した。
+- 実装上、paid webhookの注文更新は`pending`だけが対象で、既に`paid`なら再更新せず存在確認へ進む。重複eventで`paid_at`や権限を増やさない契約をread-only確認した。
+- Vercel Sensitive値はCLIへ渡らずstrict preflightが安全停止。ローカルにStripe／隔離Supabase資格情報はなく、Stripe CLIもない。秘密値の回避取得や導入は行っていない。
+- Stripe／Supabaseを開いたChrome profileへのUI接続が複数回応答せず、対象eventと注文の前後値は未確定。再配送は未実行。
+- 決済event／Checkout repository集中17/17と`git diff --check`成功。素の`node --test`は`.ts`非対応で1 file失敗したため、標準の`--experimental-strip-types`付きで再実行して全件成功した。
+- 次は操作接続復旧後にread-only前後値を確定し、同一test eventを1回だけ再配送する直前にaction-time確認を取る。Production、Stripe live、注文、権限、endpoint、Provider、Job、credit変更は0件。
+
+---
+
 ## 2026-10-09 Codex: Marketplace隔離Preview E-02 Checkout途中離脱 E2E
 
 - Branch `codex/marketplace-e02-checkout-abandonment-20261009`、Draft PR [#636](https://github.com/team478a/manga/pull/636)（PR #635へstacked）。PR #635 head `893d3c56`から開始した。PR #635はOpen／非Draft／mergeable、保護ルール待ちで、5 checksはすべて成功。PR自体は変更していない。
