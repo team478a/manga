@@ -1,8 +1,20 @@
 # MANGAI Current Task
 
+## 2026-10-09 Marketplace隔離Preview 異常系E2E
+
+- 状態: `AUTH_EXPIRY_PASS / E08_PASS / FAILURE_REFUND_PREFLIGHT_BLOCKED_SENSITIVE_SECRET / E01_E06_E09_PENDING`
+- Branch: `codex/marketplace-staging-abnormal-e2e-20261009`
+- PR #629 merge commit `9f1d4f9a08060cbfaf1b2f011431db318f16e398`を基準ブランチで確認し、最新`origin/feature/manga-canvas-mvp`から分離して開始した。
+- 隔離Previewだけへ合成未購入者用の`pending`／`test`／100円注文を1件、既存の`paid`／`test`注文と分離して準備した。Stripe request、決済、Production mutationは行っていない。
+- `marketplace:staging:auth-expiry`相当の実環境検証で、改ざんcancel tokenの拒否、注文状態の不変、5分署名URLの即時取得、実時間失効後の取得拒否をすべてPASSとした。E-08はPASS。E-02の正規Checkout離脱は別途未実施。
+- Failure／refundのread-only preflightは、Vercel PreviewのSensitiveな`STRIPE_SECRET_KEY`がCLI pullでは空値になる安全仕様のため停止した。Secretの表示、コピー、回避取得は行っていない。
+- 次: E-01決済失敗、E-02正規離脱、E-03重複通知、E-04非公開直接アクセス、E-05販売停止購入防止、E-06他人の購入file拒否、E-09スマートフォン操作を順次実施する。Stripe確定操作、返金、合成資格情報送信はaction-time確認を分離する。
+
+---
+
 ## 2026-10-09 Marketplace隔離Preview E2E準備
 
-- 状態: `PREFLIGHT_READY / FIXTURE_READY / SELLER_S01_S09_PASS / BUYER_B01_B11_PASS / READER_E07_PASS / ABNORMAL_CASES_PENDING`
+- 状態: `PREFLIGHT_READY / FIXTURE_READY / SELLER_S01_S09_PASS / BUYER_B01_B11_PASS / READER_E07_PASS / E08_PASS / ABNORMAL_CASES_PENDING`
 - Branch: `codex/marketplace-staging-fixture-readiness-20261009`
 - Preview限定のSupabase接続、Checkout `test`、Stripe test Secret／Webhook／Cancel Secretを設定し、test webhookの実配送HTTP 200を確認した。秘密値は表示・記録していない。
 - strict preflightは3/3 `READY`。Sensitive値を取得できないVercel Preview metadataを安全に扱い、明示的なlive keyを拒否する回帰テストを追加した。
@@ -17,7 +29,7 @@
 - 責任者のaction-time承認後、Stripe Sandboxの100円テスト支払いを確定した。完了画面は実請求なしを表示し、DBは注文1件が`paid`／`test`／100円、`paid_at`ありへ遷移した。
 - Buyer本棚1冊、購入済みReader 1/2・2/2ページ、2ページ目での閲覧終了、再訪時の「続きから読む（2ページ）」復帰を確認し、B-06〜B-10をPASSとした。未購入者のsample-only、Seller所有者の全ページ、支払済みBuyerの全ページでE-07もPASS。
 - 購入履歴から5分署名URLを再発行してPDFを取得し、DBのdownload countが1へ増加した。取得PDFは111,076 bytes、PDF 1.7、2ページで、B-11をPASSとした。
-- 次: E-01〜E-06、E-08、E-09の隔離Preview異常系を、正常系fixtureを壊さない順で実施する。PR: [#629](https://github.com/team478a/manga/pull/629)。
+- 次: E-01〜E-06、E-09の隔離Preview異常系を、正常系fixtureを壊さない順で実施する。PR: [#629](https://github.com/team478a/manga/pull/629)。
 
 ---
 
