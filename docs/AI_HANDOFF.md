@@ -1,5 +1,15 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Marketplace隔離Preview E-02 Checkout途中離脱（2026-10-09）
+
+- PR #635 head `893d3c56`からBranch `codex/marketplace-e02-checkout-abandonment-20261009`を作成し、Draft PR [#636](https://github.com/team478a/manga/pull/636)をPR #635へstackedした。PR #635はOpen／非Draft／mergeable、保護ルール待ちで、5 checksは成功。merge・base・履歴は変更していない。
+- action-time承認後、隔離Previewの認証済み合成BuyerでStripe Sandbox Checkoutを1回だけ開始した。カード情報は入力せず、支払い確定操作も行っていない。
+- 正規の戻る導線から、新規test注文と同じ注文IDを持つ署名付きcancel URLへ戻り、仮注文のcancel成功表示を確認した。本棚は既存test購入1冊、download count 1のままで、新しい購入権限はない。
+- test modeは新規pending注文を作成し、live modeだけが既存pendingを再利用するため、同一注文IDのcancel処理と権限非付与を根拠にE-02をPASSとした。
+- cancel後のDB再照会は別Chrome profileへのUI自動操作が応答せず未取得。画面証跡は取得済みで、Production、Stripe live、実請求、Provider、生成Job、creditは未変更。次はE-03同一test event再配送。
+
+---
+
 ## 0.0 Marketplace隔離Preview E2E準備（2026-10-09）
 
 - Supabase Preview Branch `marketplace-e2e-20261009`とVercel Previewを分離接続した。Checkoutは`test`、Stripeはtest資格情報だけを設定し、test webhookの実配送がHTTP 200になった。秘密値は取得結果や文書へ記録していない。

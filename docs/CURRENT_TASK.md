@@ -1,5 +1,21 @@
 # MANGAI Current Task
 
+## 2026-10-09 Marketplace隔離Preview E-02 Checkout途中離脱 E2E
+
+- 状態: `E02_PASS / SIGNED_CANCEL_RETURN_CONFIRMED / PURCHASE_ENTITLEMENT_UNCHANGED / PRODUCTION_UNCHANGED`
+- Branch: `codex/marketplace-e02-checkout-abandonment-20261009`
+- Draft PR: [#636](https://github.com/team478a/manga/pull/636)（base=`codex/marketplace-e01-declined-payment-pass-20261009`、PR #635にstacked）
+- PR #635 head `893d3c56`を起点に開始した。PR #635はOpen／非Draft／mergeable、保護ルール待ちの`BLOCKED`で、Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功している。PR自体のmerge・base・履歴は変更していない。
+- 責任者のaction-time承認後、隔離Previewで既に認証済みの合成Buyerを使い、税込100円のStripe Sandbox Checkoutを1回だけ開始した。カード番号、有効期限、CVC、氏名は入力せず、支払い確定操作も行っていない。
+- Stripe Checkoutから「Stock Business LLC に戻る」で離脱し、新規test注文`bd634acb-f661-46f9-a7e8-93bdcd212491`と同じ注文IDを含む署名付きcancel URLへ戻った。画面に「決済はキャンセルされ、仮注文をキャンセル状態にしました。」が表示された。
+- 同じBuyerの本棚は既存の正常系test購入1冊、download count 1のままで、新しい購入権限は表示されなかった。実行前DBには既存`paid` 1件とE-01の`failed` 1件だけがあり、`pending`注文はなかった。
+- 現行実装はtest modeでは新規pending注文を作成し、live modeだけが既存pending注文を再利用する。従来の受入れ表現「pending注文の再利用」はtest modeには適用せず、同一注文IDの署名付きcancel処理と権限非付与をE-02の判定根拠とした。
+- cancel後のDB再照会は、Supabaseを開いた別Chrome profileへのUI自動操作が応答しなくなり直接確認できなかった。cancel画面の成功表示と本棚の権限不変は実ブラウザで確認済みで、この証跡制約を隠さず記録する。
+- 変更はE2E証跡文書だけ。`git diff --check`成功。製品コードを変更していないため、追加のbuild／testは実施していない。
+- Production、Stripe live、実請求、Provider、生成Job、creditは変更していない。次はE-03同一test event再配送を別のaction-time確認で実施する。
+
+---
+
 ## 2026-10-09 Marketplace隔離Preview E-01決済失敗 E2E
 
 - 状態: `E01_PASS / FAILED_ORDER_CONFIRMED / NO_DUPLICATE_PAID_ORDER / PRODUCTION_UNCHANGED`
