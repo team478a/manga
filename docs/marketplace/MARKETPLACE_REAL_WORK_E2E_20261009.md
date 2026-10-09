@@ -2,7 +2,19 @@
 
 作成日: 2026-10-09  
 対象: `feature/manga-canvas-mvp`  
-状態: `PREPARED / STAGING_SAFETY_GATE_BLOCKED / RUNTIME_NOT_STARTED`
+状態: `STAGING_READY / FIXTURE_READY / SELLER_S01_S09_PASS / BUYER_B01_B11_PASS / READER_E07_PASS / ABNORMAL_CASES_PENDING`
+
+### 2026-10-09 隔離Preview実行準備の結果
+
+- strict preflightはSupabase isolation、Checkout test mode、Stripe test credentialsの3/3が`READY`。
+- Stripe test webhookの実配送はHTTP 200。Stripe live request、実決済、注文作成は0件。
+- Preview Branchだけへ必要な12 migrationを適用し、再dry-runでup to dateを確認した。Production DBは変更していない。
+- 合成Seller／Buyer／未購入者、一般向け非公開2ページ作品、release checkpoint、固定Publication、paused 100円商品、注文0件を準備した。fixture監査は8/8 `READY`、再実行も同結果で冪等。
+- Vercel Previewのanon key不一致を修正して再deployした。`/works`は読込エラーから正常な「0件／公開作品はまだありません」へ復旧した。
+- 認証済みSeller画面でS-01〜S-05をPASSとし、制作進捗100%、固定版v1・2ページ、Reader全2ページ、paused商品、税込100円を確認した。
+- 責任者のaction-time承認後、隔離PreviewでS-07〜S-09を実行してPASSとした。Marketplace一覧1件、作品詳細の税込100円テスト販売、売上管理の注文0件・売上0円を確認した。
+- 合成Buyerで検索、作品詳細、あとで読む、試し読み、購入準備を確認し、S-06とB-01〜B-05をPASSとした。未購入状態で2ページ目を直接指定してもサンプル1ページ目に制限された。
+- 責任者のaction-time承認後、Stripe Sandboxの100円テスト支払いを確定した。実請求なしの完了画面、注文1件の`paid`／`test`／100円遷移、本棚1冊、Reader全2ページ、2ページ目からの再開、購入履歴経由の2ページPDF downloadを確認し、B-06〜B-11をPASSとした。Seller所有者、未購入者sample-only、支払済みBuyerの3主体でE-07もPASS。Production、Stripe live、実利用者、Provider、creditは変更していない。
 
 ### 2026-10-09 外部設定の再監査
 
@@ -18,15 +30,11 @@ preflightは今後、値を表示せずに`Preview:`／`Production:`付きで不
 
 ## 1. 結論
 
-Marketplace実作品E2Eの実行項目、証跡、停止条件を固定しました。Repository上のSeller、Buyer、Checkout、Reader、あとで読む、続きから読む、購入ファイル取得に関する集中テストは72/72成功しています。加えて、実E2E開始前の対象fixtureだけをGETで監査するscriptを追加し、単体テスト5/5が成功しました。
+Marketplace実作品E2Eの実行項目、証跡、停止条件を固定しました。Repository上のSeller、Buyer、Checkout、Reader、あとで読む、続きから読む、購入ファイル取得に関する集中テストは72/72成功しています。実E2E開始前の対象fixtureだけをGETで監査するscriptに加え、隔離Preview専用の冪等provisionerを追加しました。
 
-一方、Vercel Previewを用いたread-only preflightでは、次の3条件がすべて`PENDING`でした。
+Vercel PreviewはProductionと分離されたSupabase Branch、Checkout `test`、Stripe test資格情報の3条件を満たし、strict preflightは3/3 `READY`です。必要なmigrationと合成fixtureの準備も完了し、fixture監査は8/8 `READY`です。
 
-1. Productionと分離されたPreview Supabase。
-2. Previewだけが`test`となるCheckout mode。
-3. Stripe test Secret、Webhook Secret、Cancel Secret。
-
-したがって、実作品の登録、公開、販売開始、注文作成、Stripe test決済、Reader進捗保存は実施していません。Production PreviewがProduction DBへ接続している可能性を排除できない状態で、E2E用mutationを行わないためのfail-closed判定です。
+認証済みSeller／Buyerの正常系E2EはS-01〜S-09、B-01〜B-11をPASSしました。隔離Previewでのみ作品公開、販売開始、Stripe test注文1件、Reader進捗保存、購入PDF取得を実施しています。Production、Stripe live、実利用者データには触れていません。
 
 ## 2. 環境preflight
 
@@ -38,11 +46,11 @@ npm run marketplace:staging:preflight
 
 | 安全条件 | 結果 | 不足 |
 | --- | --- | --- |
-| Preview Supabase isolation | BLOCKED | PreviewとProductionで異なるURL、anon key、service-role key、およびStaging／親Project refの一致確認 |
-| Marketplace checkout mode | BLOCKED | Preview=`test`、Production=`test`以外 |
-| Stripe test credentials | BLOCKED | Preview限定test Secret、Webhook Secret、Cancel Secret |
+| Preview Supabase isolation | READY | Preview Branchと親Production refを分離し、URL／anon／service-roleを対象Branchへ限定 |
+| Marketplace checkout mode | READY | Preview=`test`。Production targetは変更なし |
+| Stripe test credentials | READY | Preview限定test Secret、Webhook Secret、Cancel Secret。test webhook HTTP 200 |
 
-設定値と秘密値は表示・文書化していません。preflightはProduction mutation、Stripe request、Payment作成を行っていません。
+設定値と秘密値は表示・文書化していません。preflight自体はProduction mutation、Stripe request、Payment作成を行いません。test webhookの配送確認はPreview endpointに対して1件だけ実施しました。
 
 実作品fixture監査コマンド:
 
@@ -82,33 +90,33 @@ Productionの既存非公開2ページ作品をStagingへ複製する場合は�
 
 | ID | 検証 | 状態 | 現在の証跡／未実施理由 |
 | --- | --- | --- | --- |
-| S-01 | 完成作品の確認 | BLOCKED | 隔離Stagingと対象作品が未確定 |
-| S-02 | 完成版Publicationの確認 | BLOCKED | 隔離Stagingと対象作品が未確定 |
-| S-03 | 販売用下書きの確認 | BLOCKED | 隔離Stagingと対象作品が未確定 |
-| S-04 | 表紙・タイトル・説明の確認 | BLOCKED | 実作品画面未確認 |
-| S-05 | 販売価格の確認 | BLOCKED | 実商品画面未確認 |
-| S-06 | 試し読みページの設定 | BLOCKED | Staging mutationを開始していない |
-| S-07 | 作品公開 | NOT_RUN | Staging安全Gate通過後に限る |
-| S-08 | 商品販売開始 | NOT_RUN | Staging安全Gate通過後に限る |
-| S-09 | Marketplaceへの掲載 | NOT_RUN | S-07、S-08成功後に実施 |
+| S-01 | 完成作品の確認 | PASS | Creator画面で画像配置2/2、確定2/2、完成進捗100%を確認 |
+| S-02 | 完成版Publicationの確認 | PASS | 固定版履歴v1・2ページ、Reader 1/2・2/2を確認 |
+| S-03 | 販売用下書きの確認 | PASS | 商品管理で対象商品が停止中であることを確認 |
+| S-04 | 表紙・タイトル・説明の確認 | PASS | 作品編集と商品編集で表示内容を確認 |
+| S-05 | 販売価格の確認 | PASS | 商品管理・編集で税込100円を確認 |
+| S-06 | 試し読みページの設定 | PASS | Buyer未購入状態で1/2ページだけ表示し、2ページ目の直接指定も1ページ目へ制限 |
+| S-07 | 作品公開 | PASS | 責任者承認後、隔離Preview画面で作品公開完了を確認 |
+| S-08 | 商品販売開始 | PASS | 同じ操作で商品が販売中へ遷移し、税込100円を維持 |
+| S-09 | Marketplaceへの掲載 | PASS | 一覧1件、作品詳細、テスト販売表示、Seller注文0件・売上0円を確認 |
 
 ## 5. Buyer側
 
 | ID | 検証 | 状態 | 現在の証跡／未実施理由 |
 | --- | --- | --- | --- |
-| B-01 | Marketplaceで作品を探す | BLOCKED | 掲載対象がない |
-| B-02 | 作品詳細を開く | BLOCKED | 掲載対象がない |
-| B-03 | あとで読むに追加 | BLOCKED | Buyerログインと隔離DBが未準備 |
-| B-04 | 試し読み | BLOCKED | sample Publication未準備 |
-| B-05 | 購入画面へ進む | BLOCKED | Stripe test mode未準備 |
-| B-06 | Stripe test決済を完了 | NOT_RUN | test資格情報とWebhook未準備 |
-| B-07 | 本棚へ追加 | BLOCKED | paid test注文がない |
-| B-08 | Readerで本編を読む | BLOCKED | paid test注文がない |
-| B-09 | 途中で閲覧終了 | BLOCKED | Readerを開始していない |
-| B-10 | 続きから読むで復帰 | BLOCKED | Staging進捗rowを作成していない |
-| B-11 | 購入ファイルをdownload | BLOCKED | paid test注文がない |
+| B-01 | Marketplaceで作品を探す | PASS | Buyerでタイトル検索し、1件の販売中作品を確認 |
+| B-02 | 作品詳細を開く | PASS | Buyerで作品詳細、作者、税込100円、テスト販売表示を確認 |
+| B-03 | あとで読むに追加 | PASS | 追加成功表示と「あとで読む」一覧1件を確認 |
+| B-04 | 試し読み | PASS | サンプル1/2ページを表示。2ページ目直接指定は1ページ目へ制限 |
+| B-05 | 購入画面へ進む | PASS | 税込100円、Stripe test、Buyerメール、実請求なしの購入準備画面を確認 |
+| B-06 | Stripe test決済を完了 | PASS | action-time承認後に100円Sandbox決済を確定。実請求なし完了画面と`paid`／`test`／100円の注文1件を確認 |
+| B-07 | 本棚へ追加 | PASS | Buyer本棚にテスト購入作品1冊、税込100円を確認 |
+| B-08 | Readerで本編を読む | PASS | 購入済みBuyerが1/2・2/2ページを閲覧できることを確認 |
+| B-09 | 途中で閲覧終了 | PASS | 2ページ目表示後に本棚へ戻り、閲覧を終了 |
+| B-10 | 続きから読むで復帰 | PASS | 本棚に「続きから読む（2ページ）」が表示され、2/2ページへ復帰。進捗rowもpage 2を確認 |
+| B-11 | 購入ファイルをdownload | PASS | 購入履歴から署名URLを再発行して取得。download count 1、PDF 1.7・111,076 bytes・2ページを確認 |
 
-未購入者の有料本文拒否は、実行時にB-04の試し読み成功後、B-06の前後で別アカウントから確認します。Repository契約テストは権限境界を確認済みですが、実環境結果の代用にはしません。
+未購入Buyerの有料本文拒否はB-04、支払済みBuyerの全2ページ閲覧はB-08、Seller所有者の全2ページ閲覧はS-02で実画面確認済みです。これら3主体の結果をE-07の証跡とします。
 
 ## 6. 異常系
 
@@ -120,7 +128,7 @@ Productionの既存非公開2ページ作品をStagingへ複製する場合は�
 | E-04 | 非公開作品への直接アクセス | BLOCKED | 未購入・非所有アカウントで404または拒否を確認 |
 | E-05 | 販売停止商品の購入防止 | BLOCKED | `paused`へ戻した後、Sessionを作成できないことを確認 |
 | E-06 | 他人の購入ファイルへのアクセス拒否 | BLOCKED | Buyer AのdownloadをBuyer Bが取得できないことを確認 |
-| E-07 | Readerの権限確認 | BLOCKED | 未購入、購入者、所有者の3主体で比較 |
+| E-07 | Readerの権限確認 | PASS | Seller所有者は全2ページ、未購入Buyerはsample 1ページのみ、支払済みBuyerは全2ページを実画面確認 |
 | E-08 | PDF download失敗 | BLOCKED | Storage取得失敗を安全に再現できる隔離fixtureを使用 |
 | E-09 | スマートフォン操作 | BLOCKED | 390x844相当で検索、詳細、試読、Checkout復帰、本棚、Readerを確認 |
 
@@ -203,10 +211,21 @@ Productionでの一般公開、販売開始、Stripe live決済、返金、送�
 
 ## 12. 次に必要な操作
 
-1. Preview限定のisolated Supabase接続を設定する。
-2. Preview限定でCheckout modeを`test`にする。
-3. Preview限定のStripe test資格情報とWebhookを設定する。
-4. Staging用のSeller、Buyer、未購入者と非公開2ページ完成作品を用意する。
-5. strict preflightとfixture監査の両方が成功した後、この文書のS-01から実E2Eを開始する。
+1. 完了: Preview限定のisolated Supabase接続を設定した。
+2. 完了: Preview限定でCheckout modeを`test`にした。
+3. 完了: Preview限定のStripe test資格情報とWebhookを設定し、HTTP 200を確認した。
+4. 完了: Previewを再deployし、実行時設定が新しいdeploymentへ反映されたことを確認した。
+5. 完了: Staging用のSeller、Buyer、未購入者と非公開2ページ完成作品を用意した。
+6. 完了: strict preflight 3/3、fixture監査8/8、S-01〜S-09、B-01〜B-11、E-07を成功させた。
+7. 次: E-01〜E-06、E-08、E-09を隔離Previewで実施する。正常系fixtureを壊す販売停止、破損ファイル、拒否決済はそれぞれ独立したtest対象で行う。
+
+### 12.1 2026-10-09 Preview設定結果
+
+- Supabase Preview Branch `marketplace-e2e-20261009`を接続先とし、親Productionとは異なるBranchであることを確認した。
+- Supabase URL、anon key、service-role key、Preview／親ref、`MANGAI_DB_ENV=staging`、Checkout mode `test`の7件はVercel Preview専用で、git branch限定なし。
+- anon／service-role JWTは値を出力せず、roleとproject refだけを対象Branchと照合した。
+- Vercel Production、Production DB／Storage、Stripe、Webhook、fixture、注文、決済、公開・販売は変更していない。
+- strict runtime preflightはSupabase isolation、Checkout mode、Stripe test credentialsの3/3が`READY`。Sensitive値を取得できない場合はPreview限定metadataで判定し、明示的なlive keyは拒否する。
+- PR #629のPreview deploymentは`Ready`で、Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功した。
 
 これらは外部設定またはStagingデータ変更を伴うため、対象環境と変更内容を示した実行時承認後に行います。

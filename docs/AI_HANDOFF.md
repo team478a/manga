@@ -1,5 +1,17 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Marketplace隔離Preview E2E準備（2026-10-09）
+
+- Supabase Preview Branch `marketplace-e2e-20261009`とVercel Previewを分離接続した。Checkoutは`test`、Stripeはtest資格情報だけを設定し、test webhookの実配送がHTTP 200になった。秘密値は取得結果や文書へ記録していない。
+- strict preflightはSupabase isolation、Checkout mode、Stripe test credentialsの3/3が`READY`。VercelのSensitive値がCLIへ返らない場合も、Preview限定metadataを用いて安全に判定できるようにした。明示的なlive keyはmetadataがあっても拒否する。
+- Preview Branchへ不足していたMarketplace系12 migrationを適用し、再dry-runでup to dateを確認した。Production migrationは0件。
+- 隔離Previewに合成Seller／Buyer／未購入者、一般向け非公開2ページ作品、release checkpoint、固定Publication、paused 100円商品、注文0件を冪等に準備した。fixture監査は8/8 `READY`。Production、公開、販売開始、決済、Provider、creditは未変更。
+- Preview作品一覧でSupabase anon key不一致による読込エラーを発見し、Preview限定の正しいkeyへ更新して再deployした。再確認では「0件／公開作品はまだありません」の正常空状態を表示した。
+- Seller実画面のS-01〜S-05はPASS。制作ページ不足を発見してfixtureへ2ページの章・話・シーン・Canvas・private assetを追加し、画像配置2/2・確定2/2・完成進捗100%、固定版v1・2ページ、Reader全2ページ、paused商品、税込100円を確認した。
+- Reader初回失敗はVercel Previewのservice-role key不一致が原因で、Preview限定の正しい値へ再設定・再deployして解消した。次はPreviewの作品公開・販売開始を同時に行うS-07／S-08のaction-time確認待ち。PRは[#629](https://github.com/team478a/manga/pull/629)。
+
+---
+
 ## 0.0 Cloud制作 ステップ別動画マニュアル（2026-10-08）
 
 - Branch `codex/cloud-operation-video-manual-20261008`。市場分析から収益管理までを、実画面に沿った匿名化表示の8本の独立動画へ分割した。

@@ -1,5 +1,26 @@
 # MANGAI Current Task
 
+## 2026-10-09 Marketplace隔離Preview E2E準備
+
+- 状態: `PREFLIGHT_READY / FIXTURE_READY / SELLER_S01_S09_PASS / BUYER_B01_B11_PASS / READER_E07_PASS / ABNORMAL_CASES_PENDING`
+- Branch: `codex/marketplace-staging-fixture-readiness-20261009`
+- Preview限定のSupabase接続、Checkout `test`、Stripe test Secret／Webhook／Cancel Secretを設定し、test webhookの実配送HTTP 200を確認した。秘密値は表示・記録していない。
+- strict preflightは3/3 `READY`。Sensitive値を取得できないVercel Preview metadataを安全に扱い、明示的なlive keyを拒否する回帰テストを追加した。
+- Preview BranchだけへMarketplace系12 migrationを適用し、再dry-runでup to dateを確認した。Production DB／Vercel Production／Stripe liveは未変更。
+- 冪等provisionerで合成3アカウント、非公開一般向け2ページ完成作品、release checkpoint、固定Publication、paused 100円商品、注文0件を準備し、fixture監査8/8 `READY`。実利用者データ、公開、販売開始、決済、Provider、creditは未変更。
+- PreviewのSupabase anon keyが対象Branchと不一致だったため、Preview限定で修正して再deployした。`/works`は読込エラーから正常な0件空状態へ復旧した。
+- 集中18/18、対象ESLint、strict preflight、fixture冪等監査、diff checkが成功。e2e runnerはローカルNode `22.15.0`が必要最小版未満のため未使用で、既存Chromeで手動E2Eを進める。
+- Seller実画面でS-01〜S-05をPASS。Creatorは画像配置2/2・確定2/2・完成進捗100%、固定版v1・2ページ、Reader 1/2・2/2、作品情報、paused商品、税込100円を確認した。
+- 初回Reader失敗はVercel Previewのservice-role key不一致が原因で、対象Preview Branchの正しい値へPreview限定で再設定・再deployして解消した。
+- 責任者のaction-time承認後、隔離Previewで作品公開と販売開始を同時実行し、S-07〜S-09をPASSとした。Marketplace一覧1件、作品詳細の税込100円テスト販売、売上管理の注文0件・売上0円を確認した。Production、実決済、Provider、creditは未変更。
+- 責任者承認後、合成Buyer資格情報を隔離Previewへ送信した。Buyerとして検索1件、作品詳細、あとで読む1件、試し読み1/2ページ、2ページ目の直接指定が1ページ目へ制限されること、税込100円のテスト購入準備画面を確認し、S-06とB-01〜B-05をPASSとした。
+- 責任者のaction-time承認後、Stripe Sandboxの100円テスト支払いを確定した。完了画面は実請求なしを表示し、DBは注文1件が`paid`／`test`／100円、`paid_at`ありへ遷移した。
+- Buyer本棚1冊、購入済みReader 1/2・2/2ページ、2ページ目での閲覧終了、再訪時の「続きから読む（2ページ）」復帰を確認し、B-06〜B-10をPASSとした。未購入者のsample-only、Seller所有者の全ページ、支払済みBuyerの全ページでE-07もPASS。
+- 購入履歴から5分署名URLを再発行してPDFを取得し、DBのdownload countが1へ増加した。取得PDFは111,076 bytes、PDF 1.7、2ページで、B-11をPASSとした。
+- 次: E-01〜E-06、E-08、E-09の隔離Preview異常系を、正常系fixtureを壊さない順で実施する。PR: [#629](https://github.com/team478a/manga/pull/629)。
+
+---
+
 ## 2026-10-09 Marketplace Staging E2E外部設定監査
 
 - 状態: `READ_ONLY_AUDIT_COMPLETE / SETTINGS_MISSING / RUNTIME_NOT_STARTED`

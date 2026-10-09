@@ -143,7 +143,12 @@ export const assessMarketplaceStagingDeployment = ({
     "SUPABASE_SERVICE_ROLE_KEY",
   ];
   const previewSupabaseConfigured = supabaseCredentialNames.every((name) =>
-    configured(previewEnvironment[name]),
+    configured(previewEnvironment[name]) ||
+    hasTargetScopedVariable({
+      metadata: previewMetadata,
+      key: name,
+      target: "preview",
+    }),
   );
   const productionSupabaseValuesAvailable = supabaseCredentialNames.every(
     (name) => configured(productionEnvironment[name]),
@@ -193,24 +198,34 @@ export const assessMarketplaceStagingDeployment = ({
   const checkoutModeReady =
     previewEnvironment.MANGAI_MARKETPLACE_CHECKOUT_MODE?.trim() === "test" &&
     productionEnvironment.MANGAI_MARKETPLACE_CHECKOUT_MODE?.trim() !== "test";
-  const webhookSecretVerified =
-    (configured(previewEnvironment.STRIPE_WEBHOOK_SECRET, 16) &&
-      previewEnvironment.STRIPE_WEBHOOK_SECRET.trim().startsWith("whsec_")) ||
-    hasTargetScopedVariable({
-      metadata: previewMetadata,
-      key: "STRIPE_WEBHOOK_SECRET",
-      target: "preview",
-      type: "sensitive",
-    });
+  const sensitivePreviewSettingVerified = (key, value, validator) =>
+    configured(value)
+      ? validator(value.trim())
+      : hasTargetScopedVariable({
+          metadata: previewMetadata,
+          key,
+          target: "preview",
+          type: "sensitive",
+        });
+  const stripeSecretVerified = sensitivePreviewSettingVerified(
+    "STRIPE_SECRET_KEY",
+    previewEnvironment.STRIPE_SECRET_KEY,
+    (value) => value.length >= 20 && value.startsWith("sk_test_"),
+  );
+  const webhookSecretVerified = sensitivePreviewSettingVerified(
+    "STRIPE_WEBHOOK_SECRET",
+    previewEnvironment.STRIPE_WEBHOOK_SECRET,
+    (value) => value.length >= 16 && value.startsWith("whsec_"),
+  );
+  const cancelSecretVerified = sensitivePreviewSettingVerified(
+    "CHECKOUT_CANCEL_SECRET",
+    previewEnvironment.CHECKOUT_CANCEL_SECRET,
+    (value) => value.length >= 16,
+  );
   const stripeTestReady =
-    configured(previewEnvironment.STRIPE_SECRET_KEY, 20) &&
-    previewEnvironment.STRIPE_SECRET_KEY.trim().startsWith("sk_test_") &&
+    stripeSecretVerified &&
     webhookSecretVerified &&
-    configured(
-      previewEnvironment.CHECKOUT_CANCEL_SECRET ||
-        previewEnvironment.STRIPE_WEBHOOK_SECRET,
-      16,
-    );
+    cancelSecretVerified;
 
   const missingPreviewSupabaseSettings = missingTargetSettings({
     environment: previewEnvironment,
@@ -240,17 +255,13 @@ export const assessMarketplaceStagingDeployment = ({
     ? []
     : ["Preview:MANGAI_MARKETPLACE_CHECKOUT_MODE"];
   const missingStripeSettings = [
-    ...(!configured(previewEnvironment.STRIPE_SECRET_KEY, 20)
+    ...(!stripeSecretVerified
       ? ["Preview:STRIPE_SECRET_KEY"]
       : []),
     ...(!webhookSecretVerified
       ? ["Preview:STRIPE_WEBHOOK_SECRET"]
       : []),
-    ...(!configured(
-      previewEnvironment.CHECKOUT_CANCEL_SECRET ||
-        previewEnvironment.STRIPE_WEBHOOK_SECRET,
-      16,
-    )
+    ...(!cancelSecretVerified
       ? ["Preview:CHECKOUT_CANCEL_SECRET"]
       : []),
   ];
