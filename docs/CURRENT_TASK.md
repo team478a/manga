@@ -2,15 +2,17 @@
 
 ## 2026-10-09 Marketplace隔離Preview E2E準備
 
-- 状態: `PREFLIGHT_READY / FIXTURE_READY / PUBLIC_LIST_SMOKE_PASS / AUTHENTICATED_E2E_NOT_STARTED`
+- 状態: `PREFLIGHT_READY / FIXTURE_READY / PUBLIC_LIST_SMOKE_PASS / SELLER_S01_S05_PASS / PUBLISH_ACTION_CONFIRMATION_PENDING`
 - Branch: `codex/marketplace-staging-fixture-readiness-20261009`
 - Preview限定のSupabase接続、Checkout `test`、Stripe test Secret／Webhook／Cancel Secretを設定し、test webhookの実配送HTTP 200を確認した。秘密値は表示・記録していない。
 - strict preflightは3/3 `READY`。Sensitive値を取得できないVercel Preview metadataを安全に扱い、明示的なlive keyを拒否する回帰テストを追加した。
 - Preview BranchだけへMarketplace系12 migrationを適用し、再dry-runでup to dateを確認した。Production DB／Vercel Production／Stripe liveは未変更。
 - 冪等provisionerで合成3アカウント、非公開一般向け2ページ完成作品、release checkpoint、固定Publication、paused 100円商品、注文0件を準備し、fixture監査8/8 `READY`。実利用者データ、公開、販売開始、決済、Provider、creditは未変更。
 - PreviewのSupabase anon keyが対象Branchと不一致だったため、Preview限定で修正して再deployした。`/works`は読込エラーから正常な0件空状態へ復旧した。
-- 集中15/15、対象ESLint、strict preflight、fixture冪等監査、diff checkが成功。e2e runnerはローカルNode `22.15.0`が必要最小版未満のため未使用で、既存Chromeで手動E2Eを進める。
-- 次: 合成アカウントでS-01から認証済み画面E2Eを開始する。資格情報をPreviewログインへ送信する直前にComputer Use確認を取得する。PR: [#629](https://github.com/team478a/manga/pull/629)。
+- 集中18/18、対象ESLint、strict preflight、fixture冪等監査、diff checkが成功。e2e runnerはローカルNode `22.15.0`が必要最小版未満のため未使用で、既存Chromeで手動E2Eを進める。
+- Seller実画面でS-01〜S-05をPASS。Creatorは画像配置2/2・確定2/2・完成進捗100%、固定版v1・2ページ、Reader 1/2・2/2、作品情報、paused商品、税込100円を確認した。
+- 初回Reader失敗はVercel Previewのservice-role key不一致が原因で、対象Preview Branchの正しい値へPreview限定で再設定・再deployして解消した。
+- 次: Previewで作品公開と販売開始を同時に行うS-07／S-08の最終操作について、Computer Useのaction-time確認後に続行する。PR: [#629](https://github.com/team478a/manga/pull/629)。
 
 ---
 

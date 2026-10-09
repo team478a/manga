@@ -2,7 +2,7 @@
 
 作成日: 2026-10-09  
 対象: `feature/manga-canvas-mvp`  
-状態: `STAGING_READY / FIXTURE_READY / PUBLIC_LIST_SMOKE_PASS / AUTHENTICATED_E2E_NOT_STARTED`
+状態: `STAGING_READY / FIXTURE_READY / PUBLIC_LIST_SMOKE_PASS / SELLER_S01_S05_PASS / PUBLISH_ACTION_CONFIRMATION_PENDING`
 
 ### 2026-10-09 隔離Preview実行準備の結果
 
@@ -11,7 +11,7 @@
 - Preview Branchだけへ必要な12 migrationを適用し、再dry-runでup to dateを確認した。Production DBは変更していない。
 - 合成Seller／Buyer／未購入者、一般向け非公開2ページ作品、release checkpoint、固定Publication、paused 100円商品、注文0件を準備した。fixture監査は8/8 `READY`、再実行も同結果で冪等。
 - Vercel Previewのanon key不一致を修正して再deployした。`/works`は読込エラーから正常な「0件／公開作品はまだありません」へ復旧した。
-- 認証済みSeller／Buyer操作、公開、販売開始、Stripe test決済、Reader、download、異常系はまだ開始していない。Production、公開作品、販売、Provider、creditは変更していない。
+- 認証済みSeller画面でS-01〜S-05をPASSとし、制作進捗100%、固定版v1・2ページ、Reader全2ページ、paused商品、税込100円を確認した。公開、販売開始、Buyer操作、Stripe test決済、購入後Reader、download、異常系は未実施。Production、公開作品、販売、Provider、creditは変更していない。
 
 ### 2026-10-09 外部設定の再監査
 
@@ -87,14 +87,14 @@ Productionの既存非公開2ページ作品をStagingへ複製する場合は�
 
 | ID | 検証 | 状態 | 現在の証跡／未実施理由 |
 | --- | --- | --- | --- |
-| S-01 | 完成作品の確認 | NOT_RUN | fixture監査READY。Seller画面ログイン前 |
-| S-02 | 完成版Publicationの確認 | NOT_RUN | fixture監査READY。Seller画面ログイン前 |
-| S-03 | 販売用下書きの確認 | NOT_RUN | paused商品準備済み。Seller画面ログイン前 |
-| S-04 | 表紙・タイトル・説明の確認 | NOT_RUN | fixture準備済み。実画面未確認 |
-| S-05 | 販売価格の確認 | NOT_RUN | 100円fixture準備済み。実画面未確認 |
-| S-06 | 試し読みページの設定 | NOT_RUN | 1ページsample準備済み。実画面未確認 |
-| S-07 | 作品公開 | NOT_RUN | Staging安全Gate通過後に限る |
-| S-08 | 商品販売開始 | NOT_RUN | Staging安全Gate通過後に限る |
+| S-01 | 完成作品の確認 | PASS | Creator画面で画像配置2/2、確定2/2、完成進捗100%を確認 |
+| S-02 | 完成版Publicationの確認 | PASS | 固定版履歴v1・2ページ、Reader 1/2・2/2を確認 |
+| S-03 | 販売用下書きの確認 | PASS | 商品管理で対象商品が停止中であることを確認 |
+| S-04 | 表紙・タイトル・説明の確認 | PASS | 作品編集と商品編集で表示内容を確認 |
+| S-05 | 販売価格の確認 | PASS | 商品管理・編集で税込100円を確認 |
+| S-06 | 試し読みページの設定 | NOT_RUN | DB上は1ページsample。公開後に未購入者Readerで実効性を確認する |
+| S-07 | 作品公開 | NOT_RUN | Preview画面で最終確認待ち |
+| S-08 | 商品販売開始 | NOT_RUN | S-07と同じ確認操作で実行予定 |
 | S-09 | Marketplaceへの掲載 | NOT_RUN | S-07、S-08成功後に実施 |
 
 ## 5. Buyer側

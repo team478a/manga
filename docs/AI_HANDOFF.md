@@ -7,7 +7,8 @@
 - Preview Branchへ不足していたMarketplace系12 migrationを適用し、再dry-runでup to dateを確認した。Production migrationは0件。
 - 隔離Previewに合成Seller／Buyer／未購入者、一般向け非公開2ページ作品、release checkpoint、固定Publication、paused 100円商品、注文0件を冪等に準備した。fixture監査は8/8 `READY`。Production、公開、販売開始、決済、Provider、creditは未変更。
 - Preview作品一覧でSupabase anon key不一致による読込エラーを発見し、Preview限定の正しいkeyへ更新して再deployした。再確認では「0件／公開作品はまだありません」の正常空状態を表示した。
-- 次は合成アカウントでS-01から画面E2Eを開始する。ログイン資格情報をブラウザへ送信する直前に、Computer Useの確認を得る。PRは[#629](https://github.com/team478a/manga/pull/629)。
+- Seller実画面のS-01〜S-05はPASS。制作ページ不足を発見してfixtureへ2ページの章・話・シーン・Canvas・private assetを追加し、画像配置2/2・確定2/2・完成進捗100%、固定版v1・2ページ、Reader全2ページ、paused商品、税込100円を確認した。
+- Reader初回失敗はVercel Previewのservice-role key不一致が原因で、Preview限定の正しい値へ再設定・再deployして解消した。次はPreviewの作品公開・販売開始を同時に行うS-07／S-08のaction-time確認待ち。PRは[#629](https://github.com/team478a/manga/pull/629)。
 
 ---
 

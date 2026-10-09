@@ -131,20 +131,8 @@ const ensureAuthUser = async (target, users, role) => {
       }),
       `Create ${role} staging auth user`,
     );
-  } else {
-    user = await responseJson(
-      await fetch(
-        new URL(`/auth/v1/admin/users/${user.id}`, target.supabaseUrl),
-        {
-          body: JSON.stringify({ password }),
-          headers: authHeaders(target.serviceRoleKey),
-          method: "PUT",
-        },
-      ),
-      `Refresh ${role} staging auth password`,
-    );
   }
-  return { email, password, userId: user.id };
+  return { email, userId: user.id };
 };
 
 const ensureProfile = async (target, identity, profileRole) => {
@@ -185,6 +173,30 @@ const uploadObject = async (target, bucket, objectPath, bytes, contentType) => {
   await responseJson(response, `Upload ${bucket} fixture object`);
 };
 
+const ensurePrivateImageBucket = async (target, bucket) => {
+  const buckets = await responseJson(
+    await fetch(new URL("/storage/v1/bucket", target.supabaseUrl), {
+      headers: authHeaders(target.serviceRoleKey),
+    }),
+    "List fixture buckets",
+  );
+  if (Array.isArray(buckets) && buckets.some((item) => item?.id === bucket)) return;
+  await responseJson(
+    await fetch(new URL("/storage/v1/bucket", target.supabaseUrl), {
+      body: JSON.stringify({
+        allowed_mime_types: ["image/png", "image/jpeg", "image/webp"],
+        file_size_limit: 20 * 1024 * 1024,
+        id: bucket,
+        name: bucket,
+        public: false,
+      }),
+      headers: authHeaders(target.serviceRoleKey),
+      method: "POST",
+    }),
+    `Create ${bucket} fixture bucket`,
+  );
+};
+
 const makeFixtureMedia = async () => {
   const source = fs.readFileSync(
     path.join(root, "docs/evidence/R4_2C_FOUR_PAGE_PREVIEW.png"),
@@ -205,6 +217,50 @@ const makeFixtureMedia = async () => {
     page.drawImage(image, { x: 0, y: 0, width: 800, height: 1200 });
   }
   return { pageOne, pageTwo, pdf: Buffer.from(await pdf.save()) };
+};
+
+const fixtureCanvas = ({ assetId, pageId }) => {
+  const now = new Date().toISOString();
+  const panelId = crypto.randomUUID();
+  return {
+    backgroundColor: "#ffffff",
+    balloons: [],
+    pageId,
+    panelLayers: [],
+    panels: [
+      {
+        borderColor: "#111111",
+        borderWidth: 0,
+        createdAt: now,
+        fillColor: "#ffffff",
+        height: 1200,
+        id: panelId,
+        imageAssetId: assetId,
+        imageFit: "contain",
+        imageOffsetX: 0,
+        imageOffsetY: 0,
+        imageOpacity: 1,
+        imageRotation: 0,
+        imageScale: 1,
+        locked: true,
+        name: "完成原稿",
+        pageId,
+        rotation: 0,
+        shape: "rectangle",
+        slant: 0,
+        updatedAt: now,
+        visible: true,
+        width: 800,
+        x: 0,
+        y: 0,
+        zIndex: 0,
+      },
+    ],
+    schemaVersion: 1,
+    textObjects: [],
+    width: 800,
+    height: 1200,
+  };
 };
 
 const firstOrCreate = async (target, table, filters, row, select = "*") => {
@@ -263,11 +319,16 @@ export async function provisionMarketplaceRealWorkStagingFixture(environment) {
   const pageOnePath = `${prefix}/page-1.png`;
   const pageTwoPath = `${prefix}/page-2.png`;
   const productPath = `${prefix}/mangai-marketplace-e2e.pdf`;
+  const cloudPageOnePath = `${prefix}/cloud-page-1.png`;
+  const cloudPageTwoPath = `${prefix}/cloud-page-2.png`;
+  await ensurePrivateImageBucket(target, "cloud-assets");
   await Promise.all([
     uploadObject(target, "works", coverPath, media.pageOne, "image/png"),
     uploadObject(target, "digital-products", pageOnePath, media.pageOne, "image/png"),
     uploadObject(target, "digital-products", pageTwoPath, media.pageTwo, "image/png"),
     uploadObject(target, "digital-products", productPath, media.pdf, "application/pdf"),
+    uploadObject(target, "cloud-assets", cloudPageOnePath, media.pageOne, "image/png"),
+    uploadObject(target, "cloud-assets", cloudPageTwoPath, media.pageTwo, "image/png"),
   ]);
   const coverUrl = new URL(
     `/storage/v1/object/public/works/${coverPath}`,
@@ -284,6 +345,97 @@ export async function provisionMarketplaceRealWorkStagingFixture(environment) {
     .createHash("sha256")
     .update(JSON.stringify(manifest))
     .digest("hex");
+  const chapter = await firstOrCreate(
+    target,
+    "cloud_chapters",
+    { project_id: `eq.${project.id}`, order_index: "eq.0" },
+    { order_index: 0, project_id: project.id, title: "第1章" },
+  );
+  const episode = await firstOrCreate(
+    target,
+    "cloud_episodes",
+    { project_id: `eq.${project.id}`, order_index: "eq.0" },
+    {
+      chapter_id: chapter.id,
+      order_index: 0,
+      project_id: project.id,
+      title: "第1話",
+    },
+  );
+  const scene = await firstOrCreate(
+    target,
+    "cloud_scenes",
+    { episode_id: `eq.${episode.id}`, order_index: "eq.0" },
+    {
+      chapter_id: chapter.id,
+      episode_id: episode.id,
+      order_index: 0,
+      project_id: project.id,
+      summary: "Marketplace E2E用の完成原稿です。",
+      title: "完成原稿",
+    },
+  );
+  const pageMedia = [
+    { bytes: media.pageOne, pageNumber: 1, storagePath: cloudPageOnePath },
+    { bytes: media.pageTwo, pageNumber: 2, storagePath: cloudPageTwoPath },
+  ];
+  for (const item of pageMedia) {
+    const page = await firstOrCreate(
+      target,
+      "cloud_pages",
+      { project_id: `eq.${project.id}`, page_number: `eq.${item.pageNumber}` },
+      {
+        episode_id: episode.id,
+        height: 1200,
+        order_index: item.pageNumber - 1,
+        page_number: item.pageNumber,
+        project_id: project.id,
+        revision: 0,
+        scene_id: scene.id,
+        width: 800,
+      },
+    );
+    const digest = crypto.createHash("sha256").update(item.bytes).digest("hex");
+    const asset = await firstOrCreate(
+      target,
+      "cloud_assets",
+      { project_id: `eq.${project.id}`, sha256: `eq.${digest}` },
+      {
+        byte_size: item.bytes.length,
+        file_name: `page-${item.pageNumber}.png`,
+        height: 1200,
+        mime_type: "image/png",
+        owner_profile_id: seller.profileId,
+        project_id: project.id,
+        sha256: digest,
+        storage_path: item.storagePath,
+        width: 800,
+      },
+    );
+    await firstOrCreate(
+      target,
+      "cloud_canvas_snapshots",
+      { page_id: `eq.${page.id}`, revision: "eq.0" },
+      {
+        canvas: fixtureCanvas({ assetId: asset.id, pageId: page.id }),
+        created_by_profile_id: seller.profileId,
+        page_id: page.id,
+        project_id: project.id,
+        revision: 0,
+      },
+    );
+    await patchRows(
+      target,
+      "cloud_pages",
+      { id: `eq.${page.id}` },
+      {
+        finalized_revision: 0,
+        production_status: "finalized",
+        production_status_updated_by_profile_id: seller.profileId,
+        reviewed_context_revision: 0,
+      },
+    );
+  }
   const checkpoint = await firstOrCreate(
     target,
     "cloud_project_checkpoints",
