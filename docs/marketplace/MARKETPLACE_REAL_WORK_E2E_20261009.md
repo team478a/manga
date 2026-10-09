@@ -2,7 +2,7 @@
 
 作成日: 2026-10-09  
 対象: `feature/manga-canvas-mvp`  
-状態: `STAGING_READY / FIXTURE_READY / SELLER_S01_S09_PASS / BUYER_B01_B11_PASS / READER_E07_PASS / ABNORMAL_CASES_PENDING`
+状態: `STAGING_READY / FIXTURE_READY / SELLER_S01_S09_PASS / BUYER_B01_B11_PASS / READER_E07_PASS / DOWNLOAD_E08_PASS / ABNORMAL_CASES_PENDING`
 
 ### 2026-10-09 隔離Preview実行準備の結果
 
@@ -129,10 +129,12 @@ Productionの既存非公開2ページ作品をStagingへ複製する場合は�
 | E-05 | 販売停止商品の購入防止 | BLOCKED | `paused`へ戻した後、Sessionを作成できないことを確認 |
 | E-06 | 他人の購入ファイルへのアクセス拒否 | BLOCKED | Buyer AのdownloadをBuyer Bが取得できないことを確認 |
 | E-07 | Readerの権限確認 | PASS | Seller所有者は全2ページ、未購入Buyerはsample 1ページのみ、支払済みBuyerは全2ページを実画面確認 |
-| E-08 | PDF download失敗 | BLOCKED | Storage取得失敗を安全に再現できる隔離fixtureを使用 |
+| E-08 | PDF download失敗 | PASS | 新規5分署名URLは直後のRange取得に成功し、実時間失効後は同じURLの取得を拒否。元の購入fileと注文は変更なし |
 | E-09 | スマートフォン操作 | BLOCKED | 390x844相当で検索、詳細、試読、Checkout復帰、本棚、Readerを確認 |
 
 過去のStaging決済失敗／返金E2E証跡は参考にしますが、2026-10-09の最新環境結果として流用しません。
+
+異常系用に合成未購入者の`pending`／`test`／100円注文を1件だけ隔離Previewへ準備しました。改ざんcancel tokenは拒否され、前後で注文状態は不変です。これはE-02の正規Checkout離脱とは別の認可境界証跡であり、E-02は未実施のままです。Failure／refundのread-only preflightは、VercelのSensitive値がCLIへ返らないため停止し、Secretの回避取得や外部操作は行っていません。
 
 ## 7. Repository集中テスト
 
@@ -217,7 +219,8 @@ Productionでの一般公開、販売開始、Stripe live決済、返金、送�
 4. 完了: Previewを再deployし、実行時設定が新しいdeploymentへ反映されたことを確認した。
 5. 完了: Staging用のSeller、Buyer、未購入者と非公開2ページ完成作品を用意した。
 6. 完了: strict preflight 3/3、fixture監査8/8、S-01〜S-09、B-01〜B-11、E-07を成功させた。
-7. 次: E-01〜E-06、E-08、E-09を隔離Previewで実施する。正常系fixtureを壊す販売停止、破損ファイル、拒否決済はそれぞれ独立したtest対象で行う。
+7. 完了: E-08の新規5分署名URL即時取得と実時間失効後の取得拒否、改ざんcancel token拒否、注文不変を確認した。
+8. 次: E-01〜E-06、E-09を隔離Previewで実施する。正常系fixtureを壊す販売停止、拒否決済はそれぞれ独立したtest対象で行う。
 
 ### 12.1 2026-10-09 Preview設定結果
 

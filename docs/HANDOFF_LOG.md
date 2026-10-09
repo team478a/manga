@@ -1,5 +1,15 @@
 # MANGAI AI Handoff Log
 
+## 2026-10-09 Codex: Marketplace隔離Preview 異常系E2E
+
+- PR #629のmerge commit `9f1d4f9a08060cbfaf1b2f011431db318f16e398`からBranch `codex/marketplace-staging-abnormal-e2e-20261009`を作成した。
+- 隔離Previewだけへ合成未購入者の`pending`／`test`／100円注文を1件準備した。既存の`paid`／`test`注文とは別で、Stripe request、決済、Production mutationは行っていない。
+- 改ざんcancel tokenは拒否され、注文状態は`pending`／`test`のまま不変。購入fileの新規5分署名URLは直後に取得でき、実時間失効後は取得を拒否した。`expiredSignedUrlRejected`、`freshSignedUrlDownloaded`、`tamperedCancelRejected`、`tamperedOrderUnchanged`の4項目がPASSし、E-08をPASSとした。
+- Failure／refundのread-only preflightは、Vercel PreviewのSensitiveなStripe test SecretがCLIへ返らず停止した。値の表示、コピー、回避取得、失敗決済、返金は行っていない。
+- 次はE-01〜E-06、E-09。Stripe確定操作、返金、合成資格情報の外部送信はaction-time確認を分離する。Production、Stripe live、実利用者、Provider、creditは未変更。
+
+---
+
 ## 2026-10-09 Codex: Marketplace隔離Preview E2E準備
 
 - Branch `codex/marketplace-staging-fixture-readiness-20261009`、Draft PR [#629](https://github.com/team478a/manga/pull/629)。
@@ -14,7 +24,7 @@
 - 責任者のaction-time承認後、Stripe Sandboxの100円テスト支払いを確定した。完了画面の実請求なし表示と、注文1件が`paid`／`test`／100円へ遷移したことをread-only監査で確認した。
 - Buyer本棚1冊、Reader全2ページ、2ページ目で中断後の「続きから読む（2ページ）」復帰を確認し、B-06〜B-10をPASSとした。Seller所有者、未購入者sample-only、支払済みBuyerの3主体でE-07もPASS。
 - 購入履歴からPDF downloadを実行し、download count 1、PDF 1.7・111,076 bytes・2ページを確認してB-11をPASSとした。Production、Stripe live、実利用者、Provider、creditは変更していない。
-- 集中18/18、対象ESLint、strict preflight、fixture再監査、diff check成功。次はE-01〜E-06、E-08、E-09の隔離Preview異常系を実施する。
+- 集中18/18、対象ESLint、strict preflight、fixture再監査、diff check成功。次はE-01〜E-06、E-09の隔離Preview異常系を実施する。
 
 ---
 
