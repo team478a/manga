@@ -1,5 +1,15 @@
 # MANGAI AI Handoff Log
 
+## 2026-10-09 Codex: Marketplace隔離Preview E-01決済失敗 E2E
+
+- Branch `codex/marketplace-e01-declined-payment-pass-20261009`。PR #634 merge commit `6365e928`から開始した。
+- 隔離Previewの合成Buyerだけを対象に認証情報を再発行し、値を表示・記録せずにログインした。実利用者とProduction認証は変更していない。
+- 責任者のaction-time承認後、Stripe Sandboxの公式拒否用test cardで税込100円の支払いを1回だけ確定し、Checkoutのカード拒否表示を確認した。
+- DBでは対象注文が`failed`／`test`／100円、`paid_at`なし、download count 0になった。同じBuyer／商品の既存`paid`注文1件は不変で、新しいpaid注文や購入権限の重複はない。
+- E-01はPASS。Production、Stripe live、実請求、Provider、生成Job、creditへの変更は0件。次はE-02正規Checkout離脱とE-03同一test event再配送。
+
+---
+
 ## 2026-10-09 Codex: Marketplace隔離Preview E-01決済失敗preflight改善
 
 - Branch `codex/marketplace-staging-payment-failure-e2e-20261009`。PR #633 merge commit `53299f66`から開始した。

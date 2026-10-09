@@ -1,5 +1,18 @@
 # MANGAI Current Task
 
+## 2026-10-09 Marketplace隔離Preview E-01決済失敗 E2E
+
+- 状態: `E01_PASS / FAILED_ORDER_CONFIRMED / NO_DUPLICATE_PAID_ORDER / PRODUCTION_UNCHANGED`
+- Branch: `codex/marketplace-e01-declined-payment-pass-20261009`
+- PR #634 merge commit `6365e928`を基準ブランチで確認し、最新`origin/feature/manga-canvas-mvp`から分離して開始した。
+- 隔離Previewだけで合成Buyerの認証情報を再発行し、資格情報を表示・記録せずにログインした。実利用者とProduction認証は変更していない。
+- 責任者のaction-time承認後、Stripe Sandboxの公式拒否用test cardで税込100円の支払いを1回だけ確定し、Checkoutにカード拒否エラーが表示されることを確認した。実請求は発生していない。
+- 対象注文は`failed`／`test`／100円、`paid_at`なし、download count 0へ遷移した。同じBuyer／商品に既存の正常系`paid`注文1件だけが残り、新しいpaid注文や購入権限の重複は発生していない。
+- Production、Stripe live、Provider、生成Job、creditは変更していない。E-01はPASS。
+- 次: E-02正規Checkout離脱とE-03同一test event再配送を、それぞれaction-time確認を分離して実施する。
+
+---
+
 ## 2026-10-09 Marketplace隔離Preview E-01決済失敗preflight改善
 
 - 状態: `E01_PREFLIGHT_AUTODISCOVERY_READY / EXTERNAL_EXECUTION_PENDING / PRODUCTION_UNCHANGED`
