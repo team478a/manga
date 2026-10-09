@@ -2,7 +2,7 @@
 
 ## 2026-10-10 Codex: Marketplace隔離Preview E-03 重複Webhook preflight
 
-- Branch `codex/marketplace-e03-duplicate-webhook-20261010`。PR #636 merge commit `89666c1a`から開始した。PR #635はOpen／非Draft／mergeable、5 checks成功、保護ルール待ち。PR自体は変更していない。
+- Branch `codex/marketplace-e03-duplicate-webhook-20261010`、Draft PR [#637](https://github.com/team478a/manga/pull/637)（PR #635へstacked）。PR #636 merge commit `89666c1a`から開始した。PR #635はOpen／非Draft／mergeable、5 checks成功、保護ルール待ち。PR自体は変更していない。
 - PR #635 headのVercel Previewは成功し、GitHub deployment metadataでProductionではないことを確認した。
 - 実装上、paid webhookの注文更新は`pending`だけが対象で、既に`paid`なら再更新せず存在確認へ進む。重複eventで`paid_at`や権限を増やさない契約をread-only確認した。
 - Vercel Sensitive値はCLIへ渡らずstrict preflightが安全停止。ローカルにStripe／隔離Supabase資格情報はなく、Stripe CLIもない。秘密値の回避取得や導入は行っていない。

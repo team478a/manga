@@ -2,7 +2,7 @@
 
 ## 0.0 Marketplace隔離Preview E-03 重複Webhook preflight（2026-10-10）
 
-- PR #636 merge commit `89666c1a`からBranch `codex/marketplace-e03-duplicate-webhook-20261010`を作成した。PR #635はOpen／非Draft／mergeable、5 checks成功、保護ルール待ちで、merge・base・履歴は変更していない。
+- PR #636 merge commit `89666c1a`からBranch `codex/marketplace-e03-duplicate-webhook-20261010`を作成し、Draft PR [#637](https://github.com/team478a/manga/pull/637)をPR #635へstackedした。PR #635はOpen／非Draft／mergeable、5 checks成功、保護ルール待ちで、merge・base・履歴は変更していない。
 - PR #635 headのVercel Preview成功と非Production deploymentを確認した。paid webhookは`pending`注文だけを更新し、既に`paid`なら再更新せず存在確認だけを返すため、同一event再配送で`paid_at`や権限を増やさない契約である。
 - Sensitive値はCLIへ渡らずstrict preflightが安全停止し、ローカルにもStripe／隔離Supabase資格情報やStripe CLIはない。秘密値の回避取得やツール導入は行っていない。
 - Stripe／Supabaseを開いたChrome profileへのUI接続が複数回応答せず、対象test eventと注文の前後値は未確定。再配送は未実行。

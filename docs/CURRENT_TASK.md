@@ -4,6 +4,7 @@
 
 - 状態: `E03_READ_ONLY_PREFLIGHT_COMPLETE / EXTERNAL_REPLAY_PENDING / PRODUCTION_UNCHANGED`
 - Branch: `codex/marketplace-e03-duplicate-webhook-20261010`
+- Draft PR: [#637](https://github.com/team478a/manga/pull/637)（base=`codex/marketplace-e01-declined-payment-pass-20261009`、PR #635にstacked）
 - PR #636がPR #635のhead branchへmergeされたcommit `89666c1a`から分離した。PR #635はOpen／非Draft／mergeable、保護ルール待ちで、Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功している。PR #635のmerge・base・履歴は変更していない。
 - PR #635 headのVercel Preview deploymentが成功し、GitHub deployment metadataで`production_environment=false`を確認した。
 - webhook実装は`checkout.session.completed`／`checkout.session.async_payment_succeeded`を`markCheckoutSessionPaid`へ渡す。注文更新は同じorder／product／payment modeの`pending`だけに限定し、既に`paid`なら再更新せずpaid注文の存在確認だけを返す。このため同一event再配送時に`paid_at`や権限を増やさない契約になっている。
