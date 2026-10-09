@@ -7,9 +7,10 @@
 - Preview BranchだけへMarketplace系12 migrationを適用。合成3アカウント、非公開一般向け2ページ完成作品、固定Publication、paused 100円商品、注文0件を冪等に準備し、fixture監査8/8 READY。
 - Vercel Previewのanon key不一致を修正・再deployし、作品一覧の正常な0件空状態を確認した。
 - Seller実画面で制作ページ不足を検出し、fixtureへ2ページの制作構造・Canvas・private assetを追加した。画像配置2/2・確定2/2・完成進捗100%、固定版v1・Reader全2ページ、paused商品、税込100円を確認し、S-01〜S-05をPASSとした。
-- Reader初回失敗はPreview service-role key不一致を修正・再deployして解消した。S-07／S-08のPreview公開・販売開始はaction-time確認待ち。
-- Production DB／Storage／Vercel Production、Stripe live、実利用者、公開・販売、注文・決済、Provider、creditは未変更。
-- 集中18/18、対象ESLint、strict preflight、fixture再監査、diff check成功。次はaction-time確認後に隔離PreviewだけでS-07／S-08を実行し、S-09の掲載状態を確認する。
+- Reader初回失敗はPreview service-role key不一致を修正・再deployして解消した。
+- 責任者のaction-time承認後、隔離Previewで合成作品1件を公開・販売中へ変更した。S-07〜S-09はPASS。Marketplace一覧1件、作品詳細の税込100円テスト販売、売上管理の注文0件・売上0円を確認した。
+- Production DB／Storage／Vercel Production、Stripe live、実利用者、注文・決済、Provider、creditは未変更。
+- 集中18/18、対象ESLint、strict preflight、fixture再監査、diff check成功。次は合成Buyer資格情報のPreviewログイン送信確認後、B-01からBuyer E2Eを開始する。
 
 ---
 

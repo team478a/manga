@@ -2,7 +2,7 @@
 
 ## 2026-10-09 Marketplace隔離Preview E2E準備
 
-- 状態: `PREFLIGHT_READY / FIXTURE_READY / PUBLIC_LIST_SMOKE_PASS / SELLER_S01_S05_PASS / PUBLISH_ACTION_CONFIRMATION_PENDING`
+- 状態: `PREFLIGHT_READY / FIXTURE_READY / SELLER_S01_S05_PASS / SELLER_S07_S09_PASS / BUYER_LOGIN_CONFIRMATION_PENDING`
 - Branch: `codex/marketplace-staging-fixture-readiness-20261009`
 - Preview限定のSupabase接続、Checkout `test`、Stripe test Secret／Webhook／Cancel Secretを設定し、test webhookの実配送HTTP 200を確認した。秘密値は表示・記録していない。
 - strict preflightは3/3 `READY`。Sensitive値を取得できないVercel Preview metadataを安全に扱い、明示的なlive keyを拒否する回帰テストを追加した。
@@ -12,7 +12,8 @@
 - 集中18/18、対象ESLint、strict preflight、fixture冪等監査、diff checkが成功。e2e runnerはローカルNode `22.15.0`が必要最小版未満のため未使用で、既存Chromeで手動E2Eを進める。
 - Seller実画面でS-01〜S-05をPASS。Creatorは画像配置2/2・確定2/2・完成進捗100%、固定版v1・2ページ、Reader 1/2・2/2、作品情報、paused商品、税込100円を確認した。
 - 初回Reader失敗はVercel Previewのservice-role key不一致が原因で、対象Preview Branchの正しい値へPreview限定で再設定・再deployして解消した。
-- 次: Previewで作品公開と販売開始を同時に行うS-07／S-08の最終操作について、Computer Useのaction-time確認後に続行する。PR: [#629](https://github.com/team478a/manga/pull/629)。
+- 責任者のaction-time承認後、隔離Previewで作品公開と販売開始を同時実行し、S-07〜S-09をPASSとした。Marketplace一覧1件、作品詳細の税込100円テスト販売、売上管理の注文0件・売上0円を確認した。Production、実決済、Provider、creditは未変更。
+- 次: 合成Buyer資格情報を隔離Previewのログイン画面へ送信するaction-time確認後、B-01からBuyer E2Eを続行する。PR: [#629](https://github.com/team478a/manga/pull/629)。
 
 ---
 

@@ -2,7 +2,7 @@
 
 作成日: 2026-10-09  
 対象: `feature/manga-canvas-mvp`  
-状態: `STAGING_READY / FIXTURE_READY / PUBLIC_LIST_SMOKE_PASS / SELLER_S01_S05_PASS / PUBLISH_ACTION_CONFIRMATION_PENDING`
+状態: `STAGING_READY / FIXTURE_READY / SELLER_S01_S05_PASS / SELLER_S07_S09_PASS / BUYER_LOGIN_CONFIRMATION_PENDING`
 
 ### 2026-10-09 隔離Preview実行準備の結果
 
@@ -11,7 +11,8 @@
 - Preview Branchだけへ必要な12 migrationを適用し、再dry-runでup to dateを確認した。Production DBは変更していない。
 - 合成Seller／Buyer／未購入者、一般向け非公開2ページ作品、release checkpoint、固定Publication、paused 100円商品、注文0件を準備した。fixture監査は8/8 `READY`、再実行も同結果で冪等。
 - Vercel Previewのanon key不一致を修正して再deployした。`/works`は読込エラーから正常な「0件／公開作品はまだありません」へ復旧した。
-- 認証済みSeller画面でS-01〜S-05をPASSとし、制作進捗100%、固定版v1・2ページ、Reader全2ページ、paused商品、税込100円を確認した。公開、販売開始、Buyer操作、Stripe test決済、購入後Reader、download、異常系は未実施。Production、公開作品、販売、Provider、creditは変更していない。
+- 認証済みSeller画面でS-01〜S-05をPASSとし、制作進捗100%、固定版v1・2ページ、Reader全2ページ、paused商品、税込100円を確認した。
+- 責任者のaction-time承認後、隔離PreviewでS-07〜S-09を実行してPASSとした。Marketplace一覧1件、作品詳細の税込100円テスト販売、売上管理の注文0件・売上0円を確認した。Buyer操作、Stripe test決済、購入後Reader、download、異常系は未実施。Production、Stripe live、実利用者、Provider、creditは変更していない。
 
 ### 2026-10-09 外部設定の再監査
 
@@ -93,19 +94,19 @@ Productionの既存非公開2ページ作品をStagingへ複製する場合は�
 | S-04 | 表紙・タイトル・説明の確認 | PASS | 作品編集と商品編集で表示内容を確認 |
 | S-05 | 販売価格の確認 | PASS | 商品管理・編集で税込100円を確認 |
 | S-06 | 試し読みページの設定 | NOT_RUN | DB上は1ページsample。公開後に未購入者Readerで実効性を確認する |
-| S-07 | 作品公開 | NOT_RUN | Preview画面で最終確認待ち |
-| S-08 | 商品販売開始 | NOT_RUN | S-07と同じ確認操作で実行予定 |
-| S-09 | Marketplaceへの掲載 | NOT_RUN | S-07、S-08成功後に実施 |
+| S-07 | 作品公開 | PASS | 責任者承認後、隔離Preview画面で作品公開完了を確認 |
+| S-08 | 商品販売開始 | PASS | 同じ操作で商品が販売中へ遷移し、税込100円を維持 |
+| S-09 | Marketplaceへの掲載 | PASS | 一覧1件、作品詳細、テスト販売表示、Seller注文0件・売上0円を確認 |
 
 ## 5. Buyer側
 
 | ID | 検証 | 状態 | 現在の証跡／未実施理由 |
 | --- | --- | --- | --- |
-| B-01 | Marketplaceで作品を探す | BLOCKED | 掲載対象がない |
-| B-02 | 作品詳細を開く | BLOCKED | 掲載対象がない |
-| B-03 | あとで読むに追加 | BLOCKED | Buyer未ログイン、作品未掲載 |
-| B-04 | 試し読み | BLOCKED | sampleは準備済みだが作品未掲載 |
-| B-05 | 購入画面へ進む | BLOCKED | Stripe test modeはREADY、商品未販売 |
+| B-01 | Marketplaceで作品を探す | NOT_RUN | 掲載対象は準備済み。Buyerログイン待ち |
+| B-02 | 作品詳細を開く | NOT_RUN | Seller画面で表示確認済み。Buyerとしては未実施 |
+| B-03 | あとで読むに追加 | NOT_RUN | Buyerログイン待ち |
+| B-04 | 試し読み | NOT_RUN | sample準備済み。Buyer／未購入者での実効性は未確認 |
+| B-05 | 購入画面へ進む | NOT_RUN | Stripe test modeと販売中商品はREADY。Buyerログイン待ち |
 | B-06 | Stripe test決済を完了 | NOT_RUN | test資格情報とWebhookはREADY、商品未販売 |
 | B-07 | 本棚へ追加 | BLOCKED | paid test注文がない |
 | B-08 | Readerで本編を読む | BLOCKED | paid test注文がない |
