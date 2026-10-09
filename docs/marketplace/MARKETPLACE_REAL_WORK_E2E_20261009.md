@@ -13,7 +13,8 @@
 - Vercel Previewのanon key不一致を修正して再deployした。`/works`は読込エラーから正常な「0件／公開作品はまだありません」へ復旧した。
 - 認証済みSeller画面でS-01〜S-05をPASSとし、制作進捗100%、固定版v1・2ページ、Reader全2ページ、paused商品、税込100円を確認した。
 - 責任者のaction-time承認後、隔離PreviewでS-07〜S-09を実行してPASSとした。Marketplace一覧1件、作品詳細の税込100円テスト販売、売上管理の注文0件・売上0円を確認した。
-- 合成Buyerで検索、作品詳細、あとで読む、試し読み、購入準備を確認し、S-06とB-01〜B-05をPASSとした。未購入状態で2ページ目を直接指定してもサンプル1ページ目に制限された。Stripe test決済、購入後Reader、download、残りの異常系は未実施。Production、Stripe live、実利用者、Provider、creditは変更していない。
+- 合成Buyerで検索、作品詳細、あとで読む、試し読み、購入準備を確認し、S-06とB-01〜B-05をPASSとした。未購入状態で2ページ目を直接指定してもサンプル1ページ目に制限された。
+- 責任者承認後、Stripe Sandboxへ遷移し、`pending`／`test`／100円の注文1件を確認した。テストカード入力済みで、支払い確定はaction-time確認待ち。購入後Reader、download、残りの異常系は未実施。Production、Stripe live、実利用者、Provider、creditは変更していない。
 
 ### 2026-10-09 外部設定の再監査
 
@@ -108,7 +109,7 @@ Productionの既存非公開2ページ作品をStagingへ複製する場合は�
 | B-03 | あとで読むに追加 | PASS | 追加成功表示と「あとで読む」一覧1件を確認 |
 | B-04 | 試し読み | PASS | サンプル1/2ページを表示。2ページ目直接指定は1ページ目へ制限 |
 | B-05 | 購入画面へ進む | PASS | 税込100円、Stripe test、Buyerメール、実請求なしの購入準備画面を確認 |
-| B-06 | Stripe test決済を完了 | NOT_RUN | 「テスト購入へ進む」のaction-time確認待ち |
+| B-06 | Stripe test決済を完了 | NOT_RUN | Stripe Sandbox遷移、pending test注文1件、テストカード入力まで完了。支払い確定のaction-time確認待ち |
 | B-07 | 本棚へ追加 | BLOCKED | paid test注文がない |
 | B-08 | Readerで本編を読む | BLOCKED | paid test注文がない |
 | B-09 | 途中で閲覧終了 | BLOCKED | Readerを開始していない |

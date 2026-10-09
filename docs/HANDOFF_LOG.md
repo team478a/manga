@@ -11,7 +11,8 @@
 - 責任者のaction-time承認後、隔離Previewで合成作品1件を公開・販売中へ変更した。S-07〜S-09はPASS。Marketplace一覧1件、作品詳細の税込100円テスト販売、売上管理の注文0件・売上0円を確認した。
 - Production DB／Storage／Vercel Production、Stripe live、実利用者、注文・決済、Provider、creditは未変更。
 - 責任者承認後、合成Buyer資格情報を隔離Previewログインへ送信した。検索1件、作品詳細、あとで読む1件、試し読み1/2ページ、未購入の2ページ目直接指定が1ページ目へ制限されること、税込100円のテスト購入準備画面を確認し、S-06とB-01〜B-05をPASSとした。
-- 集中18/18、対象ESLint、strict preflight、fixture再監査、diff check成功。次は「テスト購入へ進む」のaction-time確認後、Stripe test CheckoutとB-06以降を実施する。
+- 責任者承認後、「テスト購入へ進む」を実行した。Stripe Sandboxへ正常遷移し、対象商品に`pending`／`test`／100円の注文1件を確認した。テストカード入力済み、支払い確定は未実行。
+- 集中18/18、対象ESLint、strict preflight、fixture再監査、diff check成功。次はStripe Sandboxの支払い確定action-time確認後、B-06以降を実施する。
 
 ---
 

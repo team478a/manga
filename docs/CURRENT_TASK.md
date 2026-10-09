@@ -14,7 +14,8 @@
 - 初回Reader失敗はVercel Previewのservice-role key不一致が原因で、対象Preview Branchの正しい値へPreview限定で再設定・再deployして解消した。
 - 責任者のaction-time承認後、隔離Previewで作品公開と販売開始を同時実行し、S-07〜S-09をPASSとした。Marketplace一覧1件、作品詳細の税込100円テスト販売、売上管理の注文0件・売上0円を確認した。Production、実決済、Provider、creditは未変更。
 - 責任者承認後、合成Buyer資格情報を隔離Previewへ送信した。Buyerとして検索1件、作品詳細、あとで読む1件、試し読み1/2ページ、2ページ目の直接指定が1ページ目へ制限されること、税込100円のテスト購入準備画面を確認し、S-06とB-01〜B-05をPASSとした。
-- 次: Stripe testのCheckout Session／テスト注文を作成する「テスト購入へ進む」のaction-time確認後、B-06以降を続行する。PR: [#629](https://github.com/team478a/manga/pull/629)。
+- 責任者承認後、「テスト購入へ進む」を実行した。Stripe Sandboxへ正常遷移し、隔離Previewの対象商品に`pending`／`test`／100円の注文1件が作成された。テストカード入力済みで、支払い確定ボタンは未実行。
+- 次: Stripe Sandboxの100円テスト支払いを確定するaction-time確認後、B-06以降を続行する。PR: [#629](https://github.com/team478a/manga/pull/629)。
 
 ---
 
