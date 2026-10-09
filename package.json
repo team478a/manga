@@ -130,6 +130,7 @@
     "marketplace:production:canary-target:preflight": "node scripts/check-marketplace-production-canary-target.mjs",
     "marketplace:staging:auth-expiry": "node scripts/check-marketplace-auth-expiry-staging.mjs",
     "marketplace:staging:access-guards": "node scripts/check-marketplace-access-guards-staging.mjs",
+    "marketplace:staging:other-buyer-download": "node scripts/check-marketplace-other-buyer-download-staging.mjs",
     "marketplace:staging:failure-refund": "node scripts/check-marketplace-failure-refund-staging.mjs",
     "rc:acceptance": "node scripts/check-rc-acceptance.mjs",
     "rc:acceptance:strict": "node scripts/check-rc-acceptance.mjs --strict",

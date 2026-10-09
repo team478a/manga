@@ -1,5 +1,15 @@
 # MANGAI AI Handoff Log
 
+## 2026-10-09 Codex: Marketplace隔離Preview 認証済み別Buyer download E2E
+
+- Branch `codex/marketplace-staging-other-buyer-e2e-20261009`。PR #632 merge commit `4ff9be4d`から開始した。
+- 責任者承認後、隔離Previewへ一時的な未購入Buyerを作成してログインし、Buyer Aのpaid／test注文download URLへ直接アクセスした。購入履歴へ`download_error=RESOURCE_NOT_FOUND`付きで戻り、本棚は空だったためE-06をPASSとした。
+- 対象注文は前後とも`paid`／`test`／download count 1。一時BuyerをログアウトしてAuth userを削除し、profileがcascade削除済みであることと対象注文不変を再確認した。
+- Production、Stripe request、Payment、実利用者、Provider、creditは変更していない。既存の合成Seller／Buyer／未購入者も変更していない。
+- Secretを表示しない外部実行harnessと集中テスト5件を追加。集中5/5、関連10/10、Hub全1282/1282、Hub型検査、全lint、diff check成功。次はE-01〜E-03のStripe test異常系。
+
+---
+
 ## 2026-10-09 Codex: Marketplace隔離Preview mobile E2E
 
 - Branch `codex/marketplace-staging-mobile-e2e-20261009`。PR #631 merge commit `337ad72eb978a1ee92276baa7311ceddf5b86688`から開始した。

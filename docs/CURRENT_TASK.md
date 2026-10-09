@@ -1,5 +1,18 @@
 # MANGAI Current Task
 
+## 2026-10-09 Marketplace隔離Preview 認証済み別Buyer download E2E
+
+- 状態: `E06_PASS / TEMP_BUYER_REMOVED / PAID_ORDER_UNCHANGED / E01_E03_PENDING`
+- Branch: `codex/marketplace-staging-other-buyer-e2e-20261009`
+- PR #632 merge commit `4ff9be4d`を基準ブランチで確認し、最新`origin/feature/manga-canvas-mvp`から分離して開始した。
+- 責任者のaction-time承認後、隔離Previewへ一時的な認証済み未購入Buyerを作成し、Buyer Aのpaid／test注文download URLへ直接アクセスした。購入履歴へ`download_error=RESOURCE_NOT_FOUND`付きで戻され、本棚は0件だった。
+- 実行前後で対象注文は`paid`／`test`／download count 1のまま不変。Stripe request、Payment、Provider、credit、Productionへの変更は0件。
+- 一時Buyerをログアウト後にAuth userを削除し、profileのcascade削除と対象注文不変を再確認した。既存のSeller、Buyer、未購入者には変更していない。
+- `marketplace:staging:other-buyer-download`と集中テスト5件を追加。集中5/5、関連10/10、Hub全1282/1282、Hub型検査、全lint、`git diff --check`が成功した。
+- 次: E-01決済失敗、E-02正規Checkout離脱、E-03重複通知を、Stripe test限定かつaction-time確認を分離して実施する。
+
+---
+
 ## 2026-10-09 Marketplace隔離Preview mobile E2E
 
 - 状態: `E09_PASS / E06_AUTHENTICATED_OTHER_BUYER_PENDING / E01_E03_PENDING`
