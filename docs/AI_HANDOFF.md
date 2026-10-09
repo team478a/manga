@@ -4,8 +4,8 @@
 
 - Supabase Preview Branch `marketplace-e2e-20261009`の接続3設定、Preview／親ref、`MANGAI_DB_ENV=staging`、Checkout mode `test`をVercel `mangai-hub-staging`のPreviewだけへ設定した。7件すべてPreview専用で、Production設定は変更していない。
 - anon／service-role JWTは値を記録せず、roleとproject refが対象Branchへ一致することを確認した。service-roleはSensitiveのまま、公開設定はConfigとして保持する。
-- Checkout modeは`READY`。Stripe test Secret／Webhook／Cancel Secretは未設定。Preview再deploy、fixture、Stripe request、Payment、注文、公開・販売は未実施。
-- Production DB／Storage、Stripe live、実利用者、Provider、生成Job、creditは未変更。Preview computeは`$0.01344/hour`で継続中。次はStripe test設定を別承認し、再deploy後にstrict preflightとfixture監査を行う。
+- Checkout modeは`READY`。PR #629のPreview deploymentは7設定を取り込んで`Ready`となり、全CI／Vercelも成功した。Stripe test Secret／Webhook／Cancel Secret、fixture、Stripe request、Payment、注文、公開・販売は未実施。
+- Production DB／Storage、Stripe live、実利用者、Provider、生成Job、creditは未変更。Preview computeは`$0.01344/hour`で継続中。次はStripe test設定を別承認し、strict preflightとfixture監査を行う。
 
 ---
 

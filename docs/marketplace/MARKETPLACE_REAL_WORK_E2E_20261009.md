@@ -206,7 +206,7 @@ Productionでの一般公開、販売開始、Stripe live決済、返金、送�
 1. 完了: Preview限定のisolated Supabase接続を設定した。
 2. 完了: Preview限定でCheckout modeを`test`にした。
 3. Preview限定のStripe test資格情報とWebhookを設定する。
-4. Previewを再deployし、実行時設定が新しいdeploymentへ反映されたことを確認する。
+4. 完了: Previewを再deployし、実行時設定が新しいdeploymentへ反映されたことを確認した。
 5. Staging用のSeller、Buyer、未購入者と非公開2ページ完成作品を用意する。
 6. strict preflightとfixture監査の両方が成功した後、この文書のS-01から実E2Eを開始する。
 
@@ -217,5 +217,6 @@ Productionでの一般公開、販売開始、Stripe live決済、返金、送�
 - anon／service-role JWTは値を出力せず、roleとproject refだけを対象Branchと照合した。
 - Vercel Production、Production DB／Storage、Stripe、Webhook、fixture、注文、決済、公開・販売は変更していない。
 - runtime preflightはCheckout mode `READY`、Stripe test `PENDING`。Sensitive service-roleをCLIから再取得しないため、値比較を伴うSupabase isolation表示は`PENDING`を維持するが、設定名不足は0件である。
+- PR #629のPreview deploymentは`Ready`で、Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功した。
 
 これらは外部設定またはStagingデータ変更を伴うため、対象環境と変更内容を示した実行時承認後に行います。
