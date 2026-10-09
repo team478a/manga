@@ -2,7 +2,7 @@
 
 ## 2026-10-09 Marketplace隔離Preview E2E準備
 
-- 状態: `PREFLIGHT_READY / FIXTURE_READY / SELLER_S01_S05_PASS / SELLER_S07_S09_PASS / BUYER_LOGIN_CONFIRMATION_PENDING`
+- 状態: `PREFLIGHT_READY / FIXTURE_READY / SELLER_S01_S09_PASS / BUYER_B01_B05_PASS / TEST_PAYMENT_CONFIRMATION_PENDING`
 - Branch: `codex/marketplace-staging-fixture-readiness-20261009`
 - Preview限定のSupabase接続、Checkout `test`、Stripe test Secret／Webhook／Cancel Secretを設定し、test webhookの実配送HTTP 200を確認した。秘密値は表示・記録していない。
 - strict preflightは3/3 `READY`。Sensitive値を取得できないVercel Preview metadataを安全に扱い、明示的なlive keyを拒否する回帰テストを追加した。
@@ -13,7 +13,8 @@
 - Seller実画面でS-01〜S-05をPASS。Creatorは画像配置2/2・確定2/2・完成進捗100%、固定版v1・2ページ、Reader 1/2・2/2、作品情報、paused商品、税込100円を確認した。
 - 初回Reader失敗はVercel Previewのservice-role key不一致が原因で、対象Preview Branchの正しい値へPreview限定で再設定・再deployして解消した。
 - 責任者のaction-time承認後、隔離Previewで作品公開と販売開始を同時実行し、S-07〜S-09をPASSとした。Marketplace一覧1件、作品詳細の税込100円テスト販売、売上管理の注文0件・売上0円を確認した。Production、実決済、Provider、creditは未変更。
-- 次: 合成Buyer資格情報を隔離Previewのログイン画面へ送信するaction-time確認後、B-01からBuyer E2Eを続行する。PR: [#629](https://github.com/team478a/manga/pull/629)。
+- 責任者承認後、合成Buyer資格情報を隔離Previewへ送信した。Buyerとして検索1件、作品詳細、あとで読む1件、試し読み1/2ページ、2ページ目の直接指定が1ページ目へ制限されること、税込100円のテスト購入準備画面を確認し、S-06とB-01〜B-05をPASSとした。
+- 次: Stripe testのCheckout Session／テスト注文を作成する「テスト購入へ進む」のaction-time確認後、B-06以降を続行する。PR: [#629](https://github.com/team478a/manga/pull/629)。
 
 ---
 

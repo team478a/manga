@@ -2,7 +2,7 @@
 
 作成日: 2026-10-09  
 対象: `feature/manga-canvas-mvp`  
-状態: `STAGING_READY / FIXTURE_READY / SELLER_S01_S05_PASS / SELLER_S07_S09_PASS / BUYER_LOGIN_CONFIRMATION_PENDING`
+状態: `STAGING_READY / FIXTURE_READY / SELLER_S01_S09_PASS / BUYER_B01_B05_PASS / TEST_PAYMENT_CONFIRMATION_PENDING`
 
 ### 2026-10-09 隔離Preview実行準備の結果
 
@@ -12,7 +12,8 @@
 - 合成Seller／Buyer／未購入者、一般向け非公開2ページ作品、release checkpoint、固定Publication、paused 100円商品、注文0件を準備した。fixture監査は8/8 `READY`、再実行も同結果で冪等。
 - Vercel Previewのanon key不一致を修正して再deployした。`/works`は読込エラーから正常な「0件／公開作品はまだありません」へ復旧した。
 - 認証済みSeller画面でS-01〜S-05をPASSとし、制作進捗100%、固定版v1・2ページ、Reader全2ページ、paused商品、税込100円を確認した。
-- 責任者のaction-time承認後、隔離PreviewでS-07〜S-09を実行してPASSとした。Marketplace一覧1件、作品詳細の税込100円テスト販売、売上管理の注文0件・売上0円を確認した。Buyer操作、Stripe test決済、購入後Reader、download、異常系は未実施。Production、Stripe live、実利用者、Provider、creditは変更していない。
+- 責任者のaction-time承認後、隔離PreviewでS-07〜S-09を実行してPASSとした。Marketplace一覧1件、作品詳細の税込100円テスト販売、売上管理の注文0件・売上0円を確認した。
+- 合成Buyerで検索、作品詳細、あとで読む、試し読み、購入準備を確認し、S-06とB-01〜B-05をPASSとした。未購入状態で2ページ目を直接指定してもサンプル1ページ目に制限された。Stripe test決済、購入後Reader、download、残りの異常系は未実施。Production、Stripe live、実利用者、Provider、creditは変更していない。
 
 ### 2026-10-09 外部設定の再監査
 
@@ -93,7 +94,7 @@ Productionの既存非公開2ページ作品をStagingへ複製する場合は�
 | S-03 | 販売用下書きの確認 | PASS | 商品管理で対象商品が停止中であることを確認 |
 | S-04 | 表紙・タイトル・説明の確認 | PASS | 作品編集と商品編集で表示内容を確認 |
 | S-05 | 販売価格の確認 | PASS | 商品管理・編集で税込100円を確認 |
-| S-06 | 試し読みページの設定 | NOT_RUN | DB上は1ページsample。公開後に未購入者Readerで実効性を確認する |
+| S-06 | 試し読みページの設定 | PASS | Buyer未購入状態で1/2ページだけ表示し、2ページ目の直接指定も1ページ目へ制限 |
 | S-07 | 作品公開 | PASS | 責任者承認後、隔離Preview画面で作品公開完了を確認 |
 | S-08 | 商品販売開始 | PASS | 同じ操作で商品が販売中へ遷移し、税込100円を維持 |
 | S-09 | Marketplaceへの掲載 | PASS | 一覧1件、作品詳細、テスト販売表示、Seller注文0件・売上0円を確認 |
@@ -102,19 +103,19 @@ Productionの既存非公開2ページ作品をStagingへ複製する場合は�
 
 | ID | 検証 | 状態 | 現在の証跡／未実施理由 |
 | --- | --- | --- | --- |
-| B-01 | Marketplaceで作品を探す | NOT_RUN | 掲載対象は準備済み。Buyerログイン待ち |
-| B-02 | 作品詳細を開く | NOT_RUN | Seller画面で表示確認済み。Buyerとしては未実施 |
-| B-03 | あとで読むに追加 | NOT_RUN | Buyerログイン待ち |
-| B-04 | 試し読み | NOT_RUN | sample準備済み。Buyer／未購入者での実効性は未確認 |
-| B-05 | 購入画面へ進む | NOT_RUN | Stripe test modeと販売中商品はREADY。Buyerログイン待ち |
-| B-06 | Stripe test決済を完了 | NOT_RUN | test資格情報とWebhookはREADY、商品未販売 |
+| B-01 | Marketplaceで作品を探す | PASS | Buyerでタイトル検索し、1件の販売中作品を確認 |
+| B-02 | 作品詳細を開く | PASS | Buyerで作品詳細、作者、税込100円、テスト販売表示を確認 |
+| B-03 | あとで読むに追加 | PASS | 追加成功表示と「あとで読む」一覧1件を確認 |
+| B-04 | 試し読み | PASS | サンプル1/2ページを表示。2ページ目直接指定は1ページ目へ制限 |
+| B-05 | 購入画面へ進む | PASS | 税込100円、Stripe test、Buyerメール、実請求なしの購入準備画面を確認 |
+| B-06 | Stripe test決済を完了 | NOT_RUN | 「テスト購入へ進む」のaction-time確認待ち |
 | B-07 | 本棚へ追加 | BLOCKED | paid test注文がない |
 | B-08 | Readerで本編を読む | BLOCKED | paid test注文がない |
 | B-09 | 途中で閲覧終了 | BLOCKED | Readerを開始していない |
 | B-10 | 続きから読むで復帰 | BLOCKED | Staging進捗rowを作成していない |
 | B-11 | 購入ファイルをdownload | BLOCKED | paid test注文がない |
 
-未購入者の有料本文拒否は、実行時にB-04の試し読み成功後、B-06の前後で別アカウントから確認します。Repository契約テストは権限境界を確認済みですが、実環境結果の代用にはしません。
+未購入Buyerの有料本文拒否はB-04で実画面確認済みです。支払い済み購入者および別の未購入者との3主体比較はB-06後に続行します。Repository契約テストは権限境界を確認済みですが、実環境結果の代用にはしません。
 
 ## 6. 異常系
 
@@ -126,7 +127,7 @@ Productionの既存非公開2ページ作品をStagingへ複製する場合は�
 | E-04 | 非公開作品への直接アクセス | BLOCKED | 未購入・非所有アカウントで404または拒否を確認 |
 | E-05 | 販売停止商品の購入防止 | BLOCKED | `paused`へ戻した後、Sessionを作成できないことを確認 |
 | E-06 | 他人の購入ファイルへのアクセス拒否 | BLOCKED | Buyer AのdownloadをBuyer Bが取得できないことを確認 |
-| E-07 | Readerの権限確認 | BLOCKED | 未購入、購入者、所有者の3主体で比較 |
+| E-07 | Readerの権限確認 | NOT_RUN | 未購入Buyerのsample-onlyはPASS。支払い済み購入者・所有者を含む3主体比較はB-06後 |
 | E-08 | PDF download失敗 | BLOCKED | Storage取得失敗を安全に再現できる隔離fixtureを使用 |
 | E-09 | スマートフォン操作 | BLOCKED | 390x844相当で検索、詳細、試読、Checkout復帰、本棚、Readerを確認 |
 
