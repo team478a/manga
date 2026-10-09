@@ -1,5 +1,16 @@
 # MANGAI AI Handoff Log
 
+## 2026-10-09 Codex: Marketplace Staging E2E外部設定監査
+
+- 最新`origin/feature/manga-canvas-mvp`から`codex/marketplace-staging-e2e-runtime-20261009`を作成した。
+- linked Vercel project `mangai-hub-staging`とGitHub環境を設定名だけで監査し、Preview側の隔離Supabase、Checkout test、Stripe test、fixture設定が未登録であることを確認した。Production側の値は取得・表示・記録していない。
+- `marketplace:staging:preflight`はSupabase分離、Checkout mode、Stripe testの3項目がすべて`PENDING`。Production、Stripe、Paymentへの変更・requestは0件。
+- preflightへ`Preview:`／`Production:`付き不足設定名を追加した。秘密値や識別子は表示せず、metadataで存在確認できるSensitive設定は不足扱いしない。
+- 集中9/9、Hub全1268/1268、Hub／Desktop型検査、全lint、依存境界error 0（既知warning 2）、Production build、diff check成功。
+- Supabase管理画面はブラウザ連携エラーでProject一覧を確認できなかった。次は隔離Projectの存在確認後、対象環境と変更名を示した承認を得てPreview限定設定を行う。
+
+---
+
 ## 2026-10-09 Codex: 外部作品持ち込み出品 Gap Analysis
 
 - 最新コードを正本として、手動Marketplace登録、Cloud固定版、Storage、Reader、Checkout、権限、管理、売上を読み取り専用で調査した。

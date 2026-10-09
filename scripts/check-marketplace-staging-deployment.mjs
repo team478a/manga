@@ -104,6 +104,19 @@ const hasTargetScopedVariable = ({ metadata, key, target, type }) =>
 const hasTargetScopedVariables = ({ metadata, keys, target }) =>
   keys.every((key) => hasTargetScopedVariable({ metadata, key, target }));
 
+const missingTargetSettings = ({
+  environment,
+  keys,
+  metadata,
+  target,
+  type,
+}) =>
+  keys.filter(
+    (key) =>
+      !configured(environment[key]) &&
+      !hasTargetScopedVariable({ metadata, key, target, type }),
+  );
+
 export const assessMarketplaceStagingDeployment = ({
   previewEnvironment,
   productionEnvironment,
@@ -199,6 +212,49 @@ export const assessMarketplaceStagingDeployment = ({
       16,
     );
 
+  const missingPreviewSupabaseSettings = missingTargetSettings({
+    environment: previewEnvironment,
+    keys: supabaseCredentialNames,
+    metadata: previewMetadata,
+    target: "preview",
+  });
+  const missingProductionSupabaseSettings = missingTargetSettings({
+    environment: productionEnvironment,
+    keys: supabaseCredentialNames,
+    metadata: productionMetadata,
+    target: "production",
+  });
+  const missingSupabaseSettings = [
+    ...missingPreviewSupabaseSettings.map((key) => `Preview:${key}`),
+    ...missingProductionSupabaseSettings.map((key) => `Production:${key}`),
+    ...[
+      "MANGAI_STAGING_PROJECT_REF",
+      "MANGAI_STAGING_PARENT_PROJECT_REF",
+    ]
+      .filter((key) => !configured(previewEnvironment[key]))
+      .map((key) => `Preview:${key}`),
+  ];
+  const missingCheckoutSettings = configured(
+    previewEnvironment.MANGAI_MARKETPLACE_CHECKOUT_MODE,
+  )
+    ? []
+    : ["Preview:MANGAI_MARKETPLACE_CHECKOUT_MODE"];
+  const missingStripeSettings = [
+    ...(!configured(previewEnvironment.STRIPE_SECRET_KEY, 20)
+      ? ["Preview:STRIPE_SECRET_KEY"]
+      : []),
+    ...(!webhookSecretVerified
+      ? ["Preview:STRIPE_WEBHOOK_SECRET"]
+      : []),
+    ...(!configured(
+      previewEnvironment.CHECKOUT_CANCEL_SECRET ||
+        previewEnvironment.STRIPE_WEBHOOK_SECRET,
+      16,
+    )
+      ? ["Preview:CHECKOUT_CANCEL_SECRET"]
+      : []),
+  ];
+
   const checks = [
     {
       id: "supabase-isolation",
@@ -210,6 +266,7 @@ export const assessMarketplaceStagingDeployment = ({
             "Preview uses distinct Supabase URL, anon key, and service-role key",
             "declared staging and parent refs match their deployment targets",
           ],
+      missingSettings: isolatedSupabase ? [] : missingSupabaseSettings,
     },
     {
       id: "checkout-mode",
@@ -218,6 +275,7 @@ export const assessMarketplaceStagingDeployment = ({
       missing: checkoutModeReady
         ? []
         : ["Preview=test and Production is not test"],
+      missingSettings: checkoutModeReady ? [] : missingCheckoutSettings,
     },
     {
       id: "stripe-test",
@@ -226,6 +284,7 @@ export const assessMarketplaceStagingDeployment = ({
       missing: stripeTestReady
         ? []
         : ["Preview test Secret Key, Webhook Secret, and Cancel Secret"],
+      missingSettings: stripeTestReady ? [] : missingStripeSettings,
     },
   ];
 
@@ -287,6 +346,8 @@ const printReport = (report) => {
   console.log("Environment and secret values: hidden");
   for (const check of report.checks) {
     console.log(`${check.ready ? "[READY]" : "[PENDING]"} ${check.label}`);
+    for (const setting of check.missingSettings)
+      console.log(`  [missing-setting] ${setting}`);
     for (const item of check.missing) console.log(`  [missing] ${item}`);
   }
   console.log("\nNo Production mutation, Stripe request, or payment was performed.");
