@@ -13,6 +13,16 @@
 
 ---
 
+## 2026-10-09 Codex: Marketplace実作品E2E fixture監査
+
+- Phase Bの実操作前Gateとして、隔離Stagingの3主体と対象2ページ作品をread-only監査する`marketplace:staging:fixture:audit`を追加した。
+- 作品・Project・Publication・release checkpoint・2ページ構成・paused商品・注文0件を対象ID限定のGETで確認する。出力へ識別子や個人情報を含めず、Storage object、Stripe、DB mutation、Productionには接続しない。
+- 単体5/5、Marketplace全183/183、Hub全1267/1267、Hub／Desktop型検査、全lint、migration 96件検証、依存境界、Production build、diff check成功。Preview preflightはSupabase分離、Checkout test mode、Stripe test資格情報がPENDINGのため、実E2E結果はすべてBLOCKED／NOT_RUNのまま。
+- 次は外部設定とfixtureの準備後、strict preflightとfixture監査を通し、Seller S-01から開始する。公開・販売・test決済を含む実操作は隔離Stagingだけで行う。
+- 詳細: `docs/marketplace/MARKETPLACE_REAL_WORK_E2E_20261009.md`
+
+---
+
 ## 2026-10-08 Codex: Cloud制作 ステップ別動画マニュアル
 
 - 購入者の「最初から実画面に沿って、ステップごとに見たい」という報告に対応し、市場分析から収益管理までを8本の独立動画へ分割した。
