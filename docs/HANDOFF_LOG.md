@@ -1,5 +1,15 @@
 # MANGAI AI Handoff Log
 
+## 2026-10-10 Codex: Marketplace隔離Preview fixture cleanup環境ブロック
+
+- Branch `codex/marketplace-e2e-cleanup-blocked-20261010`、Draft PR [#638](https://github.com/team478a/manga/pull/638)（PR #635へstacked）。PR #637はmerge commit `733309ff`でPR #635のheadへmerge済み。PR #635のmerge後5 checksは全成功。
+- action-time承認後、隔離fixtureの商品を`paused`、作品を非公開へ戻す準備を開始した。
+- Chrome連携はrequest-header policy読込みエラーで2回失敗し、computer-use session初期化後も同じエラーで停止した。安全規約に従いUI操作を打ち切った。
+- cleanup mutationは0件。商品`active`・作品公開は未変更。注文、権限、Stripe event、endpoint、Production、Stripe live、実決済、Provider、Job、creditも未変更。
+- 次はChrome連携復旧後に隔離対象をread-only再確認し、承認済みcleanupを1回だけ実施して、商品`paused`・作品非公開・注文／Webhook不変を確認する。
+
+---
+
 ## 2026-10-10 Codex: Marketplace隔離Preview E-03 同一test event再配送 E2E
 
 - Branch `codex/marketplace-e03-duplicate-webhook-20261010`、PR [#637](https://github.com/team478a/manga/pull/637)（Open／非Draft、PR #635へstacked）。PR #636 merge commit `89666c1a`から開始した。PR #635はOpen／非Draft／mergeable、5 checks成功、保護ルール待ち。PR自体は変更していない。

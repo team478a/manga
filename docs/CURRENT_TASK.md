@@ -1,5 +1,18 @@
 # MANGAI Current Task
 
+## 2026-10-10 Marketplace隔離Preview fixture cleanup
+
+- 状態: `CLEANUP_BLOCKED_EXTERNAL_BROWSER_CONTROL / NO_MUTATION / PRODUCTION_UNCHANGED`
+- Branch: `codex/marketplace-e2e-cleanup-blocked-20261010`
+- Draft PR: [#638](https://github.com/team478a/manga/pull/638)（PR #635へstacked）
+- PR #637はmerge commit `733309ff`でPR #635のheadへmerge済み。PR #635はOpen／非Draft／mergeableで、merge後のCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsは5/5成功した。
+- 責任者のaction-time承認を受け、隔離Previewの合成fixtureだけを商品`active→paused`、作品`公開→非公開`へ戻し、注文・Webhook結果をread-only確認する予定だった。
+- Chrome連携が`Unable to load browser request-header policy`で2回失敗し、computer-use session初期化後の再接続も同じエラーで停止した。安全な復旧手順を使い切ったため、UI操作を継続していない。
+- cleanup mutationは0件。商品は`active`、作品は公開のままで、注文、権限、Stripe Sandbox event、Webhook endpoint、Production、Stripe live、実決済、Provider、生成Job、creditは変更していない。
+- 次: Chrome連携のrequest-header policy読込みを復旧し、隔離PreviewとStripe Sandboxを開いたprofileへ再接続する。対象が隔離fixtureであることをread-only再確認後、同じ承認範囲でcleanupを1回だけ実施し、商品`paused`・作品非公開・既存注文／Webhook不変を確認する。
+
+---
+
 ## 2026-10-10 Marketplace隔離Preview E-03 同一test event再配送 E2E
 
 - 状態: `E03_PASS / SAME_TEST_EVENT_REDELIVERED_ONCE / HTTP_200 / PURCHASE_ENTITLEMENT_UNCHANGED / PRODUCTION_UNCHANGED`

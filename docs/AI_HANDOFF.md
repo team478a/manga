@@ -1,5 +1,14 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Marketplace隔離Preview fixture cleanup環境ブロック（2026-10-10）
+
+- PR #637はmerge commit `733309ff`でPR #635のheadへmerge済み。PR #635はOpen／非Draft／mergeableで、merge後の5 checksは全成功した。Branch `codex/marketplace-e2e-cleanup-blocked-20261010`はこのheadから分離し、Draft PR [#638](https://github.com/team478a/manga/pull/638)をPR #635へstackedした。
+- action-time承認後、隔離fixtureの商品`paused`化・作品非公開化と注文／Webhookのread-only確認を開始したが、Chrome連携がrequest-header policy読込みエラーで停止した。2回失敗後にcomputer-use sessionを初期化して再接続したが同じエラーとなり、安全規約に従って操作を終了した。
+- cleanup mutationは0件で、商品は`active`、作品は公開のまま。注文、権限、Stripe Sandbox event、Webhook endpoint、Production、Stripe live、実決済、Provider、Job、creditは未変更。
+- 次はChrome連携復旧後に隔離対象をread-only再確認し、同じ承認範囲でcleanupを1回だけ実施して、商品`paused`・作品非公開・既存注文／Webhook不変を確認する。
+
+---
+
 ## 0.0 Marketplace隔離Preview E-03 同一test event再配送（2026-10-10）
 
 - PR #636 merge commit `89666c1a`からBranch `codex/marketplace-e03-duplicate-webhook-20261010`を作成し、Open／非DraftのPR [#637](https://github.com/team478a/manga/pull/637)をPR #635へstackedした。PR #635はOpen／非Draft／mergeable、5 checks成功、保護ルール待ちで、merge・base・履歴は変更していない。
