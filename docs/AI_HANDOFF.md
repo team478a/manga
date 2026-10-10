@@ -1,5 +1,15 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 外部出品者承認merge後確認（2026-10-11）
+
+- PR [#655](https://github.com/team478a/manga/pull/655)はmerge commit `f493206a216b5ac6abd36732a6b92c46c4a263b0`で`feature/manga-canvas-mvp`へ統合済み。merge後のRequired Quality run `38065093528`、Desktop Windows run `38065093573`、Production deployment `6983177056`はすべて成功した。
+- Productionのcreator `test`で`/dashboard/external-submissions`をread-only確認した。規約同意／承認待ち表示はなく、「新しい応募下書き」フォームが表示され、eligible状態がseller側にも反映されている。
+- 応募下書きは0件のまま。作品名、説明、対象年齢、原稿形式は入力せず、下書き作成、upload、worker、提出、審査、公開、販売、Stripe、決済は操作していない。
+- 証跡commit `fd483355`をpushし、Draft PR [#656](https://github.com/team478a/manga/pull/656)を作成した。Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功した。
+- 次は一般向けfixtureの応募下書き作成を独立したProduction mutationとして扱い、対象値と停止条件を提示してaction-time承認を得るまで実行しない。実決済は禁止を維持する。
+
+---
+
 ## 0.0 外部出品者Production承認（2026-10-11）
 
 - Draft PR [#654](https://github.com/team478a/manga/pull/654)はmerge commit `90619a73ae2b0e269df5e454494e9edc7dfcb786`で`feature/manga-canvas-mvp`へ統合済み。merge後のRequired Quality、Desktop Windows、Production deployment `6982481510`はすべて成功した。
