@@ -5,6 +5,7 @@
 - PR #658はmerge commit `60c35fb9`で基準ブランチへ統合済み。merge後のRequired Quality、Desktop Windows、Production deploymentはいずれも成功した。
 - creator `test`で応募`906ff7c3-c00a-42ed-aa9f-20d330233911`の`検証を開始`をaction-time承認どおり1回だけ実行した。画面は「検証待ちに追加しました。」、`validating`、Job `queued`へ遷移した。
 - 2ファイルは`uploaded`のまま。Worker、Job claim、malware scan、page変換、page Storage保存、権利宣言、審査提出、公開、販売、Stripe、決済は操作していない。
+- 証跡commit `8f482a4d`をpushし、Draft PR [#659](https://github.com/team478a/manga/pull/659)を作成した。
 - 次はProduction WorkerのFeature Flag、内部認証、ClamAV接続条件を秘密値なしで確認し、別のaction-time承認までWorkerを実行しない。実決済は禁止を維持する。
 
 ---

@@ -4,6 +4,7 @@
 
 - 状態: `PR_658_MERGED / POST_MERGE_CHECKS_PASSED / PRODUCTION_DEPLOYED / VALIDATION_QUEUED / WORKER_NOT_AUTHORIZED`
 - Branch: `codex/external-submission-validation-queue-record-20261011`
+- PR: [#659](https://github.com/team478a/manga/pull/659)（Draft）。証跡commit `8f482a4d`。
 - 基点: PR #658 merge commit `60c35fb965e8d2c89ca633a8d291bd0e6b9ae37d`（`feature/manga-canvas-mvp`）。merge後のRequired Quality run `38074218201`、Desktop Windows run `38074218206`、Production deployment `6984747832`はすべて成功した。
 - 責任者へ対象応募、実行回数、期待状態、停止条件を提示し、action-time承認を得た後、Productionのcreator `test`で応募ID `906ff7c3-c00a-42ed-aa9f-20d330233911`の`検証を開始`を1回だけ実行した。
 - 画面で「検証待ちに追加しました。」、`状態: validating`、`Job: queued`を確認した。`01-market-analysis-guide-poster.webp`と`02-proposal-guide-poster.webp`はどちらも`uploaded`のまま。
