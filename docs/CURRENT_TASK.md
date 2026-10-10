@@ -2,15 +2,16 @@
 
 ## 2026-10-10 外部作品応募 PR-1 安全基盤
 
-- 状態: `IMPLEMENTED / LOCAL_QUALITY_GATES_PASSED / PRODUCTION_NOT_APPLIED / PR_PREPARATION`
+- 状態: `IMPLEMENTED / LOCAL_AND_PR_CHECKS_PASSED / PRODUCTION_NOT_APPLIED / REVIEW_READY`
 - Branch: `codex/external-submission-foundation-20261010`
+- PR: [#643](https://github.com/team478a/manga/pull/643)
 - 基点: PR #642 merge commit `308ce19a`（`feature/manga-canvas-mvp`）。Marketplace隔離E2E環境はteardown済みで、Production、Stripe live、実決済は変更していない。
 - `docs/marketplace/EXTERNAL_SELLER_GAP_ANALYSIS.md`のPR-1に限定し、招待制seller適格性、一般向け作品の非公開submission、権利申告snapshot、追記専用event、RLS、権限分離、検証付き状態遷移RPCを追加した。
 - submissionは`draft`から開始し、seller本人、service role、管理者の遷移責任を分離した。`submitted`にはeligible sellerと、最新の完全な権利申告を必須とする。成人向け、公開、販売開始、`works`／`digital_products`生成、Storage upload、Stripe処理は含めていない。
 - Migration `202610100001_external_submission_foundation.sql`、データ存在時に停止するrollback、canonical schema、migration manifest、forward／rollback／reapply assertion、静的契約テストを追加した。
 - ローカルPostgreSQL 16で全97 migrationのforward、assertion、全rollback、rollback assertion、reapply、canonical schema二重適用、schema／Marketplace監査を成功確認した。一時Docker DBは停止・削除済み。Production migrationは未適用。
 - 品質ゲート: `npm install`、`npm run deps:check`（error 0、既知warning 2）、`npm run lint`、`npm run typecheck`、`npm run hub:test`（1289 pass）、`npm run canvas:test`（26 pass）、`npm run ai:test`（50 pass）、`npm run desktop:test`（407 pass）、`npm run desktop:test:a11y`（violations 0）、`npm run db:migrations:validate`（97件）、`npm run build`、`npm run desktop:build`、`git diff --check`成功。`npm run rc:preflight`はexit 0でrepository structure READY、外部資格情報未設定と手動E2EはPENDINGのまま。
-- 次: Draft PRを作成しCIを確認する。merge後もProductionへ自動適用しない。PR-2（安全なupload／検証worker）はPR-1のレビュー・merge後に別branch／別PRで開始する。
+- PR #643のCore quality、Migration roundtrip、Desktop Windows、Vercel、Vercel Preview Commentsはすべて成功した。次はレビュー・merge判断。merge後もProductionへ自動適用しない。PR-2（安全なupload／検証worker）はPR-1のmerge後に別branch／別PRで開始する。
 
 ---
 

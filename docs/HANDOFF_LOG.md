@@ -3,11 +3,12 @@
 ## 2026-10-10 Codex: 外部作品応募 PR-1 安全基盤
 
 - Branch `codex/external-submission-foundation-20261010`。PR #642 merge commit `308ce19a`から分離し、外部作品応募MVPのうちDB安全基盤だけを実装した。
+- PR [#643](https://github.com/team478a/manga/pull/643)。Core quality、Migration roundtrip、Desktop Windows、Vercel、Vercel Preview Commentsはすべて成功した。
 - 招待制seller profile、一般向け限定submission、権利申告snapshot、追記専用監査event、本人／管理者read RLS、直接write禁止、検証付きRPCを追加した。seller、service role、管理者の状態遷移を分離し、提出時はeligible状態と最新の完全な権利申告を必須にした。
 - `works`、`digital_products`、Publication、Reader、Storage upload、検証worker、公開／販売開始、Stripeは変更していない。Production migration、実決済、実利用者、Provider、Job、creditへの変更は0件。
 - PostgreSQL 16の一時Docker DBで97 migrationのforward／assertion、全rollback、reapply、canonical schema冪等性、Marketplace監査を完走した。一時DBは削除済み。
 - deps check、lint、typecheck、Hub 1289、Canvas 26、AI 50、Desktop 407、Desktop a11y violations 0、migration validate 97、Hub／Desktop build、diff checkが成功。RC preflightは構造READY、外部設定と手動E2Eは未設定のためPENDING。
-- 次はDraft PRのCI確認。Production適用は別の明示承認なしに行わない。PR-2のupload／workerは本PR merge後の別作業とする。
+- 次はPR #643のレビュー・merge判断。Production適用は別の明示承認なしに行わない。PR-2のupload／workerは本PR merge後の別作業とする。
 
 ---
 
