@@ -6,6 +6,7 @@
 - Vercel Production環境変数を名前・target・typeだけread-only確認し、`MANGAI_EXTERNAL_SUBMISSION_WORKER_ENABLED`、`MANGAI_EXTERNAL_SUBMISSION_WORKER_SECRET`、`MANGAI_EXTERNAL_CLAMAV_HOST`、`MANGAI_EXTERNAL_CLAMAV_PORT`、`MANGAI_EXTERNAL_SUBMISSION_WORKER_ID`はいずれも未登録だった。値は取得・表示していない。
 - strict Feature Flag未設定はOFF、内部secret未設定は401、ClamAV host未設定はscan `unavailable`となるfail-closed契約。portは3310、Worker IDは`next-external-ingest-worker`へfallbackするが、必須3条件が欠けるためProduction Workerは`BLOCKED_CONFIGURATION`。
 - リポジトリ内に外部作品Worker endpointを自動起動するworkflow／schedulerはなく、前工程で`queued`を確認したJobに対するWorker呼出し、Job claim、malware scan、page変換、Storage page生成は0件。Production環境変数も変更していない。
+- 証跡commit `590ae0b6`をpushし、Draft PR [#660](https://github.com/team478a/manga/pull/660)を作成した。
 - 次はClamAVの安全な接続先、内部secret生成・保管、Feature Flag有効化、1回だけのWorker呼出し手段を責任者が決定する。Production設定変更とWorker実行はそれぞれ対象・停止条件を提示し、別のaction-time承認を得るまで行わない。実決済は禁止を維持する。
 
 ---
