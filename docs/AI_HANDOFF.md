@@ -3,6 +3,7 @@
 ## 0.0 外部作品応募 Production migration適用（2026-10-10）
 
 - PR #648 merge commit `bea0dbfe`を基点にBranch `codex/external-submission-production-migrations-20261010`を作成した。対象、4 ID、SHA-256、順序、停止条件を提示した後の責任者承認により、Supabase `mangai-hub-staging / main PRODUCTION / vmdsyxykcrgxcdbrwlkv`へ4 migrationを順次適用した。
+- Commit `9b584ab4`をpushし、PR [#649](https://github.com/team478a/manga/pull/649)を作成した。Core quality、Migration roundtrip、Desktop Windows、Vercel、Vercel Preview Commentsはすべて成功した。
 - preflightはProject `Healthy`、backup 7時間前、全marker 0／部分適用なし。4 transactionはすべて成功し、postflight markerは`6/6`、`6/6`、`4/4`、`4/4`、Projectも`Healthy`。
 - 外部応募関連row、Storage object、external由来work／product／publicationはすべて0件。schema、private bucket、RLS、RPC、triggerだけが反映され、実upload、審査、公開、販売、注文、Stripe、実決済、Provider、Job、creditは変更していない。
 - read-only監査で発生したEditor残存文字のsyntax errorとRPC署名指定漏れはDB mutationなし。修正した監査で全marker成立を確認済み。

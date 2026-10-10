@@ -4,6 +4,7 @@
 
 - 状態: `PRODUCTION_MIGRATIONS_APPLIED / POSTFLIGHT_PASSED / APPLICATION_DATA_UNCHANGED / MANUAL_ACCEPTANCE_NOT_STARTED`
 - Branch: `codex/external-submission-production-migrations-20261010`
+- PR: [#649](https://github.com/team478a/manga/pull/649)。Commit `9b584ab4`。Core quality、Migration roundtrip、Desktop Windows、Vercel、Vercel Preview Commentsはすべて成功した。
 - 基点: PR #648 merge commit `bea0dbfe`（`feature/manga-canvas-mvp`）。責任者へ対象Project、4 migration ID、原本SHA-256、適用順、影響範囲、停止条件を提示し、action-time明示承認を得て実行した。
 - 対象はSupabase Project `mangai-hub-staging`、ref `vmdsyxykcrgxcdbrwlkv`、`main PRODUCTION`。実行前は`Healthy`、最新backupは7時間前で、system catalog監査は4 migrationすべてmarker `0`、部分適用なしだった。
 - `202610100001_external_submission_foundation`、`202610100002_external_submission_ingest`、`202610100003_external_submission_publications`、`202610100004_external_submission_review_publish`をrepository原本SHA-256と照合し、この順で各1回だけtransaction適用した。各実行は`Success. No rows returned`で完了した。
