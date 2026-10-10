@@ -425,6 +425,26 @@ begin
   end if;
 end $$;
 
+do $$ begin
+  if to_regclass('public.external_work_submission_files') is null
+     or to_regclass('public.external_work_submission_pages') is null
+     or to_regclass('public.external_submission_ingest_jobs') is null
+     or to_regprocedure('public.register_external_submission_upload(uuid,uuid,text,text,text,bigint,text)') is null
+     or to_regprocedure('public.queue_external_submission_validation(uuid)') is null
+     or to_regprocedure('public.claim_external_submission_ingest(text,integer)') is null
+     or to_regprocedure('public.complete_external_submission_ingest(uuid,uuid,jsonb)') is null
+     or to_regprocedure('public.fail_external_submission_ingest(uuid,uuid,text,boolean)') is null
+     or to_regprocedure('public.reorder_external_submission_pages(uuid,uuid[])') is null
+     or not exists(select 1 from storage.buckets where id='external-submission-quarantine' and not public and file_size_limit=52428800)
+     or not exists(select 1 from storage.buckets where id='external-submission-pages' and not public and file_size_limit=20971520)
+     or has_table_privilege('authenticated','public.external_work_submission_files','insert,update,delete')
+     or has_table_privilege('service_role','public.external_work_submission_pages','insert,update,delete')
+     or not has_function_privilege('service_role','public.claim_external_submission_ingest(text,integer)','execute')
+     or has_function_privilege('authenticated','public.claim_external_submission_ingest(text,integer)','execute') then
+    raise exception 'External submission ingest contract missing or exposed';
+  end if;
+end $$;
+
 begin;
 insert into auth.users(id,email) values
   ('22000000-0000-4000-8000-000000000001','adult-plan-owner@example.test'),
@@ -516,6 +536,67 @@ begin
   end;
 end $$;
 reset role;
+rollback;
+
+begin;
+do $$
+declare
+  v_creator_user uuid:='62000000-0000-4000-8000-000000000001';
+  v_creator_profile uuid:='62000000-0000-4000-8000-000000000002';
+  v_admin_user uuid:='62000000-0000-4000-8000-000000000003';
+  v_admin_profile uuid:='62000000-0000-4000-8000-000000000004';
+  v_file uuid:='62000000-0000-4000-8000-000000000005';
+  v_page uuid:='62000000-0000-4000-8000-000000000006';
+  v_submission uuid;
+  v_job uuid;
+  v_claim record;
+  v_source_path text;
+  v_page_path text;
+begin
+  insert into auth.users(id,email) values
+    (v_creator_user,'external-ingest@example.invalid'),
+    (v_admin_user,'external-ingest-admin@example.invalid') on conflict(id) do nothing;
+  insert into public.profiles(id,user_id,role) values
+    (v_creator_profile,v_creator_user,'creator'),
+    (v_admin_profile,v_admin_user,'admin') on conflict(id) do nothing;
+  perform set_config('request.jwt.claim.role','authenticated',true);
+  perform set_config('request.jwt.claim.sub',v_creator_user::text,true);
+  perform public.accept_external_seller_terms('external-ingest-v1');
+  perform set_config('request.jwt.claim.sub',v_admin_user::text,true);
+  perform public.set_external_seller_status(v_creator_profile,'eligible',null);
+  perform set_config('request.jwt.claim.sub',v_creator_user::text,true);
+  v_submission:=public.create_external_work_submission('Ingest test','','全年齢','images');
+  perform public.transition_external_work_submission(v_submission,'uploading',null);
+  v_source_path:=v_creator_profile::text||'/'||v_submission::text||'/'||v_file::text||'-page.png';
+  insert into storage.objects(bucket_id,name,owner_id)
+  values('external-submission-quarantine',v_source_path,v_creator_user::text);
+  perform public.register_external_submission_upload(
+    v_submission,v_file,v_source_path,'page.png','image/png',128,repeat('a',64)
+  );
+  v_job:=public.queue_external_submission_validation(v_submission);
+  perform set_config('request.jwt.claim.sub','',true);
+  perform set_config('request.jwt.claim.role','service_role',true);
+  select * into v_claim from public.claim_external_submission_ingest('migration-test',300);
+  if v_claim.job_id<>v_job then raise exception 'External ingest job claim failed';end if;
+  v_page_path:=v_creator_profile::text||'/'||v_submission::text||'/'||v_page::text||'.png';
+  insert into storage.objects(bucket_id,name) values('external-submission-pages',v_page_path);
+  perform public.complete_external_submission_ingest(
+    v_job,v_claim.lease_token,
+    jsonb_build_array(jsonb_build_object(
+      'id',v_page,'sourceFileId',v_file,'position',1,'sourceName','page.png',
+      'storagePath',v_page_path,'byteSize',128,'width',32,'height',48,'sha256',repeat('b',64)
+    ))
+  );
+  if not exists(select 1 from public.external_work_submissions where id=v_submission and status='ready')
+     or not exists(select 1 from public.external_submission_ingest_jobs where id=v_job and status='succeeded')
+     or not exists(select 1 from public.external_work_submission_files where id=v_file and validation_status='validated' and malware_status='clean')
+     or not exists(select 1 from public.external_work_submission_pages where id=v_page and position=1) then
+    raise exception 'External ingest completion failed';
+  end if;
+  perform set_config('request.jwt.claim.role','authenticated',true);
+  perform set_config('request.jwt.claim.sub',v_creator_user::text,true);
+  perform public.reorder_external_submission_pages(v_submission,array[v_page]);
+end $$;
 rollback;
 
 do $$ begin

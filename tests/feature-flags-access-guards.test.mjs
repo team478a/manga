@@ -10,8 +10,8 @@ import {
   featureFlagEnabled,
 } from "../src/lib/feature-flags.ts";
 
-test("Feature Flag registryは監査済み25件を保持する", () => {
-  assert.equal(Object.keys(featureFlagDefinitions).length, 25);
+test("Feature Flag registryは監査済み26件を保持する", () => {
+  assert.equal(Object.keys(featureFlagDefinitions).length, 26);
   assert.equal(
     featureFlagDefinitions.MANGAI_CLOUD_DURABLE_EXPORT_FORMATS_ENABLED,
     "strict",
@@ -62,6 +62,7 @@ test("Provider／Workerと画像編集Flagは小文字trueだけを許可する"
     "MANGAI_CLOUD_AI_WORKER_ENABLED",
     "MANGAI_CLOUD_EXPORT_WORKER_ENABLED",
     "MANGAI_CLOUD_STORAGE_WORKER_ENABLED",
+    "MANGAI_EXTERNAL_SUBMISSION_WORKER_ENABLED",
     "MANGAI_MONITOR_OPS_WORKER_ENABLED",
     "MANGAI_MONITOR_QUALITY_REVIEW_ENABLED",
   ];

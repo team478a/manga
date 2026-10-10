@@ -318,7 +318,12 @@ do $$ begin
      or to_regprocedure('public.create_external_work_submission(text,text,text,text)') is not null
      or to_regprocedure('public.record_external_work_rights_declaration(uuid,text,boolean,boolean,boolean,boolean)') is not null
      or to_regprocedure('public.prevent_external_submission_audit_mutation()') is not null
-     or to_regprocedure('public.transition_external_work_submission(uuid,text,text)') is not null then
+     or to_regprocedure('public.transition_external_work_submission(uuid,text,text)') is not null
+     or to_regclass('public.external_work_submission_files') is not null
+     or to_regclass('public.external_work_submission_pages') is not null
+     or to_regclass('public.external_submission_ingest_jobs') is not null
+     or to_regprocedure('public.claim_external_submission_ingest(text,integer)') is not null
+     or exists(select 1 from storage.buckets where id in('external-submission-quarantine','external-submission-pages')) then
     raise exception 'External submission foundation objects remain after rollback';
   end if;
 end $$;

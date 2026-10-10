@@ -7,6 +7,7 @@ import {
   BookOpenCheck,
   FileText,
   FilePenLine,
+  FileUp,
   Images,
   Lightbulb,
   ReceiptText,
@@ -147,6 +148,18 @@ export function CloudWorkflowShell({
           >
             <BookOpenCheck className="h-4 w-4" />
             使い方
+          </Link>
+          <Link
+            aria-current={pathname.startsWith("/dashboard/external-submissions") ? "page" : undefined}
+            className={`mt-1 flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-bold ${
+              pathname.startsWith("/dashboard/external-submissions")
+                ? "bg-violet-100 text-violet-800"
+                : "text-stone-700 hover:bg-violet-50"
+            }`}
+            href="/dashboard/external-submissions"
+          >
+            <FileUp className="h-4 w-4" />
+            外部作品応募
           </Link>
           <p className="mt-5 px-3 text-xs font-bold uppercase tracking-wider text-stone-400">
             制作ワークフロー

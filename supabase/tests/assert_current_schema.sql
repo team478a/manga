@@ -113,6 +113,21 @@ begin
 end $$;
 
 do $$ begin
+  if to_regclass('public.external_work_submission_files') is null
+     or to_regclass('public.external_work_submission_pages') is null
+     or to_regclass('public.external_submission_ingest_jobs') is null
+     or to_regprocedure('public.queue_external_submission_validation(uuid)') is null
+     or to_regprocedure('public.claim_external_submission_ingest(text,integer)') is null
+     or to_regprocedure('public.complete_external_submission_ingest(uuid,uuid,jsonb)') is null
+     or not exists(select 1 from storage.buckets where id='external-submission-quarantine' and not public)
+     or not exists(select 1 from storage.buckets where id='external-submission-pages' and not public)
+     or has_table_privilege('authenticated','public.external_work_submission_pages','insert,update,delete')
+     or has_function_privilege('authenticated','public.claim_external_submission_ingest(text,integer)','execute') then
+    raise exception 'Current schema external submission ingest contract missing or exposed';
+  end if;
+end $$;
+
+do $$ begin
   if to_regclass('public.marketplace_reading_progress') is null
      or to_regprocedure('public.save_marketplace_reading_progress(uuid,uuid,integer)') is null
      or not exists (
