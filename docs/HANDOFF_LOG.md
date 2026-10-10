@@ -1,5 +1,14 @@
 # MANGAI AI Handoff Log
 
+## 2026-10-11 Codex: 外部出品者承認merge後確認
+
+- PR #655はmerge commit `f493206a`で基準ブランチへ統合済み。merge後のRequired Quality、Desktop Windows、Production deploymentはすべて成功した。
+- creator `test`のProduction外部作品応募画面をread-only確認し、「新しい応募下書き」フォームが表示されるeligible状態を確認した。
+- 応募下書きは0件。入力、作成、upload、worker、提出、審査、公開、販売、Stripe、決済は操作していない。
+- 次は一般向けfixtureの応募下書き作成を別承認単位として、action-time承認まで進めない。upload以降も個別承認とする。
+
+---
+
 ## 2026-10-11 Codex: 外部出品者Production承認
 
 - PR #654はmerge commit `90619a73`で基準ブランチへ統合済み。merge後のRequired Quality、Desktop Windows、Production deploymentはいずれも成功した。

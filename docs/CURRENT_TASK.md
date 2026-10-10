@@ -1,5 +1,16 @@
 # MANGAI Current Task
 
+## 2026-10-11 外部出品者承認merge後確認
+
+- 状態: `PR_655_MERGED / POST_MERGE_CHECKS_PASSED / PRODUCTION_DEPLOYED / CREATOR_ELIGIBLE_CONFIRMED / NEXT_MUTATION_NOT_AUTHORIZED`
+- Branch: `codex/external-seller-approval-merge-record-20261011`
+- 基点: PR #655 merge commit `f493206a216b5ac6abd36732a6b92c46c4a263b0`（`feature/manga-canvas-mvp`）。merge後のRequired Quality、Desktop Windows、Production deployment `6983177056`はすべて成功した。
+- Productionのcreator `test`で外部作品応募画面をread-only確認した。規約同意／承認待ち表示は消え、「新しい応募下書き」の作品名、作品説明、対象年齢、原稿形式と作成buttonが表示された。seller承認がcreator側にも反映済み。
+- 応募下書きは0件。入力、下書き作成、upload、worker、提出、審査、公開、販売、Stripe、決済は行っていない。
+- 次: 一般向けfixtureの応募下書き作成を別のProduction mutationとして、対象値と停止条件を提示し、action-time承認を得てから1件だけ実行する。upload以降はさらに別の承認単位とし、実決済は禁止を維持する。
+
+---
+
 ## 2026-10-11 外部出品者Production承認
 
 - 状態: `PR_654_MERGED / POST_MERGE_CHECKS_PASSED / PRODUCTION_DEPLOYED / SELLER_APPROVED / NEXT_MUTATION_NOT_AUTHORIZED`
