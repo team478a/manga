@@ -1,11 +1,23 @@
 # MANGAI Current Task
 
+## 2026-10-10 Marketplace実作品E2E PR #635統合完了
+
+- 状態: `PR_635_MERGED / POST_MERGE_CHECKS_PASSED / E2E_AND_FIXTURE_CLEANUP_COMPLETE / PRODUCTION_UNCHANGED`
+- Branch: `codex/marketplace-e2e-final-merge-record-20261010`
+- PR #635はmerge commit `4a7faf18`で`feature/manga-canvas-mvp`へmerge済み。S-01〜S-09、B-01〜B-11、E-01〜E-09、fixture cleanupの実装・検証・証跡が基準ブランチへ統合された。
+- merge後pushのRequired QualityはCore qualityとMigration roundtripが成功し、Desktop Windowsも型検査、lint、Desktop tests、Accessibility tests、unpacked Windows buildを含めて成功した。
+- Vercel deploymentはproject `mangai-hub-staging`で成功。GitHub deploymentの環境表示は`Production`だがmetadataは`production_environment=false`で、実Production用projectへの操作ではない。
+- 隔離Preview fixtureは商品`paused`、作品`draft`／非公開。注文は`test`限定で保持し、Production DB、Stripe live、実請求、実利用者、Provider、生成Job、creditへの追加変更は0件。
+- 次: Supabase Preview Branch、Vercel Preview設定、Stripe Sandbox webhook endpoint等の隔離E2E環境teardownは破壊操作として別の明示承認単位で扱う。承認前に削除・無効化しない。新規実装は次の指定範囲が確定するまで開始しない。
+
+---
+
 ## 2026-10-10 Marketplace隔離Preview fixture cleanup
 
 - 状態: `CLEANUP_COMPLETE / FIXTURE_PAUSED_AND_PRIVATE / TEST_ORDERS_UNCHANGED / PRODUCTION_UNCHANGED`
 - Branch: `codex/marketplace-e2e-cleanup-complete-20261010`
 - PR: [#639](https://github.com/team478a/manga/pull/639)（PR #635へstacked）
-- PR #638はmerge commit `165e7e7a`でPR #635のheadへmerge済み。PR #635はOpen／非Draft／mergeableで、Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsは5/5成功している。
+- PR #638はmerge commit `165e7e7a`、PR #639はmerge commit `a06a7295`でPR #635のheadへmerge済み。PR #635はその後merge commit `4a7faf18`で`feature/manga-canvas-mvp`へ統合され、merge後checksも成功した。
 - 責任者のaction-time承認後、Supabase Dashboardで`mangai-hub-staging`のPreview Branch `marketplace-e2e-20261009`を目視確認した。別Projectの`main / PRODUCTION`画面では操作せず、対象Previewへ切り替えてから実施した。
 - 合成Sellerの既存パスワードは復元できず、Dashboardのrecovery／magic linkは非配送のfixture emailに適用できないため使用しなかった。Vercel Preview設定の管理キーも権限制約により空値で、Auth userのパスワード変更は0件。取得時の一時ファイルは削除し、秘密値を表示・記録していない。
 - 対象作品・商品が各1件でなければ更新前に停止するSQLを、隔離PreviewのSQL Editorで1回だけ実行した。商品は`active→paused`、作品は`published / public→draft / private`へ戻り、`published_at=null`、価格100円をread-only再照会した。

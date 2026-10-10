@@ -1,8 +1,18 @@
 # MANGAI AI Handoff Log
 
+## 2026-10-10 Codex: Marketplace実作品E2E PR #635統合完了
+
+- PR #635はmerge commit `4a7faf18`で`feature/manga-canvas-mvp`へmerge済み。Marketplace実作品E2Eの正常系、異常系E-01〜E-09、fixture cleanupを基準ブランチへ統合した。
+- merge後のCore quality、Migration roundtrip、Desktop Windowsは全成功。Desktop WindowsはAccessibility testsとunpacked buildを含む。
+- Vercel project `mangai-hub-staging`のdeploymentは成功し、GitHub metadataは`production_environment=false`。実Production用project、Production DB、Stripe live、実請求への追加操作はない。
+- fixtureは商品`paused`、作品`draft`／非公開、注文は`test`限定で保持している。
+- 隔離E2E環境のSupabase Branch、Vercel Preview設定、Stripe Sandbox endpointは未削除。teardownは破壊操作として別の明示承認を必要とする。新規実装は次の指定範囲待ち。
+
+---
+
 ## 2026-10-10 Codex: Marketplace隔離Preview fixture cleanup完了
 
-- Branch `codex/marketplace-e2e-cleanup-complete-20261010`、PR [#639](https://github.com/team478a/manga/pull/639)（PR #635へstacked）。PR #638 merge commit `165e7e7a`のPR #635最新headから開始した。PR #635はOpen／非Draft／mergeable、5 checks成功。
+- Branch `codex/marketplace-e2e-cleanup-complete-20261010`、PR [#639](https://github.com/team478a/manga/pull/639)。PR #638 merge commit `165e7e7a`のPR #635 headから開始し、PR #639はmerge commit `a06a7295`でPR #635へ統合、PR #635はmerge commit `4a7faf18`で基準ブランチへ統合済み。
 - Supabase Dashboardで`mangai-hub-staging / marketplace-e2e-20261009 / PREVIEW`を確認し、別Projectの`main / PRODUCTION`では操作しなかった。
 - fixture Sellerのパスワード変更は、非配送emailとVercel管理キー取得権限制約のため実施せず、Auth user変更は0件。一時設定ファイルは削除し、秘密値を表示・記録していない。
 - 対象作品・商品が各1件でなければ停止するguard付きSQLをPreviewで1回実行し、商品`paused`、作品`draft`／非公開／`published_at=null`、価格100円をread-only確認した。
