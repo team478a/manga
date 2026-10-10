@@ -9,7 +9,7 @@
 - Migration `202610100004_external_submission_review_publish.sql`、rollback、canonical schema、manifest、DB assertion、contract testを同期した。PostgreSQL 16で100 migrationのforward／rollback／reapply、canonical二重適用、PR-4 data assertionを成功確認し、一時DBは削除済み。
 - PR初回Migration roundtripがcanonical schemaの`+begin;`誤記を検出した。余分な`+`を除去してchecksumを更新し、新規PostgreSQL 16でschema二重適用と全schema assertionを再実行して成功、一時DBも削除した。
 - deps check、lint、typecheck、Hub 1304、Canvas 26、AI 50、Desktop 407、Hub／Desktop build、contract 4が成功。RC structureはREADY、外部設定と手動E2EはPENDING。ローカルDesktop a11yはreport未生成のため`LOCAL_BLOCKED_EXTERNAL_ENVIRONMENT`とし、PRのWindows workflowで確認する。
-- Production migration、実upload、実公開／販売、Stripe、実決済、実利用者、Provider、Job、creditは変更していない。次はPR #646の全CI確認とレビュー・merge判断。PR-5は本PRmerge後に別branchで扱う。
+- Production migration、実upload、実公開／販売、Stripe、実決済、実利用者、Provider、Job、creditは変更していない。修正後HEAD `310aaa58`のCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功。次はPR #646のレビュー・merge判断。PR-5は本PRmerge後に別branchで扱う。
 
 ---
 

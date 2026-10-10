@@ -2,7 +2,7 @@
 
 ## 2026-10-10 外部作品応募 PR-4 審査・公開・強制停止
 
-- 状態: `IMPLEMENTED / LOCAL_CHECKS_PASSED / PRODUCTION_NOT_APPLIED / PR_OPEN`
+- 状態: `IMPLEMENTED / LOCAL_AND_PR_CHECKS_PASSED / PRODUCTION_NOT_APPLIED / REVIEW_READY`
 - Branch: `codex/external-submission-review-publish-20261010`
 - PR: [#646](https://github.com/team478a/manga/pull/646)
 - 基点: PR #645 merge commit `c7161b7e`（`feature/manga-canvas-mvp`）。PR-3の固定Publication・Reader統合を前提に、`docs/marketplace/EXTERNAL_SELLER_GAP_ANALYSIS.md`のPR-4だけを実装した。
@@ -12,7 +12,7 @@
 - Migration `202610100004_external_submission_review_publish.sql`、rollback、canonical schema、manifest、forward／rollback／data assertion、静的契約testを同期した。ローカルPostgreSQL 16で全100 migrationのforward／rollback／reapply、canonical schema二重適用、PR-4 data assertionを成功確認し、一時Docker DBは削除済み。
 - PR初回Migration roundtripがcanonical schema内の誤記`+begin;`を検出した。先頭の`+`を除去してschema checksumを更新し、新規PostgreSQL 16でCIと同じcanonical schema二重適用と全schema assertionを再実行して成功、一時DBも削除した。
 - 品質ゲート: `npm run deps:check`（error 0、既知warning 2）、`npm run lint`、`npm run typecheck`、`npm run hub:test`（1304 pass）、`npm run canvas:test`（26 pass）、`npm run ai:test`（50 pass）、`npm run desktop:test`（407 pass）、`npm run build`、`npm run desktop:build`、PR-4 contract test（4 pass）成功。`npm run rc:preflight`はexit 0／repository structure READY、外部設定と手動E2EはPENDING。ローカル`desktop:test:a11y`はruntime report未生成のため`LOCAL_BLOCKED_EXTERNAL_ENVIRONMENT`として扱い、PRのDesktop Windowsで確認する。
-- Production migration、実upload、実公開／販売、Stripe Checkout、実決済、実利用者、Provider、生成Job、creditへの操作は0件。Commit `9a3a5a45`をpushし、PR #646を作成した。次は全CI確認とレビュー・merge判断。PR-5は本PRのmerge後に別branchで扱う。
+- Production migration、実upload、実公開／販売、Stripe Checkout、実決済、実利用者、Provider、生成Job、creditへの操作は0件。Commit `9a3a5a45`をpushし、PR #646を作成した。修正後HEAD `310aaa58`のCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功。次はレビュー・merge判断。PR-5は本PRのmerge後に別branchで扱う。
 
 ---
 
