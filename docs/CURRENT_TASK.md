@@ -2,14 +2,15 @@
 
 ## 2026-10-10 外部作品応募 PR-3 Publication一般化・Reader統合
 
-- 状態: `IMPLEMENTED / LOCAL_GATES_PASSED_EXCEPT_A11Y_RUNTIME / PRODUCTION_NOT_APPLIED / PR_PREPARATION`
+- 状態: `IMPLEMENTED / LOCAL_GATES_PASSED_EXCEPT_A11Y_RUNTIME / PRODUCTION_NOT_APPLIED / REVIEW_READY`
 - Branch: `codex/external-submission-publication-20261010`
+- PR: [#645](https://github.com/team478a/manga/pull/645)
 - 基点: PR #644 merge commit `7852f225`（`feature/manga-canvas-mvp`）。
 - `docs/marketplace/EXTERNAL_SELLER_GAP_ANALYSIS.md`のPR-3に限定し、検証済み外部submissionを非公開draft作品と固定Publicationへ変換する管理者RPC、ownerによる1〜10ページのsample指定、外部Publicationのprivate Storage参照を追加した。商品作成、公開、販売開始はPR-4へ残し、本PRでは実行しない。
 - `cloud_work_publications`／pageをCloudまたは外部submissionの排他的sourceとして一般化し、既存Cloud rowを維持する。`works`とsubmissionへ相互linkを追加し、ordersへ購入時Publication snapshotを保存する。Readerと購入履歴は所有版または支払済み注文の固定版だけを開き、DB migration未適用時は既存購入経路へ限定fallbackする。
 - Migration `202610100003_external_submission_publications.sql`、data存在時に停止するrollback、canonical schema、manifest、forward／rollback assertion、静的契約testを同期した。ローカルPostgreSQL 16で全99 migrationのforward／全rollback／reapply、canonical schema二重適用、schema data／Marketplace assertionを成功確認し、一時Docker DBは削除済み。
 - 品質ゲート: `npm install`、`npm run deps:check`（error 0、既知warning 2）、`npm run lint`、`npm run typecheck`、`npm run hub:test`（1300 pass）、`npm run canvas:test`（26 pass）、`npm run ai:test`（50 pass）、`npm run desktop:test`（407 pass）、`npm run db:migrations:validate`（99件）、`npm run build`、`npm run desktop:build`成功。`npm run rc:preflight`はexit 0／repository structure READY、外部設定と手動E2EはPENDING。`desktop:test:a11y`はbuildとruntime寸法取得後、Hub接続timeoutを伴うexit 1となりreport未生成で、CI Desktop Windowsの確認待ち。
-- Production migration、実upload、公開／販売、Stripe Checkout、実決済、実利用者、Provider、生成Job、creditへの操作は0件。次は差分・secret・文書の最終確認、commit／push、PR作成、CI確認を行う。
+- Production migration、実upload、公開／販売、Stripe Checkout、実決済、実利用者、Provider、生成Job、creditへの操作は0件。Commit `54057a9a`をpushし、PR #645を作成した。次はCI確認とレビュー・merge判断。
 
 ---
 
