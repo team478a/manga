@@ -1,5 +1,51 @@
 # MANGAI AI Handoff Log
 
+## 2026-10-10 Codex: Marketplace隔離Preview fixture cleanup完了
+
+- Branch `codex/marketplace-e2e-cleanup-complete-20261010`、PR [#639](https://github.com/team478a/manga/pull/639)（PR #635へstacked）。PR #638 merge commit `165e7e7a`のPR #635最新headから開始した。PR #635はOpen／非Draft／mergeable、5 checks成功。
+- Supabase Dashboardで`mangai-hub-staging / marketplace-e2e-20261009 / PREVIEW`を確認し、別Projectの`main / PRODUCTION`では操作しなかった。
+- fixture Sellerのパスワード変更は、非配送emailとVercel管理キー取得権限制約のため実施せず、Auth user変更は0件。一時設定ファイルは削除し、秘密値を表示・記録していない。
+- 対象作品・商品が各1件でなければ停止するguard付きSQLをPreviewで1回実行し、商品`paused`、作品`draft`／非公開／`published_at=null`、価格100円をread-only確認した。
+- 注文は`test`限定で`canceled`／`failed`／`paid`／`pending`各1件。`paid`のみdownload count 1・`paid_at`あり、他は0・なし。注文、Stripe event、Webhook endpointは変更していない。
+- Marketplace実作品E2EはS-01〜S-09、B-01〜B-11、E-01〜E-09とcleanupまで完了。Production、Stripe live、実請求、実利用者、Provider、Job、credit変更は0件。
+
+---
+
+## 2026-10-10 Codex: Marketplace隔離Preview E-03 同一test event再配送 E2E
+
+- Branch `codex/marketplace-e03-duplicate-webhook-20261010`、PR [#637](https://github.com/team478a/manga/pull/637)（Open／非Draft、PR #635へstacked）。PR #636 merge commit `89666c1a`から開始した。PR #635はOpen／非Draft／mergeable、5 checks成功、保護ルール待ち。PR自体は変更していない。
+- PR #635 headのVercel Previewは成功し、GitHub deployment metadataでProductionではないことを確認した。
+- 実装上、paid webhookの注文更新は`pending`だけが対象で、既に`paid`なら再更新せず存在確認へ進む。重複eventで`paid_at`や権限を増やさない契約をread-only確認した。
+- Vercel Sensitive値はCLIへ渡らずstrict preflightが安全停止。ローカルにStripe／隔離Supabase資格情報はなく、Stripe CLIもない。秘密値の回避取得や導入は行っていない。
+- action-time承認後、Stripe Sandboxの既存`checkout.session.completed`を同一event IDで隔離Previewへ1回だけ手動再配送した。HTTP 200、`received: true`、手動再送・回復済みを確認した。
+- 合成Buyerの本棚は再配送前後とも1冊、download countも1のままで、重複権限はない。現行Dashboardアカウントは隔離Supabase Projectへアクセスできず、`paid_at`のDB再照会は未取得。この証跡制約を明記する。
+- 決済event／Checkout repository集中17/17と`git diff --check`成功。素の`node --test`は`.ts`非対応で1 file失敗したため、標準の`--experimental-strip-types`付きで再実行して全件成功した。
+- E-01〜E-09は全PASS。隔離fixture cleanupは別承認で行う。Production、Stripe live、実請求、新規Checkout／PaymentIntent、endpoint、Provider、Job、credit変更は0件。
+
+---
+
+## 2026-10-09 Codex: Marketplace隔離Preview E-02 Checkout途中離脱 E2E
+
+- Branch `codex/marketplace-e02-checkout-abandonment-20261009`、Draft PR [#636](https://github.com/team478a/manga/pull/636)（PR #635へstacked）。PR #635 head `893d3c56`から開始した。PR #635はOpen／非Draft／mergeable、保護ルール待ちで、5 checksはすべて成功。PR自体は変更していない。
+- 責任者のaction-time承認後、隔離Previewの認証済み合成Buyerで税込100円のStripe Sandbox Checkoutを1回だけ開始した。カード情報は入力せず、支払い確定操作は行っていない。
+- Checkoutから正規の戻る導線で離脱し、新規test注文`bd634acb-f661-46f9-a7e8-93bdcd212491`と同じ注文IDの署名付きcancel URLへ戻った。cancel成功表示を確認した。
+- 本棚は既存test購入1冊、download count 1のままで、新しい購入権限はない。test modeは新規pending作成、live modeだけがpending再利用であるため、同一注文IDのcancel処理と権限非付与でE-02をPASSとした。
+- cancel後のDB再照会は別Chrome profileへのUI自動操作が応答せず未取得。cancel画面と本棚は実ブラウザ確認済み。この証跡制約を明記する。
+- 文書のみの変更で`git diff --check`成功。製品コード変更がないため追加のbuild／testは未実施。
+- Production、Stripe live、実請求、Provider、生成Job、creditへの変更は0件。次はE-03同一test event再配送を別承認で実施する。
+
+---
+
+## 2026-10-09 Codex: Marketplace隔離Preview E-01決済失敗 E2E
+
+- Branch `codex/marketplace-e01-declined-payment-pass-20261009`。PR #634 merge commit `6365e928`から開始した。
+- 隔離Previewの合成Buyerだけを対象に認証情報を再発行し、値を表示・記録せずにログインした。実利用者とProduction認証は変更していない。
+- 責任者のaction-time承認後、Stripe Sandboxの公式拒否用test cardで税込100円の支払いを1回だけ確定し、Checkoutのカード拒否表示を確認した。
+- DBでは対象注文が`failed`／`test`／100円、`paid_at`なし、download count 0になった。同じBuyer／商品の既存`paid`注文1件は不変で、新しいpaid注文や購入権限の重複はない。
+- E-01はPASS。Production、Stripe live、実請求、Provider、生成Job、creditへの変更は0件。次はE-02正規Checkout離脱とE-03同一test event再配送。
+
+---
+
 ## 2026-10-09 Codex: Marketplace隔離Preview E-01決済失敗preflight改善
 
 - Branch `codex/marketplace-staging-payment-failure-e2e-20261009`。PR #633 merge commit `53299f66`から開始した。
