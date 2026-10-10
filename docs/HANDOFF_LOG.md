@@ -6,7 +6,9 @@
 - action-time承認後、Productionの`tanaka`で`external-seller-v1`規約同意を1回送信したが失敗表示となったため、再送信と管理者承認を停止した。read-only監査でprofile role=`admin`、seller rowなし、event 0件を確認し、creator専用RPCとのrole不一致と特定した。部分変更はない。
 - adminへcreator専用フォームを表示しない画面guardとServer Actionの二重guardを追加した。adminにはcreatorアカウントへの切替案内と承認画面への導線を表示する。DB、RPC、migration、Production role、seller状態、submission、Storage、公開、販売、Stripe、決済は変更していない。
 - 集中3/3、Hub 1310/1310、Hub/Desktop typecheck、ESLint、Hub Production build、diff check成功。
-- 次はPR作成と全CI確認。merge後も責任者がcreatorアカウントを指定してログインし直すまで再試行しない。
+- Draft PR [#652](https://github.com/team478a/manga/pull/652)はCore quality、Migration roundtrip、Desktop Windows、Vercel、Vercel Preview Commentsがすべて成功し、merge commit `3e5776d0f0aca5c5e608f55f2528f3c10a183a68`で基準ブランチへ統合済み。merge後のRequired Quality、Desktop Windows（Accessibilityとunpacked buildを含む）、Vercel deploymentもすべて成功した。
+- Production反映後の`tanaka`画面をread-only確認し、creator専用規約フォームが表示されず、creatorアカウントへの切替案内と管理者向け承認画面への導線が表示されることを確認した。応募下書きは0件。Production mutationは行っていない。
+- 次は文書PRを確認する。責任者が応募用creatorアカウントを指定してログインし直すまで規約同意を再試行しない。
 
 ---
 
