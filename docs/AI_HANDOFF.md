@@ -1,5 +1,16 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 外部出品者Production承認（2026-10-11）
+
+- Draft PR [#654](https://github.com/team478a/manga/pull/654)はmerge commit `90619a73ae2b0e269df5e454494e9edc7dfcb786`で`feature/manga-canvas-mvp`へ統合済み。merge後のRequired Quality、Desktop Windows、Production deployment `6982481510`はすべて成功した。
+- Productionの`tanaka`管理画面をread-only再確認し、creator `test`が`draft / external-seller-v1`として正しく表示されることを確認した。候補0件の誤表示は解消した。
+- 責任者のaction-time承認後、「出品者として承認」を1回だけ実行した。画面上で`test`が`eligible / external-seller-v1`へ遷移し、承認ボタンが消えたことを確認した。
+- Production変更は既存RPCによるseller状態遷移だけ。DB schema、migration、role、submission、Storage、worker、作品、商品、公開、販売、注文、Stripe、決済、Provider、Job、creditは変更していない。
+- 証跡commit `b95b504e`をpushし、Draft PR [#655](https://github.com/team478a/manga/pull/655)を作成した。Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功した。
+- 次はcreator `test`でeligible表示をread-only確認する。応募下書き作成、upload、worker、審査、公開、販売、Stripe testは、それぞれ対象と停止条件を提示し、必要なaction-time承認を得るまで実行しない。実決済は行わない。
+
+---
+
 ## 0.0 外部出品者管理一覧の取得修正（2026-10-10）
 
 - PR #653 merge commit `5ddbe639`を基点にBranch `codex/fix-external-seller-admin-list-20261010`を作成した。
