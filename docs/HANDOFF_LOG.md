@@ -2,7 +2,7 @@
 
 ## 2026-10-10 Codex: Marketplace隔離Preview fixture cleanup完了
 
-- Branch `codex/marketplace-e2e-cleanup-complete-20261010`。PR #638 merge commit `165e7e7a`のPR #635最新headから開始した。PR #635はOpen／非Draft／mergeable、5 checks成功。
+- Branch `codex/marketplace-e2e-cleanup-complete-20261010`、PR [#639](https://github.com/team478a/manga/pull/639)（PR #635へstacked）。PR #638 merge commit `165e7e7a`のPR #635最新headから開始した。PR #635はOpen／非Draft／mergeable、5 checks成功。
 - Supabase Dashboardで`mangai-hub-staging / marketplace-e2e-20261009 / PREVIEW`を確認し、別Projectの`main / PRODUCTION`では操作しなかった。
 - fixture Sellerのパスワード変更は、非配送emailとVercel管理キー取得権限制約のため実施せず、Auth user変更は0件。一時設定ファイルは削除し、秘密値を表示・記録していない。
 - 対象作品・商品が各1件でなければ停止するguard付きSQLをPreviewで1回実行し、商品`paused`、作品`draft`／非公開／`published_at=null`、価格100円をread-only確認した。

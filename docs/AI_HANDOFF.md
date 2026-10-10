@@ -2,7 +2,7 @@
 
 ## 0.0 Marketplace隔離Preview fixture cleanup完了（2026-10-10）
 
-- PR #638はmerge commit `165e7e7a`でPR #635のheadへmerge済み。Branch `codex/marketplace-e2e-cleanup-complete-20261010`はこの最新headから分離した。PR #635はOpen／非Draft／mergeable、5 checks成功。
+- PR #638はmerge commit `165e7e7a`でPR #635のheadへmerge済み。Branch `codex/marketplace-e2e-cleanup-complete-20261010`はこの最新headから分離し、PR [#639](https://github.com/team478a/manga/pull/639)をPR #635へstackedした。PR #635はOpen／非Draft／mergeable、5 checks成功。
 - Supabase Dashboardで対象が`mangai-hub-staging / marketplace-e2e-20261009 / PREVIEW`であることを確認した。別Projectの`main / PRODUCTION`画面には変更を加えていない。
 - fixture Sellerのrecovery／magic linkは非配送emailのため使わず、Vercel経由の管理キーも空値で取得不能だった。Auth user変更は0件。一時設定ファイルは削除し、秘密値と資格情報は表示・記録していない。
 - 対象作品・商品が各1件でなければ更新前に停止するSQLをPreview SQL Editorで1回実行し、商品を`paused`、作品を`draft`／非公開／`published_at=null`へ戻した。read-only再照会で価格100円を含むcleanup後状態を確認した。

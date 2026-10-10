@@ -4,6 +4,7 @@
 
 - 状態: `CLEANUP_COMPLETE / FIXTURE_PAUSED_AND_PRIVATE / TEST_ORDERS_UNCHANGED / PRODUCTION_UNCHANGED`
 - Branch: `codex/marketplace-e2e-cleanup-complete-20261010`
+- PR: [#639](https://github.com/team478a/manga/pull/639)（PR #635へstacked）
 - PR #638はmerge commit `165e7e7a`でPR #635のheadへmerge済み。PR #635はOpen／非Draft／mergeableで、Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsは5/5成功している。
 - 責任者のaction-time承認後、Supabase Dashboardで`mangai-hub-staging`のPreview Branch `marketplace-e2e-20261009`を目視確認した。別Projectの`main / PRODUCTION`画面では操作せず、対象Previewへ切り替えてから実施した。
 - 合成Sellerの既存パスワードは復元できず、Dashboardのrecovery／magic linkは非配送のfixture emailに適用できないため使用しなかった。Vercel Preview設定の管理キーも権限制約により空値で、Auth userのパスワード変更は0件。取得時の一時ファイルは削除し、秘密値を表示・記録していない。
