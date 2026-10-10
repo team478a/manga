@@ -616,3 +616,32 @@ do $$ begin
     raise exception 'Current schema marketplace favorite contract missing or exposed';
   end if;
 end $$;
+
+do $$ begin
+  if to_regclass('public.external_seller_profiles') is null
+     or to_regclass('public.external_seller_profile_events') is null
+     or to_regclass('public.external_work_submissions') is null
+     or to_regclass('public.external_work_rights_declarations') is null
+     or to_regclass('public.external_work_submission_events') is null
+     or to_regprocedure('public.accept_external_seller_terms(text)') is null
+     or to_regprocedure('public.set_external_seller_status(uuid,text,text)') is null
+     or to_regprocedure('public.create_external_work_submission(text,text,text,text)') is null
+     or to_regprocedure('public.record_external_work_rights_declaration(uuid,text,boolean,boolean,boolean,boolean)') is null
+     or to_regprocedure('public.transition_external_work_submission(uuid,text,text)') is null
+     or not exists(
+       select 1 from pg_class c join pg_namespace n on n.oid=c.relnamespace
+       where n.nspname='public' and c.relname='external_work_submissions' and c.relrowsecurity
+     )
+     or has_table_privilege('authenticated','public.external_work_submissions','insert,update,delete')
+     or has_table_privilege('service_role','public.external_work_submissions','insert,update,delete')
+     or has_table_privilege('service_role','public.external_work_rights_declarations','insert,update,delete')
+     or has_table_privilege('anon','public.external_work_submissions','select')
+     or not has_function_privilege('authenticated','public.create_external_work_submission(text,text,text,text)','execute')
+     or has_function_privilege('anon','public.create_external_work_submission(text,text,text,text)','execute')
+     or position(
+       'external_submission_audit_append_only' in
+       pg_get_functiondef('public.prevent_external_submission_audit_mutation()'::regprocedure)
+     )=0 then
+    raise exception 'External submission foundation missing or exposed';
+  end if;
+end $$;

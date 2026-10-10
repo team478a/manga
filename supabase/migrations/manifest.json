@@ -576,7 +576,13 @@
       "description": "Cloud販売下書き同期の戻り値名とDB列名の衝突を完全修飾で解消",
       "forwardSha256": "7d9aff799797c5f89371eb4262907be2604b22fecb1fb1aafcd3c90f09f83c75",
       "rollbackSha256": "7b88f89269ab6139125ab708c1beac556601bcc144bde89404e60209aca75951"
+    },
+    {
+      "id": "202610100001_external_submission_foundation",
+      "description": "外部作品持ち込み出品のseller資格・権利申告・審査状態・追記専用監査基盤を追加",
+      "forwardSha256": "650a202cfe8f003b495c209c1048d8797956afc667d1ff911ba4222ef1af0936",
+      "rollbackSha256": "824b40f3cbe07701cad7e65479a98ea61e8fdb830dbf9630e5282edae1bd9bcb"
     }
   ],
-  "schemaSha256": "4724704bea028d247936ac5ac3bbb15653a5927699f1ddaec5b2520848459c3a"
+  "schemaSha256": "9f607669c680600ed7a7658753510ef1ffc776187cf5987fee307ef17060c0cc"
 }
