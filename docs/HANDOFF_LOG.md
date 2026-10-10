@@ -1,12 +1,13 @@
 # MANGAI AI Handoff Log
 
-## 2026-10-10 Codex: Marketplace隔離Preview fixture cleanup環境ブロック
+## 2026-10-10 Codex: Marketplace隔離Preview fixture cleanup完了
 
-- Branch `codex/marketplace-e2e-cleanup-blocked-20261010`、Draft PR [#638](https://github.com/team478a/manga/pull/638)（PR #635へstacked）。PR #637はmerge commit `733309ff`でPR #635のheadへmerge済み。PR #635のmerge後5 checksは全成功。
-- action-time承認後、隔離fixtureの商品を`paused`、作品を非公開へ戻す準備を開始した。
-- Chrome連携はrequest-header policy読込みエラーで2回失敗し、computer-use session初期化後も同じエラーで停止した。安全規約に従いUI操作を打ち切った。
-- cleanup mutationは0件。商品`active`・作品公開は未変更。注文、権限、Stripe event、endpoint、Production、Stripe live、実決済、Provider、Job、creditも未変更。
-- 次はChrome連携復旧後に隔離対象をread-only再確認し、承認済みcleanupを1回だけ実施して、商品`paused`・作品非公開・注文／Webhook不変を確認する。
+- Branch `codex/marketplace-e2e-cleanup-complete-20261010`、PR [#639](https://github.com/team478a/manga/pull/639)（PR #635へstacked）。PR #638 merge commit `165e7e7a`のPR #635最新headから開始した。PR #635はOpen／非Draft／mergeable、5 checks成功。
+- Supabase Dashboardで`mangai-hub-staging / marketplace-e2e-20261009 / PREVIEW`を確認し、別Projectの`main / PRODUCTION`では操作しなかった。
+- fixture Sellerのパスワード変更は、非配送emailとVercel管理キー取得権限制約のため実施せず、Auth user変更は0件。一時設定ファイルは削除し、秘密値を表示・記録していない。
+- 対象作品・商品が各1件でなければ停止するguard付きSQLをPreviewで1回実行し、商品`paused`、作品`draft`／非公開／`published_at=null`、価格100円をread-only確認した。
+- 注文は`test`限定で`canceled`／`failed`／`paid`／`pending`各1件。`paid`のみdownload count 1・`paid_at`あり、他は0・なし。注文、Stripe event、Webhook endpointは変更していない。
+- Marketplace実作品E2EはS-01〜S-09、B-01〜B-11、E-01〜E-09とcleanupまで完了。Production、Stripe live、実請求、実利用者、Provider、Job、credit変更は0件。
 
 ---
 

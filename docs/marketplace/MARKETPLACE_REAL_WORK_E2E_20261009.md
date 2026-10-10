@@ -2,7 +2,7 @@
 
 作成日: 2026-10-09  
 対象: `feature/manga-canvas-mvp`  
-状態: `STAGING_READY / FIXTURE_READY / SELLER_S01_S09_PASS / BUYER_B01_B11_PASS / ABNORMAL_E01_E09_PASS / DUPLICATE_WEBHOOK_E03_PASS`
+状態: `STAGING_READY / FIXTURE_READY / SELLER_S01_S09_PASS / BUYER_B01_B11_PASS / ABNORMAL_E01_E09_PASS / DUPLICATE_WEBHOOK_E03_PASS / CLEANUP_COMPLETE`
 
 ### 2026-10-09 隔離Preview実行準備の結果
 
@@ -18,6 +18,7 @@
 - Chromeの実ブラウザを390x844 viewportに固定し、合成BuyerでHome、タイトル検索、作品詳細、あとで読む、本棚、Reader、読書位置の保存・復帰、購入準備画面までを確認した。全画面でdocumentの横overflowはなく、mobile navigationから主要導線へ遷移できた。購入確定ボタンは押しておらず、決済・注文・downloadは発生していない。E-09をPASSとした。
 - 責任者のaction-time承認後、隔離Previewへ一時的な未購入Buyerを作成し、Buyer Aのpaid／test注文のdownload URLへ認証済みで直接アクセスした。購入履歴へ`RESOURCE_NOT_FOUND`付きで戻され、本棚は空、注文のstatus／payment mode／download countは不変だった。ログアウト後に一時Auth userを削除し、cascadeされたprofileが存在しないことを確認した。E-06をPASSとした。
 - 責任者のaction-time承認後、既存のStripe Sandbox `checkout.session.completed`を同一event IDのまま隔離Previewへ1回だけ手動再配送した。HTTP 200／`received: true`を確認し、合成Buyerの本棚1冊・download count 1は前後不変で、重複権限は発生しなかった。E-03をPASSとした。
+- 責任者のaction-time承認後、Supabase Preview Branch `marketplace-e2e-20261009`の対象作品・商品を各1件に限定するguard付きSQLでcleanupした。商品は`paused`、作品は`draft`／非公開／`published_at=null`へ戻った。注文はすべて`test`で`canceled`／`failed`／`paid`／`pending`各1件、`paid`だけdownload count 1・`paid_at`あり、他は0・なし。注文、Stripe event、Webhook endpoint、Production、Stripe liveは変更していない。
 
 ### 2026-10-09 外部設定の再監査
 
@@ -37,7 +38,7 @@ Marketplace実作品E2Eの実行項目、証跡、停止条件を固定しまし
 
 Vercel PreviewはProductionと分離されたSupabase Branch、Checkout `test`、Stripe test資格情報の3条件を満たし、strict preflightは3/3 `READY`です。必要なmigrationと合成fixtureの準備も完了し、fixture監査は8/8 `READY`です。
 
-認証済みSeller／Buyerの正常系E2EはS-01〜S-09、B-01〜B-11をPASSしました。異常系もE-01〜E-09をすべてPASSしました。隔離Previewでのみ作品公開、販売開始、Stripe testの正常注文1件・失敗注文1件・途中離脱注文1件、正常注文eventの再配送1回、Reader進捗保存、購入PDF取得を実施しています。Production、Stripe live、実利用者データには触れていません。
+認証済みSeller／Buyerの正常系E2EはS-01〜S-09、B-01〜B-11をPASSしました。異常系もE-01〜E-09をすべてPASSしました。隔離Previewでのみ作品公開、販売開始、Stripe testの正常注文1件・失敗注文1件・途中離脱注文1件、正常注文eventの再配送1回、Reader進捗保存、購入PDF取得を実施し、終了後は商品を`paused`、作品を非公開へ戻しました。Production、Stripe live、実利用者データには触れていません。
 
 ## 2. 環境preflight
 
