@@ -2,7 +2,7 @@
 
 ## 2026-10-11 外部作品応募Worker scheduler
 
-- 状態: `IMPLEMENTED / LOCAL_CHECKS_PASSED / PRODUCTION_CONFIG_UNCHANGED / WORKER_NOT_RUN`
+- 状態: `IMPLEMENTED / DRAFT_PR_OPEN / ALL_PR_CHECKS_PASSED / PRODUCTION_CONFIG_UNCHANGED / WORKER_NOT_RUN`
 - Branch: `codex/external-submission-worker-scheduler-20261011`
 - PR: [#661](https://github.com/team478a/manga/pull/661)（Draft）。実装commit `edbfbfb5`。
 - 基点: PR #660 merge commit `67aeb9caf62393d041e44a04b162fddb54eec1ac`（`feature/manga-canvas-mvp`）。merge後のRequired Quality run `38092177579`、Desktop Windows run `38092177603`、Production deployment `6987863224`はすべて成功した。
@@ -10,6 +10,7 @@
 - URLはHTTPSかloopback HTTP、固定path `/api/internal/external-submissions/worker`だけを許可し、query、fragment、埋め込みcredentialを拒否する。secretは32文字以上を要求し、応答のsubmission ID、error code、秘密値はログへ出さない。`idle`／`completed`／`failed`のいずれでも追加requestを行わない。
 - 運用文書 `docs/hub/EXTERNAL_SUBMISSION_WORKER_SCHEDULER.md`へ、GitHub／Vercel設定、ClamAV非公開接続、段階的有効化、canary、停止・復旧を記録した。Production設定、GitHub secret／variable、redeploy、Worker実行は変更していない。
 - 検証: 集中6/6、Hub 1316/1316、停止時preflight `DISABLED`（通信0件）、deps（error 0、既知warning 2）、lint、Hub/Desktop typecheck、Hub Production build、diff check成功。
+- PRの証跡同期前HEAD `dfca4f2f`でRequired Quality run `38092961737`（Core quality、Migration roundtrip）、Desktop Windows run `38092961764`（Accessibility、unpacked buildを含む）、Vercel、Vercel Preview Commentsはすべて成功した。
 - 次: Draft PRを作成し、全CI／Vercel Preview成功で停止する。merge後もClamAV接続先とsecretを準備し、Production設定変更、GitHub設定変更、redeploy、設定check、1回のWorker runを別々のaction-time承認なしに実行しない。実決済は禁止を維持する。
 
 ---
