@@ -7,7 +7,7 @@
 - `tanaka`の管理画面が候補0件と誤表示した。Production dataではなく、複数FKを持つ`profiles` relationのhint欠落とquery errorの握りつぶしが原因だった。
 - `external_seller_profiles_profile_id_fkey`を明示し、query失敗時は汎用エラー表示へ切り替える。DB、migration、RPC、Production seller状態は変更していない。
 - 集中3/3、Hub 1310/1310、Hub/Desktop typecheck、ESLint、Hub Production build成功。
-- Commit `d80cd69e`をpushし、Draft PR [#654](https://github.com/team478a/manga/pull/654)を作成した。次は全CI／Vercel Preview。merge／Production反映後に管理一覧をread-only確認し、出品者承認は新しいaction-time承認まで実行しない。
+- Commit `d80cd69e`をpushし、Draft PR [#654](https://github.com/team478a/manga/pull/654)を作成した。Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功した。merge／Production反映後に管理一覧をread-only確認し、出品者承認は新しいaction-time承認まで実行しない。
 
 ---
 
