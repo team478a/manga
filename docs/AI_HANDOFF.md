@@ -1,5 +1,14 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 外部作品応募Production検証queue登録（2026-10-11）
+
+- PR [#658](https://github.com/team478a/manga/pull/658)はmerge commit `60c35fb965e8d2c89ca633a8d291bd0e6b9ae37d`で`feature/manga-canvas-mvp`へ統合済み。merge後のRequired Quality run `38074218201`、Desktop Windows run `38074218206`、Production deployment `6984747832`はすべて成功した。
+- 責任者のaction-time承認後、Productionのcreator `test`で応募`906ff7c3-c00a-42ed-aa9f-20d330233911`の`検証を開始`を1回だけ実行した。画面は「検証待ちに追加しました。」を返し、状態は`uploading`から`validating`、Jobは`未開始`から`queued`へ遷移した。
+- 2ファイルは`uploaded`のまま。Worker endpointは呼び出さず、Job claim、malware scan、page変換、Storage page生成、権利宣言、審査提出、公開、販売、Stripe、決済は実行していない。
+- 次はProduction WorkerのFeature Flag、内部認証、ClamAV接続条件を秘密値を表示せず確認し、対象Job、実行回数、停止条件を提示して別のaction-time承認を得るまでWorkerを実行しない。実決済は禁止を維持する。
+
+---
+
 ## 0.0 外部作品応募Production隔離upload（2026-10-11）
 
 - PR [#657](https://github.com/team478a/manga/pull/657)はmerge commit `e33ee2d1a6ef8fab25f218a8eac7bd2e8418b669`で`feature/manga-canvas-mvp`へ統合済み。merge後のRequired Quality run `38071199657`、Desktop Windows run `38071199655`、Production deployment `6984220162`はすべて成功した。
