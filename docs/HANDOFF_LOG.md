@@ -6,6 +6,7 @@
 - `tanaka`管理画面で`test`が`draft / external-seller-v1`として表示され、一覧取得修正のProduction反映を確認した。
 - action-time承認後、「出品者として承認」を1回だけ実行した。画面は`eligible / external-seller-v1`へ遷移し、承認ボタンは消えた。追加操作は行っていない。
 - Production変更はseller状態遷移だけ。DB schema、migration、role、submission、Storage、worker、公開、販売、Stripe、決済、Provider、Job、creditは変更していない。
+- 証跡commit `b95b504e`をpushし、Draft PR [#655](https://github.com/team478a/manga/pull/655)を作成した。
 - 次はcreator `test`のeligible表示をread-only確認する。応募下書き作成以降は新しいaction-time承認まで進めない。
 
 ---
