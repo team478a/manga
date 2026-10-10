@@ -5,6 +5,7 @@
 - PR #655はmerge commit `f493206a`で基準ブランチへ統合済み。merge後のRequired Quality、Desktop Windows、Production deploymentはすべて成功した。
 - creator `test`のProduction外部作品応募画面をread-only確認し、「新しい応募下書き」フォームが表示されるeligible状態を確認した。
 - 応募下書きは0件。入力、作成、upload、worker、提出、審査、公開、販売、Stripe、決済は操作していない。
+- 証跡commit `fd483355`をpushし、Draft PR [#656](https://github.com/team478a/manga/pull/656)を作成した。
 - 次は一般向けfixtureの応募下書き作成を別承認単位として、action-time承認まで進めない。upload以降も個別承認とする。
 
 ---

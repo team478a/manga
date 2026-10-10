@@ -4,6 +4,7 @@
 
 - 状態: `PR_655_MERGED / POST_MERGE_CHECKS_PASSED / PRODUCTION_DEPLOYED / CREATOR_ELIGIBLE_CONFIRMED / NEXT_MUTATION_NOT_AUTHORIZED`
 - Branch: `codex/external-seller-approval-merge-record-20261011`
+- PR: [#656](https://github.com/team478a/manga/pull/656)（Draft）。証跡commit `fd483355`。
 - 基点: PR #655 merge commit `f493206a216b5ac6abd36732a6b92c46c4a263b0`（`feature/manga-canvas-mvp`）。merge後のRequired Quality、Desktop Windows、Production deployment `6983177056`はすべて成功した。
 - Productionのcreator `test`で外部作品応募画面をread-only確認した。規約同意／承認待ち表示は消え、「新しい応募下書き」の作品名、作品説明、対象年齢、原稿形式と作成buttonが表示された。seller承認がcreator側にも反映済み。
 - 応募下書きは0件。入力、下書き作成、upload、worker、提出、審査、公開、販売、Stripe、決済は行っていない。
