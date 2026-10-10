@@ -10,13 +10,16 @@ lease付きclaim、malware scan、画像検証、非公開page保存は実装済
 Schedulerがなかったため、Production Jobは自動では進みませんでした。
 
 このSchedulerはGitHub Actionsから認証付きでWorkerを呼びます。Production設定とClamAV接続が
-揃うまで既定で停止し、手動実行も既定値は通信しない`check`です。
+揃うまで既定で停止し、手動実行も既定値は通信しない`check`です。明示的な`probe`はWorkerの
+認証付き`GET`だけを呼び、ClamAVへframed `PING`を1回送ります。Job claim、scan、Storage、DB更新は
+行いません。
 
 ## 実行構成
 
 - GitHub Actions `External submission Worker scheduler`が5分間隔で起動する。
 - Repository variableが厳密に`true`のときだけscheduled実行する。
 - 1 workflowでWorker requestは1回、処理対象は最大1 Jobに限定する。
+- `probe`はFeature Flag停止中にも実行でき、ClamAVの正確な`PONG`だけをreadyとする。
 - `idle`、`completed`、`failed`のいずれでも同一workflow内の追加requestは行わない。
 - workflow concurrencyは1本に限定し、実行中workflowをcancelしない。
 - Worker側のDB leaseと`for update skip locked`で二重claimを防ぐ。
@@ -44,7 +47,8 @@ URLはHTTPSかつ上記Worker pathだけを許可します。query、fragment、
 
 ## Vercel設定
 
-Schedulerを実行する前にProduction側で次を確認します。
+Schedulerの`run`を実行する前にProduction側で次を確認します。`probe`ではFlagを`false`のまま
+維持し、Jobを処理せずClamAV疎通だけを確認できます。
 
 - `MANGAI_EXTERNAL_SUBMISSION_WORKER_ENABLED=true`
 - `MANGAI_EXTERNAL_SUBMISSION_WORKER_SECRET`: GitHub Secretと同じ32文字以上の値
@@ -64,10 +68,11 @@ network controlを必須とし、疎通確認前にFeature Flagを有効化し�
 2. Vercel ProductionへFlag=`false`、Worker secret、ClamAV接続設定を反映する。
 3. GitHub ActionsへWorker URLと同じWorker secretを登録する。Repository variableは未設定のままにする。
 4. `Run workflow`の既定`check`を実行し、Workerへ通信せずGitHub側設定だけを確認する。
-5. ClamAV接続制御と疎通を確認し、Vercel ProductionでFlag=`true`を反映する。
-6. Queue、lease、対象Jobが意図した1件だけであることをread-only確認する。
-7. `workflow_dispatch / run`を1回だけ実行し、`queued -> running -> completed`、2 page生成、owner isolationを確認する。
-8. 定期処理を開始する場合だけRepository variableを`true`にする。
+5. Flag=`false`のまま`workflow_dispatch / probe`を1回実行し、認証付きGETとClamAV `PING`がreadyになることを確認する。Jobはclaimされない。
+6. Vercel ProductionでFlag=`true`を反映する。
+7. Queue、lease、対象Jobが意図した1件だけであることをread-only確認する。
+8. `workflow_dispatch / run`を1回だけ実行し、`queued -> running -> completed`、2 page生成、owner isolationを確認する。
+9. 定期処理を開始する場合だけRepository variableを`true`にする。
 
 Production環境変数、GitHub secret／variable、redeploy、Worker runはそれぞれ別の変更として、対象と
 停止条件を提示し、action-time承認を得てから実行します。

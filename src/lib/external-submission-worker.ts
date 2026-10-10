@@ -6,7 +6,10 @@ import {
   type ExternalSubmissionSourceFormat,
   validateExternalSubmissionSource,
 } from "./external-submission-ingest";
+import { readClamAvConnection } from "./external-submission-clamav";
 import { createAdminClient } from "./supabase/admin";
+
+export { checkClamAvReadiness } from "./external-submission-clamav";
 
 type AdminClient = ReturnType<typeof createAdminClient>;
 type IngestClaim = {
@@ -27,15 +30,13 @@ export function createClamAvScanner(input: {
   port?: number;
   timeoutMs?: number;
 } = {}): ExternalSubmissionMalwareScanner {
-  const host = input.host ?? process.env.MANGAI_EXTERNAL_CLAMAV_HOST;
-  const port = input.port ?? Number(process.env.MANGAI_EXTERNAL_CLAMAV_PORT ?? 3310);
+  const connection = readClamAvConnection(input);
   const timeoutMs = input.timeoutMs ?? 15_000;
-  if (!host || !Number.isInteger(port) || port < 1 || port > 65535)
-    return async () => "unavailable";
+  if (!connection) return async () => "unavailable";
 
   return async ({ bytes }) =>
     new Promise((resolve) => {
-      const socket = net.createConnection({ host, port });
+      const socket = net.createConnection(connection);
       let response = "";
       let settled = false;
       const finish = (status: "clean" | "infected" | "unavailable") => {

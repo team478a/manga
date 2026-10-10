@@ -1,10 +1,28 @@
 import { NextResponse } from "next/server";
-import { processNextExternalSubmissionIngest } from "@/lib/external-submission-worker";
+import {
+  checkClamAvReadiness,
+  processNextExternalSubmissionIngest,
+} from "@/lib/external-submission-worker";
 import { featureFlagEnabled } from "@/lib/feature-flags";
 import { hasValidInternalWorkerAuthorization } from "@/lib/internal-worker-auth";
 
 export const runtime = "nodejs";
 export const maxDuration = 300;
+
+export async function GET(request: Request) {
+  if (!hasValidInternalWorkerAuthorization(
+    request,
+    process.env.MANGAI_EXTERNAL_SUBMISSION_WORKER_SECRET,
+  )) return NextResponse.json({ error: "認証できません。" }, { status: 401 });
+  const status = await checkClamAvReadiness();
+  return NextResponse.json(
+    { status },
+    {
+      status: status === "ready" ? 200 : 503,
+      headers: { "Cache-Control": "no-store" },
+    },
+  );
+}
 
 export async function POST(request: Request) {
   if (!hasValidInternalWorkerAuthorization(

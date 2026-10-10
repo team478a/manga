@@ -97,14 +97,57 @@ export async function runExternalSubmissionWorkerScheduler({
   };
 }
 
+export async function probeExternalSubmissionWorkerScheduler({
+  env = process.env,
+  fetchImpl = globalThis.fetch,
+} = {}) {
+  const config = readExternalSubmissionSchedulerConfig(env);
+  if (!config.enabled)
+    return { enabled: false, requests: 0, status: "disabled" };
+
+  let response;
+  try {
+    response = await fetchImpl(config.endpoint, {
+      method: "GET",
+      headers: { authorization: `Bearer ${config.secret}` },
+      cache: "no-store",
+      signal: AbortSignal.timeout(config.timeoutMs),
+    });
+  } catch {
+    throw new Error("External submission Worker preflightへ接続できませんでした。");
+  }
+  if (!response.ok)
+    throw new Error(
+      `External submission Worker preflightが安全に停止しました (HTTP ${response.status})。`,
+    );
+
+  let body;
+  try {
+    body = await response.json();
+  } catch {
+    throw new Error("External submission Worker preflight応答を確認できませんでした。");
+  }
+  if (body?.status !== "ready")
+    throw new Error("External submission Worker preflightは準備未完了です。");
+  return { enabled: true, requests: 1, status: "ready" };
+}
+
 async function main() {
   const checkOnly = process.argv.includes("--check");
+  const probeOnly = process.argv.includes("--probe");
   const config = readExternalSubmissionSchedulerConfig();
   if (checkOnly) {
     console.log(
       `${config.enabled ? "READY" : "DISABLED"} External submission scheduler`,
     );
     console.log("INFO Credentials and values are never printed.");
+    return;
+  }
+  if (probeOnly) {
+    const result = await probeExternalSubmissionWorkerScheduler();
+    console.log(
+      `External submission scheduler probe: status=${result.status} requests=${result.requests}`,
+    );
     return;
   }
   const result = await runExternalSubmissionWorkerScheduler();
