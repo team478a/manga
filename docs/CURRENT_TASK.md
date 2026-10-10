@@ -1,5 +1,17 @@
 # MANGAI Current Task
 
+## 2026-10-11 外部作品応募Production隔離upload
+
+- 状態: `PR_657_MERGED / POST_MERGE_CHECKS_PASSED / PRODUCTION_DEPLOYED / TWO_FILES_UPLOADED / VALIDATION_NOT_AUTHORIZED`
+- Branch: `codex/external-submission-upload-record-20261011`
+- 基点: PR #657 merge commit `e33ee2d1a6ef8fab25f218a8eac7bd2e8418b669`（`feature/manga-canvas-mvp`）。merge後のRequired Quality run `38071199657`、Desktop Windows run `38071199655`、Production deployment `6984220162`はすべて成功した。
+- 責任者へ対象ファイル、保存先、件数、停止条件を提示し、action-time承認を得た後、Productionのcreator `test`で応募ID `906ff7c3-c00a-42ed-aa9f-20d330233911`の`Uploadを開始`を1回だけ実行した。状態は`draft`から`uploading`へ遷移した。
+- 非公開quarantineへrepo追跡済みの一般向けWebPを2件だけuploadした。`01-market-analysis-guide-poster.webp`（38,130 bytes、1280×720、SHA-256 `ab8ed76ab468c753a5fe167f375d9a7e309e276a9707cfcb879ce3cf7ecba90c`）と`02-proposal-guide-poster.webp`（35,256 bytes、1280×720、SHA-256 `1ebea14b9ccd106a43d8cf220994926bfbfa141714bce1cc68f1304f41c409cd`）はいずれも`uploaded`表示を確認した。
+- 完了時は`状態: uploading`、`Job: 未開始`で、`検証を開始`は未操作。worker、権利宣言、審査提出、公開、販売、Stripe、決済は行っていない。
+- 次: `検証を開始`とworker処理について、対象、実行回数、停止条件を提示し、別のaction-time承認を得てから実行する。実決済は禁止を維持する。
+
+---
+
 ## 2026-10-11 外部作品応募Production下書き作成
 
 - 状態: `PR_656_MERGED / POST_MERGE_CHECKS_PASSED / PRODUCTION_DEPLOYED / SUBMISSION_DRAFT_CREATED / UPLOAD_NOT_AUTHORIZED`

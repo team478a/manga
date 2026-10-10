@@ -1,5 +1,15 @@
 # MANGAI AI Handoff Log
 
+## 2026-10-11 Codex: 外部作品応募Production隔離upload
+
+- PR #657はmerge commit `e33ee2d1`で基準ブランチへ統合済み。merge後のRequired Quality、Desktop Windows、Production deploymentはいずれも成功した。
+- creator `test`で応募`906ff7c3-c00a-42ed-aa9f-20d330233911`の`Uploadを開始`をaction-time承認どおり1回だけ実行し、`draft`から`uploading`への遷移を確認した。
+- 非公開quarantineへ一般向けrepo fixture 2件だけをuploadした。`01-market-analysis-guide-poster.webp`（38,130 bytes、SHA-256 `ab8ed76ab468c753a5fe167f375d9a7e309e276a9707cfcb879ce3cf7ecba90c`）と`02-proposal-guide-poster.webp`（35,256 bytes、SHA-256 `1ebea14b9ccd106a43d8cf220994926bfbfa141714bce1cc68f1304f41c409cd`）はいずれも`uploaded`。
+- 停止時は`uploading`、`Job: 未開始`。`検証を開始`、worker、権利宣言、審査提出、公開、販売、Stripe、決済は操作していない。
+- 次はvalidation／workerを別のProduction mutationとして扱い、対象と停止条件を提示して新しいaction-time承認を得るまで進めない。実決済は禁止を維持する。
+
+---
+
 ## 2026-10-11 Codex: 外部作品応募Production下書き作成
 
 - PR #656はmerge commit `4d519b5d`で基準ブランチへ統合済み。merge後のRequired Quality、Desktop Windows、Production deploymentはいずれも成功した。
