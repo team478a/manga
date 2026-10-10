@@ -2,8 +2,9 @@
 
 ## 2026-10-10 外部作品応募 PR-2 隔離upload・検証worker
 
-- 状態: `IMPLEMENTED / LOCAL_CHECKS_PASSED / PRODUCTION_NOT_APPLIED / PR_PENDING`
+- 状態: `IMPLEMENTED / LOCAL_CHECKS_PASSED / PRODUCTION_NOT_APPLIED / PR_OPEN_CHECKS_PENDING`
 - Branch: `codex/external-submission-ingest-20261010`
+- PR: [#644](https://github.com/team478a/manga/pull/644)
 - 基点: PR #643 merge commit `40c0f7e5`（`feature/manga-canvas-mvp`）。PR #643のmerge後Required QualityとDesktop Windowsも成功済み。
 - `docs/marketplace/EXTERNAL_SELLER_GAP_ANALYSIS.md`のPR-2に限定し、PDF／ZIP／複数画像の隔離upload、private quarantine／page Storage、検証Job、ページ分割・順序変更UIを追加した。Publication、Reader、公開、販売開始、Stripeは変更していない。
 - 1 source 50MB、submission合計500MB、ZIP展開500MB、100ページ、1正規化page 20MB、80MP、ZIP比100倍を上限とする。magic byte、ZIP traversal／CRC／重複page、PDF暗号化・破損、画像decodeを検査し、全pageをmetadata除去済みPNGへ正規化する。
@@ -11,7 +12,7 @@
 - owner RLS、登録済みsourceを直接削除できないStorage policy、Upload登録RPC、500MB quota、連続page検査、順序RPCを追加した。Migration `202610100002_external_submission_ingest.sql`、安全rollback、canonical schema、manifest、DB assertion、unit／contract testを同期した。
 - 品質ゲート: `npm install`、`npm run deps:check`（error 0、既知warning 2）、`npm run lint`、`npm run typecheck`、`npm run hub:test`（1296 pass）、`npm run canvas:test`（26 pass）、`npm run ai:test`（50 pass）、`npm run desktop:test`（407 pass）、`npm run desktop:test:a11y`（violations 0）、`npm run db:migrations:validate`（98件）、`npm run build`、`npm run desktop:build`、`git diff --check`成功。`npm run rc:preflight`はexit 0でrepository structure READY、外部資格情報と手動E2EはPENDING。
 - ローカルPostgreSQL 16で全98 migrationのforward／assertion、全rollback、reapplyを成功確認した。canonical schema二重適用とschema data／Marketplace assertionも成功し、一時Docker DBはすべて削除済み。Production migration、実upload、実マルウェア検査、実利用者、実決済、Provider、creditへの操作は0件。
-- 次: commit・push・PRを作成しCIを確認する。PR-2 merge後の次候補はPR-3（Publication一般化とReader統合）だが、本PRから先回りしない。
+- Commit `f43d88de`をpushし、PR #644を作成した。次はCIを確認する。PR-2 merge後の次候補はPR-3（Publication一般化とReader統合）だが、本PRから先回りしない。
 
 ---
 
