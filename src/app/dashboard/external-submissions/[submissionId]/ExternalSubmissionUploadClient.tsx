@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 
-type Page = { id: string; position: number; url: string };
+type Page = { id: string; position: number; url: string; isSample: boolean };
 
 export function ExternalSubmissionUploadClient({
   submissionId,
@@ -62,6 +62,17 @@ export function ExternalSubmissionUploadClient({
     setBusy(false);
   }
 
+  async function saveSamples() {
+    const pageIds = pages.filter((page) => page.isSample).map((page) => page.id);
+    setBusy(true); setMessage("");
+    const response = await fetch(`/api/creator/external-submissions/${submissionId}/pages/samples`, {
+      method: "PUT", headers: { "content-type": "application/json" },
+      body: JSON.stringify({ pageIds }),
+    });
+    setMessage(response.ok ? "試し読みページを保存しました。" : "試し読みページを保存できませんでした。");
+    setBusy(false);
+  }
+
   return <div className="space-y-5">
     {status === "uploading" ? <div className="panel space-y-4">
       <label className="label" htmlFor="external-source">原稿ファイル</label>
@@ -71,14 +82,22 @@ export function ExternalSubmissionUploadClient({
       <button className="button" type="button" disabled={busy} onClick={() => void validate()}>検証を開始</button>
     </div> : null}
     {message ? <p className="rounded-md bg-stone-100 p-3" role="status">{message}</p> : null}
-    {pages.length ? <div className="grid gap-3 sm:grid-cols-2">
+    {pages.length ? <><div className="grid gap-3 sm:grid-cols-2">
       {pages.map((page, index) => <div className="panel" key={page.id}>
         <Image alt={`ページ ${index + 1}`} className="mx-auto h-auto max-h-72 w-auto" src={page.url} width={320} height={480} unoptimized />
         <div className="mt-3 flex items-center justify-between"><span>{index + 1}ページ</span><span className="flex gap-2">
           <button className="button-secondary" type="button" disabled={busy || index === 0} onClick={() => void move(index, -1)}>上へ</button>
           <button className="button-secondary" type="button" disabled={busy || index === pages.length - 1} onClick={() => void move(index, 1)}>下へ</button>
         </span></div>
+        {status === "ready" || status === "rejected" ? <label className="mt-3 flex min-h-11 items-center gap-2 font-semibold">
+          <input type="checkbox" checked={page.isSample} disabled={busy}
+            onChange={(event) => setPages((current) => current.map((item) => item.id === page.id ? { ...item, isSample: event.target.checked } : item))} />
+          試し読みに含める
+        </label> : null}
       </div>)}
-    </div> : null}
+    </div>{status === "ready" || status === "rejected" ? <div className="panel">
+      <p className="text-sm text-stone-600">試し読みは1〜10ページを選択してください。2ページ以上の作品では全ページを選べません。</p>
+      <button className="button mt-3" type="button" disabled={busy} onClick={() => void saveSamples()}>試し読み設定を保存</button>
+    </div> : null}</> : null}
   </div>;
 }

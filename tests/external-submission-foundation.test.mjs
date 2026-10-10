@@ -19,12 +19,10 @@ test("外部作品申請基盤は一般向け・招待seller・非公開状態�
     assert.match(source, /external_seller_not_eligible/);
     assert.match(source, /external_rights_declaration_required/);
     assert.match(source, /external_submission_transition_forbidden/);
-    const externalSection = source.slice(
-      source.indexOf("create table if not exists public.external_seller_profiles"),
-    );
-    assert.doesNotMatch(externalSection, /insert into public\.works/);
-    assert.doesNotMatch(externalSection, /insert into public\.digital_products/);
   }
+
+  assert.doesNotMatch(migration, /insert into public\.works/);
+  assert.doesNotMatch(migration, /insert into public\.digital_products/);
 });
 
 test("外部作品申請の権利申告と監査eventは追記専用で本文・秘密値を持たない", async () => {

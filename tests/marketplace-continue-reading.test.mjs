@@ -101,6 +101,7 @@ test("Readerと本棚はDB未適用時にも既存閲覧を維持して続きへ
   assert.match(action, /rpc\("save_marketplace_reading_progress"/);
   assert.match(action, /catch \{[\s\S]*ok: false/);
   assert.match(purchases, /続きから読む/);
-  assert.match(purchases, /read\?page=\$\{savedPage\}/);
+  assert.match(purchases, /publication=\$\{fixedPublicationId\}/);
+  assert.match(purchases, /&page=\$\{savedPage\}/);
   assert.match(repository, /current_publication_id/);
 });

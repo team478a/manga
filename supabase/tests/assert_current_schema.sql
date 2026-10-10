@@ -113,6 +113,18 @@ begin
 end $$;
 
 do $$ begin
+  if to_regprocedure('public.set_external_submission_sample_pages(uuid,uuid[])') is null
+     or to_regprocedure('public.create_external_work_publication(uuid)') is null
+     or not exists(select 1 from information_schema.columns where table_schema='public' and table_name='cloud_work_publications' and column_name='source_kind')
+     or not exists(select 1 from information_schema.columns where table_schema='public' and table_name='cloud_work_publications' and column_name='external_submission_id')
+     or not exists(select 1 from information_schema.columns where table_schema='public' and table_name='orders' and column_name='publication_id')
+     or not has_function_privilege('authenticated','public.create_external_work_publication(uuid)','execute')
+     or has_function_privilege('anon','public.create_external_work_publication(uuid)','execute') then
+    raise exception 'Current schema external publication contract missing or exposed';
+  end if;
+end $$;
+
+do $$ begin
   if to_regclass('public.external_work_submission_files') is null
      or to_regclass('public.external_work_submission_pages') is null
      or to_regclass('public.external_submission_ingest_jobs') is null

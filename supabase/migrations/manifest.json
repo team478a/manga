@@ -588,7 +588,13 @@
       "description": "外部作品の隔離upload・検証page・lease付きingest worker基盤を追加",
       "forwardSha256": "f7517d307bb318204102184c7a6fd2382eb7c00b3b96ddb79c90599bbb16b51c",
       "rollbackSha256": "039880eeaf5bd89ea583a12315e6bbe06626350589cc1ceeedae181a02c38773"
+    },
+    {
+      "id": "202610100003_external_submission_publications",
+      "description": "外部作品の固定Publication・試し読み・購入時version固定を既存Readerへ統合",
+      "forwardSha256": "c8dc67a432419989a474eb4ca0b2562597544e330a757bf05b3ba094b316a739",
+      "rollbackSha256": "c7d34221ee7131933239f05cfbda3e906ce7902a0b34124b04843e7b7aaafc6e"
     }
   ],
-  "schemaSha256": "4a54e58606032b032b23d6860ea8510cb100bf4c31b7a19787d67d6c37c63800"
+  "schemaSha256": "efe904bc938da29adcfcbd48582f0e7034131c75755f3580a0da8edf500b3e3f"
 }

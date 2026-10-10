@@ -9,6 +9,7 @@ export type PendingCheckoutOrderInput = {
   buyerEmail: string;
   buyerProfileId: string | null;
   productId: string;
+  publicationId: string | null;
   creatorId: string;
   amount: number;
   platformFee: number;
@@ -16,13 +17,22 @@ export type PendingCheckoutOrderInput = {
   paymentMode: "test" | "live";
 };
 
-export function insertPendingCheckoutOrder(input: PendingCheckoutOrderInput) {
-  return createAdminClient()
+function missingPublicationColumn(error: { code?: string; message?: string } | null) {
+  return Boolean(error && (
+    error.code === "42703" || error.code === "PGRST204" ||
+    error.message?.includes("publication_id")
+  ));
+}
+
+export async function insertPendingCheckoutOrder(input: PendingCheckoutOrderInput) {
+  const admin = createAdminClient();
+  const result = await admin
     .from("orders")
     .insert({
       buyer_email: input.buyerEmail,
       buyer_profile_id: input.buyerProfileId,
       product_id: input.productId,
+      publication_id: input.publicationId,
       creator_id: input.creatorId,
       amount: input.amount,
       platform_fee: input.platformFee,
@@ -32,15 +42,45 @@ export function insertPendingCheckoutOrder(input: PendingCheckoutOrderInput) {
     })
     .select("id")
     .single<{ id: string }>();
+  if (!missingPublicationColumn(result.error)) return result;
+  return admin.from("orders").insert({
+    buyer_email: input.buyerEmail,
+    buyer_profile_id: input.buyerProfileId,
+    product_id: input.productId,
+    creator_id: input.creatorId,
+    amount: input.amount,
+    platform_fee: input.platformFee,
+    creator_revenue: input.creatorRevenue,
+    payment_mode: input.paymentMode,
+    status: "pending",
+  }).select("id").single<{ id: string }>();
 }
 
-function findReusableLivePendingCheckoutOrder(
+async function findReusableLivePendingCheckoutOrder(
   input: PendingCheckoutOrderInput,
 ) {
   if (input.paymentMode !== "live" || !input.buyerProfileId) {
     return Promise.resolve({ data: null, error: null });
   }
 
+  const query = createAdminClient()
+    .from("orders")
+    .select("id")
+    .eq("buyer_email", input.buyerEmail)
+    .eq("buyer_profile_id", input.buyerProfileId)
+    .eq("product_id", input.productId)
+    .eq("creator_id", input.creatorId)
+    .eq("amount", input.amount)
+    .eq("platform_fee", input.platformFee)
+    .eq("creator_revenue", input.creatorRevenue)
+    .eq("payment_mode", "live")
+    .eq("status", "pending")
+    .limit(1);
+  const result = await (input.publicationId
+    ? query.eq("publication_id", input.publicationId)
+    : query.is("publication_id", null)
+  ).maybeSingle<{ id: string }>();
+  if (!missingPublicationColumn(result.error)) return result;
   return createAdminClient()
     .from("orders")
     .select("id")

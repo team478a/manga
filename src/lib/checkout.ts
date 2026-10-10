@@ -25,6 +25,7 @@ type CheckoutOrder = {
   amount: number;
   status: string;
   payment_mode: OrderPaymentMode;
+  publication_id?: string | null;
   buyer_profile_id: string | null;
   digital_products: {
     id: string;
@@ -63,14 +64,23 @@ export async function createStripeCheckoutSession({
     );
 
   const supabase = createAdminClient();
-  const { data: checkoutOrder, error: checkoutOrderError } = await supabase
+  let checkoutResult = await supabase
     .from("orders")
     .select(
-      "id,buyer_email,buyer_profile_id,product_id,creator_id,amount,status,payment_mode,digital_products:product_id(id,title,description,status,creator_id,works:work_id(id,title,is_public,content_class,source_project_id,current_publication_id))",
+      "id,buyer_email,buyer_profile_id,product_id,creator_id,amount,status,payment_mode,publication_id,digital_products:product_id(id,title,description,status,creator_id,works:work_id(id,title,is_public,content_class,source_project_id,current_publication_id))",
     )
     .eq("id", orderId)
     .eq("product_id", productId)
     .maybeSingle<CheckoutOrder>();
+  if (checkoutResult.error && (
+    checkoutResult.error.code === "42703" || checkoutResult.error.code === "PGRST204" ||
+    checkoutResult.error.message.includes("publication_id")
+  )) {
+    checkoutResult = await supabase.from("orders").select(
+      "id,buyer_email,buyer_profile_id,product_id,creator_id,amount,status,payment_mode,digital_products:product_id(id,title,description,status,creator_id,works:work_id(id,title,is_public,content_class,source_project_id,current_publication_id))",
+    ).eq("id", orderId).eq("product_id", productId).maybeSingle<CheckoutOrder>();
+  }
+  const { data: checkoutOrder, error: checkoutOrderError } = checkoutResult;
   if (checkoutOrderError)
     throw new DomainError(
       "INTERNAL_ERROR",
