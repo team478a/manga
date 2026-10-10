@@ -1,5 +1,14 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 外部出品者onboarding導線（2026-10-10）
+
+- PR #649 merge commit `510e8a3a`を基点にBranch `codex/external-seller-onboarding-ui-20261010`を作成した。Productionのread-only確認で、creator画面が規約同意と招待承認を要求する一方、それらを実行する画面導線がなく実地受入れ開始不能と特定した。
+- creatorの版付き規約同意、承認待ち／停止中／eligible表示と、adminのseller候補一覧・承認・理由付き停止を実装した。既存の監査付きRPCだけを利用し、migrationやDB契約は変更していない。メールと秘密値は取得せず、通常表示はdisplay nameと状態だけに限定した。
+- 集中10/10、Hub 1309/1309、deps error 0（既知warning 2）、Hub typecheck、ESLint、Hub Production build、diff check成功。Production、Storage、worker設定、seller状態、submission、公開、販売、注文、Stripe、実決済は変更していない。
+- 次はDraft PRと全CI／Vercel Preview成功を確認して停止する。merge後の規約同意とseller承認、upload、worker、審査、公開、販売、Stripe testはそれぞれ別のaction-time承認が必要で、実決済は行わない。
+
+---
+
 ## 0.0 外部作品応募 Production migration適用（2026-10-10）
 
 - PR #648 merge commit `bea0dbfe`を基点にBranch `codex/external-submission-production-migrations-20261010`を作成した。対象、4 ID、SHA-256、順序、停止条件を提示した後の責任者承認により、Supabase `mangai-hub-staging / main PRODUCTION / vmdsyxykcrgxcdbrwlkv`へ4 migrationを順次適用した。

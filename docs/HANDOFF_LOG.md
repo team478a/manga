@@ -1,5 +1,15 @@
 # MANGAI AI Handoff Log
 
+## 2026-10-10 Codex: 外部出品者onboarding導線
+
+- PR #649 merge commit `510e8a3a`からBranch `codex/external-seller-onboarding-ui-20261010`を作成した。Productionをread-only確認し、Supabase Projectは`Healthy`、`app.mang-ai.com`のcreator画面は規約同意と招待承認を要求する一方、それらを実行するUI／Server Actionがないため受入れ開始不能と特定した。
+- creatorへ版付き規約同意、承認待ち、停止中、eligibleの状態別導線を追加した。adminへseller候補一覧、既存RPCによる承認、理由必須の停止操作を追加した。規約版変更時の再承認、admin限定、未同意承認拒否、監査eventのDB契約は変更していない。
+- 通常表示はdisplay nameと状態に限定し、メールや秘密値を取得しない。DB、migration、Production、Storage、worker設定、seller状態、作品、商品、公開、注文、Stripe、実決済は変更していない。
+- 集中10/10、Hub 1309/1309、deps error 0（既知warning 2）、Hub typecheck、ESLint、Hub Production build、diff check成功。
+- 次はcommit、push、Draft PR、全CI／Vercel Preview成功で停止。merge後の規約同意・seller承認は別のaction-time承認を得るまで実行しない。
+
+---
+
 ## 2026-10-10 Codex: 外部作品応募 Production migration適用
 
 - Branch `codex/external-submission-production-migrations-20261010`。PR #648 merge commit `bea0dbfe`を基点に、責任者のaction-time明示承認後、Supabase `mangai-hub-staging / main PRODUCTION / vmdsyxykcrgxcdbrwlkv`へ外部作品応募の4 migrationを適用した。

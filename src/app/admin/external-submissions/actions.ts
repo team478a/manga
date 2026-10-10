@@ -9,6 +9,34 @@ import { createClient } from "@/lib/supabase/server";
 const idSchema = z.string().uuid();
 const reasonSchema = z.string().trim().regex(/^[a-z0-9][a-z0-9._-]{0,63}$/);
 
+export async function updateExternalSellerStatusAction(formData: FormData) {
+  await requireAdmin();
+  const profileId = idSchema.parse(formData.get("profileId"));
+  const status = z.enum(["draft", "eligible", "suspended"]).parse(formData.get("status"));
+  const rawReason = String(formData.get("reasonCode") ?? "").trim();
+  const reasonCode = rawReason ? reasonSchema.safeParse(rawReason) : null;
+  if (reasonCode && !reasonCode.success)
+    redirect(
+      `/admin/external-submissions?error=${encodeURIComponent("停止理由コードを確認してください")}`,
+    );
+  if (status === "suspended" && !reasonCode)
+    redirect(
+      `/admin/external-submissions?error=${encodeURIComponent("停止理由コードが必要です")}`,
+    );
+  const supabase = await createClient();
+  const result = await supabase.rpc("set_external_seller_status", {
+    p_profile_id: profileId,
+    p_status: status,
+    p_reason_code: reasonCode?.data ?? null,
+  });
+  if (result.error)
+    redirect(
+      `/admin/external-submissions?error=${encodeURIComponent("出品者状態を更新できませんでした")}`,
+    );
+  revalidatePath("/admin/external-submissions");
+  revalidatePath("/dashboard/external-submissions");
+}
+
 export async function reviewExternalSubmissionAction(formData: FormData) {
   await requireAdmin();
   const submissionId = idSchema.parse(formData.get("submissionId"));
