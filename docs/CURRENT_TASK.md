@@ -4,7 +4,7 @@
 
 - 状態: `PR_659_MERGED / POST_MERGE_CHECKS_PASSED / PRODUCTION_DEPLOYED / WORKER_BLOCKED_CONFIGURATION / PRODUCTION_CONFIG_UNCHANGED`
 - Branch: `codex/external-submission-worker-preflight-record-20261011`
-- PR: [#660](https://github.com/team478a/manga/pull/660)（Draft）。証跡commit `590ae0b6`。
+- PR: [#660](https://github.com/team478a/manga/pull/660)（Draft）。証跡commit `590ae0b6`。証跡同期前HEAD `99e37294`のCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功した。
 - 基点: PR #659 merge commit `eb6b735298819c5a978ca5b2c341ddef6f4db92e`（`feature/manga-canvas-mvp`）。merge後のRequired Quality run `38077323939`、Desktop Windows run `38077323903`、Production deployment `6985346594`はすべて成功した。
 - Vercel Productionの環境変数を名前・target・typeだけread-only監査した。`MANGAI_EXTERNAL_SUBMISSION_WORKER_ENABLED`、`MANGAI_EXTERNAL_SUBMISSION_WORKER_SECRET`、`MANGAI_EXTERNAL_CLAMAV_HOST`、`MANGAI_EXTERNAL_CLAMAV_PORT`、`MANGAI_EXTERNAL_SUBMISSION_WORKER_ID`はいずれも未登録。秘密値は取得・表示していない。
 - 実装契約ではFeature Flagはstrictで未設定時OFF、内部secret未設定時はWorker endpointが401、ClamAV host未設定時はmalware scanが`unavailable`となる。portは3310、Worker IDは`next-external-ingest-worker`へfallbackするが、必須のFlag・secret・hostが欠けるため`BLOCKED_CONFIGURATION`。
