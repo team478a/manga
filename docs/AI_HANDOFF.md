@@ -1,5 +1,17 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 外部作品応募Worker scheduler（2026-10-11）
+
+- PR [#660](https://github.com/team478a/manga/pull/660)はmerge commit `67aeb9caf62393d041e44a04b162fddb54eec1ac`で`feature/manga-canvas-mvp`へ統合済み。merge後のRequired Quality run `38092177579`、Desktop Windows run `38092177603`、Production deployment `6987863224`はすべて成功した。
+- Branch `codex/external-submission-worker-scheduler-20261011`で、既定停止のGitHub Actions scheduler、実行script、package scripts、集中test、運用文書を追加した。scheduled実行はRepository variableが厳密に`true`のときだけ、手動既定は通信しない`check`、`run`も1 request／最大1 Jobで停止する。
+- 実装commit `edbfbfb5`をpushし、Draft PR [#661](https://github.com/team478a/manga/pull/661)を作成した。
+- 固定HTTPS path、32文字以上のsecret、直列実行、秘密情報を含む応答の非出力を強制する。`idle`、`completed`、`failed`のいずれでも同一workflow内で再実行しない。
+- 集中6/6、Hub 1316/1316、停止時preflight、deps（error 0、既知warning 2）、lint、Hub/Desktop typecheck、Hub Production build、diff check成功。Production環境変数、GitHub secret／variable、redeploy、Worker、ClamAV、Job、Storage、審査、公開、販売、Stripe、決済は変更していない。
+- 証跡同期前HEAD `dfca4f2f`のRequired Quality run `38092961737`、Desktop Windows run `38092961764`、Vercel、Vercel Preview Commentsはすべて成功した。
+- 次はDraft PR化とCI確認。merge後のProduction有効化は、ClamAV接続先準備、Vercel設定、GitHub設定、redeploy、設定check、対象Job 1件のWorker runを分離し、各action-time承認まで実行しない。実決済は禁止を維持する。
+
+---
+
 ## 0.0 外部作品応募Production Worker preflight（2026-10-11）
 
 - PR [#659](https://github.com/team478a/manga/pull/659)はmerge commit `eb6b735298819c5a978ca5b2c341ddef6f4db92e`で`feature/manga-canvas-mvp`へ統合済み。merge後のRequired Quality run `38077323939`、Desktop Windows run `38077323903`、Production deployment `6985346594`はすべて成功した。

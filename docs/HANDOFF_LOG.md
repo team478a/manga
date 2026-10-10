@@ -1,5 +1,17 @@
 # MANGAI AI Handoff Log
 
+## 2026-10-11 Codex: 外部作品応募Worker scheduler
+
+- PR #660はmerge commit `67aeb9ca`で基準ブランチへ統合済み。merge後のRequired Quality `38092177579`、Desktop Windows `38092177603`、Production deployment `6987863224`はすべて成功した。
+- Branch `codex/external-submission-worker-scheduler-20261011`で、既定停止・手動既定`check`・1 request／最大1 JobのGitHub Actions schedulerと実行scriptを追加した。
+- 実装commit `edbfbfb5`をpushし、Draft PR [#661](https://github.com/team478a/manga/pull/661)を作成した。
+- URLを固定HTTPS Worker pathへ限定し、secret 32文字以上、直列実行、秘密情報を含む応答の非出力、失敗時の同一workflow内再試行禁止を強制した。GitHub／Vercel／ClamAVの安全な設定・開始・停止手順も文書化した。
+- 集中6/6、Hub 1316/1316、停止時preflight、deps（error 0、既知warning 2）、lint、Hub/Desktop typecheck、Hub Production build、diff check成功。Production環境変数、GitHub secret／variable、redeploy、Worker、Job、Storage、審査、公開、販売、Stripe、決済操作0件。
+- 証跡同期前HEAD `dfca4f2f`のRequired Quality `38092961737`、Desktop Windows `38092961764`、Vercel、Vercel Preview Commentsはすべて成功した。
+- 次はcommit、push、Draft PR、全CI／Vercel Preview成功で停止。Production有効化とWorker runは段階ごとに新しいaction-time承認が必要。
+
+---
+
 ## 2026-10-11 Codex: 外部作品応募Production Worker preflight
 
 - PR #659はmerge commit `eb6b7352`で基準ブランチへ統合済み。merge後のRequired Quality、Desktop Windows、Production deploymentはいずれも成功した。
