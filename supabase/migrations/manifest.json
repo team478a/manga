@@ -594,7 +594,13 @@
       "description": "外部作品の固定Publication・試し読み・購入時version固定を既存Readerへ統合",
       "forwardSha256": "c8dc67a432419989a474eb4ca0b2562597544e330a757bf05b3ba094b316a739",
       "rollbackSha256": "c7d34221ee7131933239f05cfbda3e906ce7902a0b34124b04843e7b7aaafc6e"
+    },
+    {
+      "id": "202610100004_external_submission_review_publish",
+      "description": "外部作品の審査・固定価格公開・取下げ・管理者停止とCheckout防御を追加",
+      "forwardSha256": "1f5ff524f9b182197a095025bee19b44e478700a8e89bf367a1b782d492335d6",
+      "rollbackSha256": "430e8dca61038b93f8d56c4d3b17f6a7e1c593154e10587e5b41cacf1990f2cf"
     }
   ],
-  "schemaSha256": "efe904bc938da29adcfcbd48582f0e7034131c75755f3580a0da8edf500b3e3f"
+  "schemaSha256": "45fa3f239af141ca294ca462ada68584a789bd5c47d1e09ae1746c7e4cbfde28"
 }

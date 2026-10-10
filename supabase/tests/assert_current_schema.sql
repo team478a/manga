@@ -113,6 +113,21 @@ begin
 end $$;
 
 do $$ begin
+  if to_regclass('public.external_submission_notifications') is null
+     or to_regprocedure('public.submit_external_work_for_review(uuid,integer,text,boolean,boolean,boolean,boolean)') is null
+     or to_regprocedure('public.review_external_work_submission(uuid,text,text)') is null
+     or to_regprocedure('public.publish_external_marketplace_listing(uuid)') is null
+     or to_regprocedure('public.withdraw_external_marketplace_listing(uuid)') is null
+     or to_regprocedure('public.stop_external_marketplace_listing(uuid,text)') is null
+     or not exists(select 1 from information_schema.columns where table_schema='public' and table_name='external_work_submissions' and column_name='asking_price')
+     or not exists(select 1 from information_schema.columns where table_schema='public' and table_name='digital_products' and column_name='external_submission_id')
+     or has_function_privilege('anon','public.publish_external_marketplace_listing(uuid)','execute')
+     or not has_function_privilege('authenticated','public.stop_external_marketplace_listing(uuid,text)','execute') then
+    raise exception 'External submission review and publish contract missing or exposed';
+  end if;
+end $$;
+
+do $$ begin
   if to_regprocedure('public.set_external_submission_sample_pages(uuid,uuid[])') is null
      or to_regprocedure('public.create_external_work_publication(uuid)') is null
      or not exists(select 1 from information_schema.columns where table_schema='public' and table_name='cloud_work_publications' and column_name='source_kind')
