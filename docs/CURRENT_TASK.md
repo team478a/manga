@@ -2,14 +2,15 @@
 
 ## 2026-10-10 外部作品応募 PR-5 売上運用
 
-- 状態: `IMPLEMENTED / LOCAL_CHECKS_PASSED / PRODUCTION_NOT_APPLIED / PR_PREPARING`
+- 状態: `IMPLEMENTED / LOCAL_CHECKS_PASSED / PRODUCTION_NOT_APPLIED / PR_CHECKS_RUNNING`
 - Branch: `codex/external-submission-sales-ops-20261010`
+- PR: [#647](https://github.com/team478a/manga/pull/647)
 - 基点: PR #646 merge commit `13a888e5`（`feature/manga-canvas-mvp`）。`docs/marketplace/EXTERNAL_SELLER_GAP_ANALYSIS.md`のPR-5だけを実装した。
 - クリエイター本人の売上一覧へ税込表示と本番売上運用レポートを追加した。支払い済み件数、全額返金件数／金額、決済完了総額、純売上、純手数料、純受取予定額を表示し、テスト注文は本番集計から除外する。
 - owner scoped queryを再利用するCSV exportを追加した。注文・作品・商品・購入者・状態・test/live・税込金額・返金調整・純額をUTF-8 BOM付きで出力し、表計算式注入を防止する。CSVは`no-store`で、管理者clientや決済秘密情報を使用しない。
 - 全額返金は元の売上と同額を返金調整として控除し、手数料と受取予定額を0円表示する。部分返金、税額内訳、適格請求書、確定台帳、精算・送金は明示的に対象外とした。
 - 品質ゲート: `npm run deps:check`（error 0、既知warning 2）、`npm run lint`、`npm run typecheck`、`npm run hub:test`（1307 pass）、`npm run canvas:test`（26 pass）、`npm run ai:test`（50 pass）、`npm run desktop:test`（407 pass）、`npm run desktop:test:a11y`（violations 0）、`npm run db:migrations:validate`（100件）、`npm run build`、`npm run desktop:build`、集中test（3 pass）、`git diff --check`成功。`npm run rc:preflight`はexit 0／repository structure READY、外部設定と手動E2EはPENDING。
-- DB／migration変更、Production変更、Stripe request、返金操作、実決済、精算・送金、実利用者、Provider、生成Job、creditへの操作は0件。次はcommit・push・PR作成とPR checks確認。
+- DB／migration変更、Production変更、Stripe request、返金操作、実決済、精算・送金、実利用者、Provider、生成Job、creditへの操作は0件。Commit `a7fae722`をpushし、PR #647を作成した。次はPR checks確認。
 
 ---
 
