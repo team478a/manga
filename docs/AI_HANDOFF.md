@@ -1,5 +1,16 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 外部作品応募Production Worker preflight（2026-10-11）
+
+- PR [#659](https://github.com/team478a/manga/pull/659)はmerge commit `eb6b735298819c5a978ca5b2c341ddef6f4db92e`で`feature/manga-canvas-mvp`へ統合済み。merge後のRequired Quality run `38077323939`、Desktop Windows run `38077323903`、Production deployment `6985346594`はすべて成功した。
+- Vercel Production環境変数を名前・target・typeだけread-only確認し、`MANGAI_EXTERNAL_SUBMISSION_WORKER_ENABLED`、`MANGAI_EXTERNAL_SUBMISSION_WORKER_SECRET`、`MANGAI_EXTERNAL_CLAMAV_HOST`、`MANGAI_EXTERNAL_CLAMAV_PORT`、`MANGAI_EXTERNAL_SUBMISSION_WORKER_ID`はいずれも未登録だった。値は取得・表示していない。
+- strict Feature Flag未設定はOFF、内部secret未設定は401、ClamAV host未設定はscan `unavailable`となるfail-closed契約。portは3310、Worker IDは`next-external-ingest-worker`へfallbackするが、必須3条件が欠けるためProduction Workerは`BLOCKED_CONFIGURATION`。
+- リポジトリ内に外部作品Worker endpointを自動起動するworkflow／schedulerはなく、前工程で`queued`を確認したJobに対するWorker呼出し、Job claim、malware scan、page変換、Storage page生成は0件。Production環境変数も変更していない。
+- 証跡commit `590ae0b6`をpushし、Draft PR [#660](https://github.com/team478a/manga/pull/660)を作成した。証跡同期前HEAD `99e37294`のCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功した。
+- 次はClamAVの安全な接続先、内部secret生成・保管、Feature Flag有効化、1回だけのWorker呼出し手段を責任者が決定する。Production設定変更とWorker実行はそれぞれ対象・停止条件を提示し、別のaction-time承認を得るまで行わない。実決済は禁止を維持する。
+
+---
+
 ## 0.0 外部作品応募Production検証queue登録（2026-10-11）
 
 - PR [#658](https://github.com/team478a/manga/pull/658)はmerge commit `60c35fb965e8d2c89ca633a8d291bd0e6b9ae37d`で`feature/manga-canvas-mvp`へ統合済み。merge後のRequired Quality run `38074218201`、Desktop Windows run `38074218206`、Production deployment `6984747832`はすべて成功した。
