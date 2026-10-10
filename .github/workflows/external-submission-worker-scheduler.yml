@@ -1,0 +1,58 @@
+name: External submission Worker scheduler
+
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "通信せず設定確認、または外部作品検証Workerを明示実行"
+        required: true
+        default: check
+        type: choice
+        options:
+          - check
+          - run
+
+permissions:
+  contents: read
+
+concurrency:
+  group: external-submission-worker-production
+  cancel-in-progress: false
+
+jobs:
+  check-settings:
+    name: Check external submission scheduler settings without a worker request
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.mode == 'check' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - name: Validate settings without printing values
+        env:
+          MANGAI_EXTERNAL_SUBMISSION_SCHEDULER_ENABLED: "true"
+          MANGAI_EXTERNAL_SUBMISSION_WORKER_URL: ${{ secrets.MANGAI_EXTERNAL_SUBMISSION_WORKER_URL }}
+          MANGAI_EXTERNAL_SUBMISSION_WORKER_SECRET: ${{ secrets.MANGAI_EXTERNAL_SUBMISSION_WORKER_SECRET }}
+        run: node scripts/run-external-submission-worker-scheduler.mjs --check
+
+  run-worker:
+    name: Process at most one external submission ingest job
+    if: ${{ (github.event_name == 'schedule' && vars.MANGAI_EXTERNAL_SUBMISSION_SCHEDULER_ENABLED == 'true') || (github.event_name == 'workflow_dispatch' && inputs.mode == 'run') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - name: Process at most one external submission ingest job
+        env:
+          MANGAI_EXTERNAL_SUBMISSION_SCHEDULER_ENABLED: "true"
+          MANGAI_EXTERNAL_SUBMISSION_WORKER_URL: ${{ secrets.MANGAI_EXTERNAL_SUBMISSION_WORKER_URL }}
+          MANGAI_EXTERNAL_SUBMISSION_WORKER_SECRET: ${{ secrets.MANGAI_EXTERNAL_SUBMISSION_WORKER_SECRET }}
+          MANGAI_EXTERNAL_SUBMISSION_SCHEDULER_TIMEOUT_SECONDS: "285"
+        run: node scripts/run-external-submission-worker-scheduler.mjs
