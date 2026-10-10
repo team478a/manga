@@ -33,12 +33,14 @@ type CheckoutOrder = {
     description: string | null;
     status: string;
     creator_id: string;
+    external_submission_id: string | null;
     works: {
       id: string;
       title: string;
       is_public: boolean;
       content_class: "general" | "adult";
       source_project_id: string | null;
+      external_submission_id: string | null;
       current_publication_id: string | null;
     } | null;
   } | null;
@@ -67,7 +69,7 @@ export async function createStripeCheckoutSession({
   let checkoutResult = await supabase
     .from("orders")
     .select(
-      "id,buyer_email,buyer_profile_id,product_id,creator_id,amount,status,payment_mode,publication_id,digital_products:product_id(id,title,description,status,creator_id,works:work_id(id,title,is_public,content_class,source_project_id,current_publication_id))",
+      "id,buyer_email,buyer_profile_id,product_id,creator_id,amount,status,payment_mode,publication_id,digital_products:product_id(id,title,description,status,creator_id,external_submission_id,works:work_id(id,title,is_public,content_class,source_project_id,external_submission_id,current_publication_id))",
     )
     .eq("id", orderId)
     .eq("product_id", productId)
@@ -77,7 +79,7 @@ export async function createStripeCheckoutSession({
     checkoutResult.error.message.includes("publication_id")
   )) {
     checkoutResult = await supabase.from("orders").select(
-      "id,buyer_email,buyer_profile_id,product_id,creator_id,amount,status,payment_mode,digital_products:product_id(id,title,description,status,creator_id,works:work_id(id,title,is_public,content_class,source_project_id,current_publication_id))",
+      "id,buyer_email,buyer_profile_id,product_id,creator_id,amount,status,payment_mode,digital_products:product_id(id,title,description,status,creator_id,external_submission_id,works:work_id(id,title,is_public,content_class,source_project_id,external_submission_id,current_publication_id))",
     ).eq("id", orderId).eq("product_id", productId).maybeSingle<CheckoutOrder>();
   }
   const { data: checkoutOrder, error: checkoutOrderError } = checkoutResult;
@@ -94,6 +96,28 @@ export async function createStripeCheckoutSession({
     buyerEmail,
     paymentMode: configuredPaymentMode,
   });
+  const externalSubmissionId = order.digital_products.external_submission_id
+    ?? order.digital_products.works?.external_submission_id;
+  if (externalSubmissionId) {
+    const { data: externalListing, error: externalListingError } = await supabase
+      .from("external_work_submissions")
+      .select("id,status,owner_profile_id,work_id,product_id,publication_id,external_seller_profiles!owner_profile_id(status)")
+      .eq("id", externalSubmissionId).maybeSingle<{
+        id: string; status: string; owner_profile_id: string; work_id: string | null;
+        product_id: string | null; publication_id: string | null;
+        external_seller_profiles: { status: string } | null;
+      }>();
+    if (externalListingError || !externalListing || externalListing.status !== "published"
+      || externalListing.owner_profile_id !== order.creator_id
+      || externalListing.work_id !== order.digital_products.works?.id
+      || externalListing.product_id !== order.product_id
+      || externalListing.publication_id !== order.publication_id
+      || externalListing.external_seller_profiles?.status !== "eligible"
+      || order.digital_products.external_submission_id !== externalSubmissionId
+      || order.digital_products.works?.external_submission_id !== externalSubmissionId) {
+      throw new DomainError("VALIDATION_ERROR", "この商品は現在購入できません。");
+    }
+  }
   assertMarketplaceCanaryCheckoutTarget({
     buyerProfileId: order.buyer_profile_id,
     paymentMode: configuredPaymentMode,

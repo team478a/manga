@@ -325,6 +325,12 @@ do $$ begin
      or to_regprocedure('public.claim_external_submission_ingest(text,integer)') is not null
      or to_regprocedure('public.set_external_submission_sample_pages(uuid,uuid[])') is not null
      or to_regprocedure('public.create_external_work_publication(uuid)') is not null
+     or to_regprocedure('public.submit_external_work_for_review(uuid,integer,text,boolean,boolean,boolean,boolean)') is not null
+     or to_regprocedure('public.review_external_work_submission(uuid,text,text)') is not null
+     or to_regprocedure('public.publish_external_marketplace_listing(uuid)') is not null
+     or to_regprocedure('public.withdraw_external_marketplace_listing(uuid)') is not null
+     or to_regprocedure('public.stop_external_marketplace_listing(uuid,text)') is not null
+     or to_regclass('public.external_submission_notifications') is not null
      or exists(select 1 from information_schema.columns where table_schema='public' and table_name='orders' and column_name='publication_id')
      or exists(select 1 from storage.buckets where id in('external-submission-quarantine','external-submission-pages')) then
     raise exception 'External submission foundation objects remain after rollback';

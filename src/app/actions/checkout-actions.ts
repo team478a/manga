@@ -58,18 +58,20 @@ export async function createPendingOrder(formData: FormData) {
   }
   const { data: product } = await supabase
     .from("digital_products")
-    .select("id,creator_id,price,status,works:work_id(id,is_public,content_class,source_project_id,current_publication_id)")
+    .select("id,creator_id,price,status,external_submission_id,works:work_id(id,is_public,content_class,source_project_id,external_submission_id,current_publication_id)")
     .eq("id", productId)
     .maybeSingle<{
       id: string;
       creator_id: string;
       price: number;
       status: string;
+      external_submission_id: string | null;
       works: {
         id: string;
         is_public: boolean;
         content_class: "general" | "adult";
         source_project_id: string | null;
+        external_submission_id: string | null;
         current_publication_id: string | null;
       } | null;
     }>();
@@ -82,6 +84,26 @@ export async function createPendingOrder(formData: FormData) {
       !product.works.current_publication_id)
   ) {
     redirect(encodeURI(`/checkout/${productId}?error=この商品は現在購入できません`));
+  }
+  const externalSubmissionId = product.external_submission_id ?? product.works.external_submission_id;
+  if (externalSubmissionId) {
+    const { data: externalListing } = await supabase.from("external_work_submissions")
+      .select("id,status,owner_profile_id,work_id,product_id,publication_id,external_seller_profiles!owner_profile_id(status)")
+      .eq("id", externalSubmissionId).maybeSingle<{
+        id: string; status: string; owner_profile_id: string; work_id: string | null;
+        product_id: string | null; publication_id: string | null;
+        external_seller_profiles: { status: string } | null;
+      }>();
+    if (!externalListing || externalListing.status !== "published"
+      || externalListing.owner_profile_id !== product.creator_id
+      || externalListing.work_id !== product.works.id
+      || externalListing.product_id !== product.id
+      || externalListing.publication_id !== product.works.current_publication_id
+      || externalListing.external_seller_profiles?.status !== "eligible"
+      || product.external_submission_id !== externalSubmissionId
+      || product.works.external_submission_id !== externalSubmissionId) {
+      redirect(encodeURI(`/checkout/${productId}?error=この商品は現在購入できません`));
+    }
   }
 
   try {

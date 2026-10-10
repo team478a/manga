@@ -223,6 +223,21 @@ begin
 end $$;
 
 do $$ begin
+  if to_regclass('public.external_submission_notifications') is null
+     or to_regprocedure('public.submit_external_work_for_review(uuid,integer,text,boolean,boolean,boolean,boolean)') is null
+     or to_regprocedure('public.review_external_work_submission(uuid,text,text)') is null
+     or to_regprocedure('public.publish_external_marketplace_listing(uuid)') is null
+     or to_regprocedure('public.withdraw_external_marketplace_listing(uuid)') is null
+     or to_regprocedure('public.stop_external_marketplace_listing(uuid,text)') is null
+     or not exists(select 1 from information_schema.columns where table_schema='public' and table_name='external_work_submissions' and column_name='product_id')
+     or not exists(select 1 from information_schema.columns where table_schema='public' and table_name='digital_products' and column_name='external_submission_id')
+     or has_function_privilege('anon','public.review_external_work_submission(uuid,text,text)','execute')
+     or not has_function_privilege('authenticated','public.withdraw_external_marketplace_listing(uuid)','execute') then
+    raise exception 'External submission review and publish migration missing or exposed';
+  end if;
+end $$;
+
+do $$ begin
   if to_regprocedure('public.set_external_submission_sample_pages(uuid,uuid[])') is null
      or to_regprocedure('public.create_external_work_publication(uuid)') is null
      or not exists(select 1 from information_schema.columns where table_schema='public' and table_name='works' and column_name='external_submission_id')
@@ -550,6 +565,8 @@ end $$;
 reset role;
 rollback;
 
+\ir assert_external_submission_review_publish.sql
+
 begin;
 do $$
 declare
@@ -609,14 +626,11 @@ begin
   perform set_config('request.jwt.claim.sub',v_creator_user::text,true);
   perform public.reorder_external_submission_pages(v_submission,array[v_page]);
   perform public.set_external_submission_sample_pages(v_submission,array[v_page]);
-  perform public.record_external_work_rights_declaration(
-    v_submission,'external-publication-v1',true,true,true,true
+  perform public.submit_external_work_for_review(
+    v_submission,100,'external-publication-v1',true,true,true,true
   );
-  perform public.transition_external_work_submission(v_submission,'submitted',null);
   perform set_config('request.jwt.claim.sub',v_admin_user::text,true);
-  perform public.transition_external_work_submission(v_submission,'in_review',null);
-  perform public.transition_external_work_submission(v_submission,'approved',null);
-  perform public.create_external_work_publication(v_submission);
+  perform public.review_external_work_submission(v_submission,'approved',null);
   if not exists(
     select 1 from public.external_work_submissions submission
     join public.works work on work.id=submission.work_id
@@ -1497,24 +1511,16 @@ begin
   perform public.transition_external_work_submission(v_submission,'validating',null);
   perform public.transition_external_work_submission(v_submission,'ready',null);
 
-  perform set_config('request.jwt.claim.sub',v_creator_user::text,true);
-  perform set_config('request.jwt.claim.role','authenticated',true);
-  perform public.transition_external_work_submission(v_submission,'submitted',null);
-
-  perform set_config('request.jwt.claim.sub',v_admin_user::text,true);
-  perform public.transition_external_work_submission(v_submission,'in_review',null);
-  perform public.transition_external_work_submission(v_submission,'rejected','rights_revision_required');
-
   if not exists(
        select 1 from public.external_work_submissions
        where id=v_submission and owner_profile_id=v_creator_profile
-         and status='rejected' and content_class='general' and version=6
+         and status='ready' and content_class='general' and version=3
      )
      or not exists(
        select 1 from public.external_work_rights_declarations
        where id=v_declaration and declared_by_profile_id=v_creator_profile
      )
-     or (select count(*) from public.external_work_submission_events where submission_id=v_submission)<>8
+     or (select count(*) from public.external_work_submission_events where submission_id=v_submission)<>5
      or (select count(*) from public.external_seller_profile_events where profile_id=v_creator_profile)<>2 then
     raise exception 'External submission state machine failed';
   end if;

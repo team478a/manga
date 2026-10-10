@@ -12,6 +12,7 @@ import {
   Megaphone,
   PackageCheck,
   ReceiptText,
+  ScanSearch,
   ShieldCheck,
   Users,
   UserRoundCheck,
@@ -81,6 +82,12 @@ export default async function AdminPage() {
       count: "件数のみ確認",
       href: "/admin/marketplace-canary",
       icon: ListChecks,
+    },
+    {
+      title: "外部作品審査",
+      count: "承認・停止",
+      href: "/admin/external-submissions",
+      icon: ScanSearch,
     },
     {
       title: "本番売上合計（仮）",
