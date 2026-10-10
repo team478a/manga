@@ -7,6 +7,7 @@
 - seller提出、管理者審査、承認時の固定Publication・停止中商品作成、seller公開／取り下げ、管理者強制停止を専用RPCへ分離した。通常更新triggerと旧汎用遷移RPCの制限により、差し替え・無審査公開・通常商品有効化の迂回を閉じた。
 - Checkoutをpending order作成時とStripe Session作成直前に再検証し、停止後の新規購入を拒否する一方、既存支払済み注文の固定Publication／Reader権限は維持する。審査・公開・停止eventとowner／admin向け通知も追加した。
 - Migration `202610100004_external_submission_review_publish.sql`、rollback、canonical schema、manifest、DB assertion、contract testを同期した。PostgreSQL 16で100 migrationのforward／rollback／reapply、canonical schema二重適用、PR-4 data assertionを完走し、一時DBは削除済み。
+- PR初回Migration roundtripがcanonical schemaの`+begin;`誤記を検出したため、余分な`+`を除去してchecksumを更新した。新規PostgreSQL 16でschema二重適用と全schema assertionを再実行して成功し、一時DBも削除した。
 - deps check、lint、typecheck、Hub 1304、Canvas 26、AI 50、Desktop 407、Hub／Desktop build、contract 4が成功。RC preflightは構造READY、外部設定と手動E2EはPENDING。ローカルDesktop a11yはreport未生成のため`LOCAL_BLOCKED_EXTERNAL_ENVIRONMENT`で、PRのWindows workflowへ引き継ぐ。
 - Production、実upload、実公開／販売、Stripe、実決済、実利用者、Provider、Job、creditは変更していない。次はPR #646の全CI確認とレビュー・merge判断。PR-5はPR-4 merge後の別作業とする。
 

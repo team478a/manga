@@ -4236,7 +4236,7 @@ grant execute on function public.create_external_work_publication(uuid)
 to authenticated;
 
 commit;
-+begin;
+begin;
 
 alter table public.external_work_submissions
   add column if not exists asking_price integer check(asking_price>=0),
