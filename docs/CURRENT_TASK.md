@@ -4,6 +4,7 @@
 
 - 状態: `IMPLEMENTED / LOCAL_CHECKS_PASSED / PRODUCTION_CONFIG_UNCHANGED / WORKER_NOT_RUN`
 - Branch: `codex/external-submission-worker-scheduler-20261011`
+- PR: [#661](https://github.com/team478a/manga/pull/661)（Draft）。実装commit `edbfbfb5`。
 - 基点: PR #660 merge commit `67aeb9caf62393d041e44a04b162fddb54eec1ac`（`feature/manga-canvas-mvp`）。merge後のRequired Quality run `38092177579`、Desktop Windows run `38092177603`、Production deployment `6987863224`はすべて成功した。
 - 既存Cloud Workerと同じfail-closed構成で、GitHub Actions `External submission Worker scheduler`、実行script、package scripts、運用文書を追加した。scheduled実行はRepository variableが厳密に`true`の場合だけ、手動実行の既定は通信しない`check`、`run`も1 workflowで1 request／最大1 Jobに限定する。
 - URLはHTTPSかloopback HTTP、固定path `/api/internal/external-submissions/worker`だけを許可し、query、fragment、埋め込みcredentialを拒否する。secretは32文字以上を要求し、応答のsubmission ID、error code、秘密値はログへ出さない。`idle`／`completed`／`failed`のいずれでも追加requestを行わない。
