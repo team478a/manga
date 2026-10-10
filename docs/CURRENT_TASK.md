@@ -4,6 +4,7 @@
 
 - 状態: `PR_657_MERGED / POST_MERGE_CHECKS_PASSED / PRODUCTION_DEPLOYED / TWO_FILES_UPLOADED / VALIDATION_NOT_AUTHORIZED`
 - Branch: `codex/external-submission-upload-record-20261011`
+- PR: [#658](https://github.com/team478a/manga/pull/658)（Draft）。証跡commit `0a76dd2f`。
 - 基点: PR #657 merge commit `e33ee2d1a6ef8fab25f218a8eac7bd2e8418b669`（`feature/manga-canvas-mvp`）。merge後のRequired Quality run `38071199657`、Desktop Windows run `38071199655`、Production deployment `6984220162`はすべて成功した。
 - 責任者へ対象ファイル、保存先、件数、停止条件を提示し、action-time承認を得た後、Productionのcreator `test`で応募ID `906ff7c3-c00a-42ed-aa9f-20d330233911`の`Uploadを開始`を1回だけ実行した。状態は`draft`から`uploading`へ遷移した。
 - 非公開quarantineへrepo追跡済みの一般向けWebPを2件だけuploadした。`01-market-analysis-guide-poster.webp`（38,130 bytes、1280×720、SHA-256 `ab8ed76ab468c753a5fe167f375d9a7e309e276a9707cfcb879ce3cf7ecba90c`）と`02-proposal-guide-poster.webp`（35,256 bytes、1280×720、SHA-256 `1ebea14b9ccd106a43d8cf220994926bfbfa141714bce1cc68f1304f41c409cd`）はいずれも`uploaded`表示を確認した。
