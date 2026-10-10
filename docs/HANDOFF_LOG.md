@@ -6,7 +6,7 @@
 - creator `test`で応募`906ff7c3-c00a-42ed-aa9f-20d330233911`の`Uploadを開始`をaction-time承認どおり1回だけ実行し、`draft`から`uploading`への遷移を確認した。
 - 非公開quarantineへ一般向けrepo fixture 2件だけをuploadした。`01-market-analysis-guide-poster.webp`（38,130 bytes、SHA-256 `ab8ed76ab468c753a5fe167f375d9a7e309e276a9707cfcb879ce3cf7ecba90c`）と`02-proposal-guide-poster.webp`（35,256 bytes、SHA-256 `1ebea14b9ccd106a43d8cf220994926bfbfa141714bce1cc68f1304f41c409cd`）はいずれも`uploaded`。
 - 停止時は`uploading`、`Job: 未開始`。`検証を開始`、worker、権利宣言、審査提出、公開、販売、Stripe、決済は操作していない。
-- 証跡commit `0a76dd2f`をpushし、Draft PR [#658](https://github.com/team478a/manga/pull/658)を作成した。
+- 証跡commit `0a76dd2f`をpushし、Draft PR [#658](https://github.com/team478a/manga/pull/658)を作成した。証跡同期前HEAD `d32c76d6`の5チェックはすべて成功した。
 - 次はvalidation／workerを別のProduction mutationとして扱い、対象と停止条件を提示して新しいaction-time承認を得るまで進めない。実決済は禁止を維持する。
 
 ---
