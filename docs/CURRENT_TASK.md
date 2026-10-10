@@ -1,14 +1,14 @@
 # MANGAI Current Task
 
-## 2026-10-10 Marketplace隔離E2E Supabase teardown完了
+## 2026-10-10 Marketplace隔離E2E環境 teardown完了
 
-- 状態: `SUPABASE_PREVIEW_BRANCH_DELETED / VERCEL_PREVIEW_ENV_REMOVED / STRIPE_SANDBOX_ENDPOINT_PENDING / PRODUCTION_UNCHANGED`
+- 状態: `TEARDOWN_COMPLETE / SUPABASE_PREVIEW_BRANCH_DELETED / VERCEL_PREVIEW_ENV_REMOVED / STRIPE_SANDBOX_ENDPOINT_DELETED / PRODUCTION_UNCHANGED`
 - Branch: `codex/marketplace-e2e-supabase-teardown-20261010`
 - PR #641はmerge commit `952c9bfd`で`feature/manga-canvas-mvp`へmerge済み。merge後のRequired QualityとDesktop Windowsはすべて成功した。
 - 責任者のaction-time承認後、親Project `mangai-hub-staging`のBranch一覧でPreview Branch `marketplace-e2e-20261009`を一意確認し、削除確認名を入力して削除した。Dashboardの`Successfully deleted branch`表示と、Branch一覧から対象が消えたことを確認した。
 - Vercel隔離E2E用Preview環境変数10件はPR #641前に削除・不在確認済み。既存Cloud／branch限定／Production共有設定は保持している。
-- Stripe Sandbox webhook endpoint `we_1UOXSNHG2m6PnGC7Fi2o6o9T`は未削除。対象タブとURLは検出できるが、Chrome connectionがfocus切替でtimeoutするため、安全に停止した。
-- 次: 対象Stripe Sandbox endpointタブをforegroundにしてbrowser connectionを再開し、このendpointだけを削除して不在確認する。Stripe live、実決済、Production、実利用者、Provider、Job、creditは変更しない。
+- 同じaction-time承認範囲で、Stripe DashboardがSandbox／テスト環境であること、endpoint ID `we_1UOXSNHG2m6PnGC7Fi2o6o9T`、名称`MANGAI Marketplace Preview 2026-10-09`を再照合し、送信先を削除した。削除後はendpoint詳細が消え、Webhook送信先の追加案内画面へ戻ったことを確認した。
+- 隔離E2E環境teardownは完了。Stripe live、実決済、Production、実利用者、Provider、Job、creditは変更していない。次は責任者が指定する新規タスク待ち。
 
 ---
 

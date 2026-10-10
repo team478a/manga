@@ -1,12 +1,12 @@
 # MANGAI AI Handoff Log
 
-## 2026-10-10 Codex: Marketplace隔離E2E Supabase teardown完了
+## 2026-10-10 Codex: Marketplace隔離E2E環境 teardown完了
 
 - Branch `codex/marketplace-e2e-supabase-teardown-20261010`。PR #641はmerge commit `952c9bfd`で基準ブランチへ統合済みで、merge後のRequired QualityとDesktop Windowsは成功した。
 - action-time承認後、Supabase親Project `mangai-hub-staging`のBranch一覧でPreview Branch `marketplace-e2e-20261009`を一意確認し、確認名入力後に削除した。成功toastと一覧からの消失を確認した。
 - Vercel隔離E2E用Preview設定10件は削除・不在確認済み。共有設定は保持している。
-- Stripe Sandbox endpoint `we_1UOXSNHG2m6PnGC7Fi2o6o9T`だけが残件。タブは検出済みだがChrome connectionのfocus切替timeoutで操作できず停止した。
-- 次はStripe Sandbox対象タブをforegroundにしてbrowser connectionを再開し、対象endpointだけを削除・不在確認する。Production、Stripe live、実決済、実利用者、Provider、Job、credit変更は0件。
+- Stripe DashboardでSandbox／テスト環境、endpoint ID `we_1UOXSNHG2m6PnGC7Fi2o6o9T`、名称`MANGAI Marketplace Preview 2026-10-09`を再照合し、送信先を削除した。削除後にendpoint詳細が消え、Webhook送信先追加案内へ戻ったことを確認した。
+- Vercel Preview専用10設定、Supabase Preview Branch、Stripe Sandbox endpointの隔離E2E teardownは完了。Production、Stripe live、実決済、実利用者、Provider、Job、credit変更は0件。次は責任者の新規タスク指定待ち。
 
 ---
 
