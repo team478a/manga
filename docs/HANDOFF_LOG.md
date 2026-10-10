@@ -6,7 +6,8 @@
 - creatorへ版付き規約同意、承認待ち、停止中、eligibleの状態別導線を追加した。adminへseller候補一覧、既存RPCによる承認、理由必須の停止操作を追加した。規約版変更時の再承認、admin限定、未同意承認拒否、監査eventのDB契約は変更していない。
 - 通常表示はdisplay nameと状態に限定し、メールや秘密値を取得しない。DB、migration、Production、Storage、worker設定、seller状態、作品、商品、公開、注文、Stripe、実決済は変更していない。
 - 集中10/10、Hub 1309/1309、deps error 0（既知warning 2）、Hub typecheck、ESLint、Hub Production build、diff check成功。
-- 次はcommit、push、Draft PR、全CI／Vercel Preview成功で停止。merge後の規約同意・seller承認は別のaction-time承認を得るまで実行しない。
+- 実装commit `d13fda49`をpushし、Draft PR [#650](https://github.com/team478a/manga/pull/650)を作成した。Core quality、Migration roundtrip、Desktop Windows、Vercel、Vercel Preview Commentsはすべて成功した。
+- 次はPR #650のレビュー・merge判断待ち。merge後の規約同意・seller承認は別のaction-time承認を得るまで実行しない。
 
 ---
 
