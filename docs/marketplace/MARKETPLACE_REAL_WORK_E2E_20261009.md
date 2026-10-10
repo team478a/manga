@@ -2,7 +2,7 @@
 
 作成日: 2026-10-09  
 対象: `feature/manga-canvas-mvp`  
-状態: `STAGING_READY / FIXTURE_READY / SELLER_S01_S09_PASS / BUYER_B01_B11_PASS / PAYMENT_FAILURE_E01_PASS / CHECKOUT_ABANDONMENT_E02_PASS / DOWNLOAD_GUARD_E06_PASS / READER_E07_PASS / DOWNLOAD_E08_PASS / MOBILE_E09_PASS / E03_PENDING`
+状態: `STAGING_READY / FIXTURE_READY / SELLER_S01_S09_PASS / BUYER_B01_B11_PASS / ABNORMAL_E01_E09_PASS / DUPLICATE_WEBHOOK_E03_PASS`
 
 ### 2026-10-09 隔離Preview実行準備の結果
 
@@ -17,6 +17,7 @@
 - 責任者のaction-time承認後、Stripe Sandboxの100円テスト支払いを確定した。実請求なしの完了画面、注文1件の`paid`／`test`／100円遷移、本棚1冊、Reader全2ページ、2ページ目からの再開、購入履歴経由の2ページPDF downloadを確認し、B-06〜B-11をPASSとした。Seller所有者、未購入者sample-only、支払済みBuyerの3主体でE-07もPASS。Production、Stripe live、実利用者、Provider、creditは変更していない。
 - Chromeの実ブラウザを390x844 viewportに固定し、合成BuyerでHome、タイトル検索、作品詳細、あとで読む、本棚、Reader、読書位置の保存・復帰、購入準備画面までを確認した。全画面でdocumentの横overflowはなく、mobile navigationから主要導線へ遷移できた。購入確定ボタンは押しておらず、決済・注文・downloadは発生していない。E-09をPASSとした。
 - 責任者のaction-time承認後、隔離Previewへ一時的な未購入Buyerを作成し、Buyer Aのpaid／test注文のdownload URLへ認証済みで直接アクセスした。購入履歴へ`RESOURCE_NOT_FOUND`付きで戻され、本棚は空、注文のstatus／payment mode／download countは不変だった。ログアウト後に一時Auth userを削除し、cascadeされたprofileが存在しないことを確認した。E-06をPASSとした。
+- 責任者のaction-time承認後、既存のStripe Sandbox `checkout.session.completed`を同一event IDのまま隔離Previewへ1回だけ手動再配送した。HTTP 200／`received: true`を確認し、合成Buyerの本棚1冊・download count 1は前後不変で、重複権限は発生しなかった。E-03をPASSとした。
 
 ### 2026-10-09 外部設定の再監査
 
@@ -36,7 +37,7 @@ Marketplace実作品E2Eの実行項目、証跡、停止条件を固定しまし
 
 Vercel PreviewはProductionと分離されたSupabase Branch、Checkout `test`、Stripe test資格情報の3条件を満たし、strict preflightは3/3 `READY`です。必要なmigrationと合成fixtureの準備も完了し、fixture監査は8/8 `READY`です。
 
-認証済みSeller／Buyerの正常系E2EはS-01〜S-09、B-01〜B-11をPASSしました。異常系はE-01、E-02、E-04〜E-09をPASSし、残りはE-03です。隔離Previewでのみ作品公開、販売開始、Stripe testの正常注文1件・失敗注文1件・途中離脱注文1件、Reader進捗保存、購入PDF取得を実施しています。Production、Stripe live、実利用者データには触れていません。
+認証済みSeller／Buyerの正常系E2EはS-01〜S-09、B-01〜B-11をPASSしました。異常系もE-01〜E-09をすべてPASSしました。隔離Previewでのみ作品公開、販売開始、Stripe testの正常注文1件・失敗注文1件・途中離脱注文1件、正常注文eventの再配送1回、Reader進捗保存、購入PDF取得を実施しています。Production、Stripe live、実利用者データには触れていません。
 
 ## 2. 環境preflight
 
@@ -126,7 +127,7 @@ Productionの既存非公開2ページ作品をStagingへ複製する場合は�
 | --- | --- | --- | --- |
 | E-01 | 決済失敗 | PASS | action-time承認後、Stripe Sandboxの公式拒否用test cardで100円の支払いを1回だけ確定。Checkoutの拒否表示、注文`failed`／`test`、`paid_at`なし、download count 0、既存paid注文不変、新規paid注文なしを確認 |
 | E-02 | 決済処理中の離脱 | PASS | Stripe Sandbox Checkoutでカード情報を入力せず正規の戻る導線から離脱し、同じ新規test注文IDの署名付きcancel URLで仮注文のcancel成功を確認。本棚は既存test購入1冊のままで新しい権限なし。test modeは新規pending作成、live modeだけがpending再利用 |
-| E-03 | 同一注文の重複通知 | BLOCKED | 同一test eventの再配送で状態と権限が重複しないことを確認 |
+| E-03 | 同一注文の重複通知 | PASS | 既存のStripe Sandbox `checkout.session.completed`を同一event IDで1回だけ手動再配送。HTTP 200／`received: true`、本棚1冊・download count 1の前後不変、重複権限なしを確認 |
 | E-04 | 非公開作品への直接アクセス | PASS | 隔離Previewで合成作品を一時的に非公開化し、匿名の直接URLが404相当（soft 404を含む）となり、作品名を返さないことを確認。直後に公開状態へ復元 |
 | E-05 | 販売停止商品の購入防止 | PASS | 合成商品を一時的に`paused`へ戻し、購入画面が404、公開作品ページから商品・Checkout導線が消えることを確認。Server Actionの既存集中テストで注文作成・Stripeより前のstatus再検査も確認し、直後に`active`へ復元 |
 | E-06 | 他人の購入ファイルへのアクセス拒否 | PASS | 隔離Previewの認証済み未購入BuyerでBuyer Aのdownload URLへ直接アクセスし、購入履歴へ`RESOURCE_NOT_FOUND`付きで戻ること、本棚0件、download count 1の不変を確認。使用した一時Buyer／profileは確認後に削除 |
@@ -139,6 +140,8 @@ Productionの既存非公開2ページ作品をStagingへ複製する場合は�
 異常系用に合成未購入者の`pending`／`test`／100円注文を1件だけ隔離Previewへ準備しました。改ざんcancel tokenは拒否され、前後で注文状態は不変です。この認可境界証跡とは別に、E-02では責任者のaction-time承認後、認証済み合成Buyerが税込100円のStripe Sandbox Checkoutを1回だけ開始しました。カード番号、有効期限、CVC、氏名は入力せず、支払い確定操作も行わず、「Stock Business LLC に戻る」で離脱しました。新規test注文`bd634acb-f661-46f9-a7e8-93bdcd212491`と同じ注文IDの署名付きcancel URLへ戻り、「決済はキャンセルされ、仮注文をキャンセル状態にしました。」の表示を確認しました。本棚は既存test購入1冊、download count 1のままで、新しい購入権限はありません。cancel後のDB再照会はSupabaseを開いた別Chrome profileへのUI自動操作が応答せず直接取得できなかったため、画面証跡の範囲として明記します。Failure／refundのread-only preflightは、VercelのSensitive値がCLIへ返らないため停止し、Secretの回避取得や外部操作は行っていません。
 
 E-01用のfailure/refund harnessは、注文IDとStripe test webhook endpoint IDが未指定の場合、pending／paidのtest注文と互換endpointが各1件だけ存在するときに限り自動選択するよう改善しました。0件・複数件、Production URL、live key、同一Supabase refでは外部更新前に停止します。CLI経由のread-only preflightはVercelのSensitive値を子processへ渡さず安全停止しましたが、ブラウザで隔離Preview、Stripe Sandbox、合成Buyerを確認できたため、責任者のaction-time承認後に拒否支払いを1回だけ実行しました。Checkoutはカード拒否を表示し、対象注文は`failed`／`test`／100円、`paid_at`なし、download count 0になりました。同じBuyer／商品の既存`paid`注文1件は不変で、新しいpaid注文や購入権限は作成されていません。合成Buyerの認証情報は隔離Previewだけで再発行し、値は表示・記録していません。Production、Stripe live、実請求、Provider、creditへの変更は0件です。
+
+E-03は、責任者のaction-time承認後にStripe Sandbox画面から、既存の正常購入に対応する`checkout.session.completed`を同一event IDのまま隔離Previewへ1回だけ手動再配送しました。配送履歴はHTTP 200、response `received: true`、手動再送・回復済みでした。再配送前後で合成Buyerの本棚は1冊、対象購入のdownload countは1のままで、新しい権限や重複表示はありません。現行Dashboardアカウントが隔離Supabase Projectへアクセスできないため、`paid_at`のDB再照会は未取得であり、この証跡制約を明記します。Production、Stripe live、実請求、新規Checkout／PaymentIntent、Webhook endpoint、Provider、creditへの変更は0件です。
 
 E-04／E-05はdeployment `dpl_GxV3w4jDFG54Eg4b4QKrM1JyeJ5c`に対し、`marketplace:staging:access-guards`で実施しました。実行前に隔離Supabase refと親Production refが異なること、Checkoutが`test`であること、paid注文が`test`であることをfail closedで確認しています。商品と作品は条件付きPATCHで一時変更し、失敗時を含む`finally`復元後に`active`／公開へ戻ったことを再読込しました。注文status、payment mode、download countは実行前後で不変でした。Stripe request、Payment作成、Production変更は0件です。
 
@@ -201,9 +204,9 @@ E-01 failure/refund harnessの改善テスト:
 6. S-01からS-06を確認する。
 7. Staging内でS-07、S-08を実施し、S-09を確認する。
 8. B-01からB-11を順番に実施する。
-9. 完了: E-02を正常系とE-01の証跡を壊さず実施した。次はE-03を実施する。
-10. 商品を`paused`、作品を非公開へ戻す。
-11. 注文とWebhook結果をread-only確認し、Stripe test endpointを変更した場合は元へ戻す。
+9. 完了: E-02とE-03を正常系とE-01の証跡を壊さず実施し、E-01〜E-09をすべてPASSとした。
+10. 次: 別のaction-time承認後、商品を`paused`、作品を非公開へ戻す。
+11. cleanup後に注文とWebhook結果をread-only確認する。Stripe test endpointは変更していない。
 
 ## 9. 各項目の証跡
 
@@ -251,7 +254,8 @@ Productionでの一般公開、販売開始、Stripe live決済、返金、送�
 8. 完了: E-04非公開直接アクセスとE-05販売停止購入防止を隔離PreviewでPASS。匿名download拒否を部分確認し、fixtureを元の公開／active状態へ復元した。
 9. 完了: E-09スマートフォン操作を390x844の実ブラウザでPASSとし、購入確定なしで主要導線と読書位置復帰を確認した。
 10. 完了: E-06を認証済み別BuyerでPASSとし、一時Buyer／profileを削除、対象注文不変を確認した。
-11. 完了: E-02正規Checkout離脱を隔離PreviewでPASSとした。次: E-03重複通知を隔離Previewで実施する。外部確定操作はaction-time確認を分離する。
+11. 完了: E-02正規Checkout離脱とE-03同一test event再配送を隔離PreviewでPASSとし、E-01〜E-09をすべて完了した。
+12. 次: 隔離fixtureの商品`paused`化・作品非公開化を、別のaction-time承認単位で実施する。
 
 ### 12.1 2026-10-09 Preview設定結果
 
