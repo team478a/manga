@@ -1,5 +1,18 @@
 # MANGAI Current Task
 
+## 2026-10-11 外部作品応募Production検証queue登録
+
+- 状態: `PR_658_MERGED / POST_MERGE_CHECKS_PASSED / PRODUCTION_DEPLOYED / VALIDATION_QUEUED / WORKER_NOT_AUTHORIZED`
+- Branch: `codex/external-submission-validation-queue-record-20261011`
+- PR: [#659](https://github.com/team478a/manga/pull/659)（Draft）。証跡commit `8f482a4d`。証跡同期前HEAD `d19a91b7`のCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功した。
+- 基点: PR #658 merge commit `60c35fb965e8d2c89ca633a8d291bd0e6b9ae37d`（`feature/manga-canvas-mvp`）。merge後のRequired Quality run `38074218201`、Desktop Windows run `38074218206`、Production deployment `6984747832`はすべて成功した。
+- 責任者へ対象応募、実行回数、期待状態、停止条件を提示し、action-time承認を得た後、Productionのcreator `test`で応募ID `906ff7c3-c00a-42ed-aa9f-20d330233911`の`検証を開始`を1回だけ実行した。
+- 画面で「検証待ちに追加しました。」、`状態: validating`、`Job: queued`を確認した。`01-market-analysis-guide-poster.webp`と`02-proposal-guide-poster.webp`はどちらも`uploaded`のまま。
+- Worker endpoint、Job claim、malware scan、page変換、`external-submission-pages`への保存、権利宣言、審査提出、公開、販売、Stripe、決済は実行していない。
+- 次: Production WorkerのFeature Flag、内部認証、ClamAV接続条件を秘密値なしで確認する。対象Job、Worker実行回数、成功／失敗時の停止条件を提示し、別のaction-time承認を得るまでWorkerを実行しない。実決済は禁止を維持する。
+
+---
+
 ## 2026-10-11 外部作品応募Production隔離upload
 
 - 状態: `PR_657_MERGED / POST_MERGE_CHECKS_PASSED / PRODUCTION_DEPLOYED / TWO_FILES_UPLOADED / VALIDATION_NOT_AUTHORIZED`
