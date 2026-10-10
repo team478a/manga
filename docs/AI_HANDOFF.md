@@ -1,5 +1,15 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 外部作品応募 PR-5 売上運用（2026-10-10）
+
+- PR #646 merge commit `13a888e5`を基点にBranch `codex/external-submission-sales-ops-20261010`を作成し、`EXTERNAL_SELLER_GAP_ANALYSIS.md`のPR-5だけを実装した。
+- クリエイター本人の売上一覧へ税込表示、本番売上の支払い済み／全額返金／純売上／純手数料／純受取予定額の運用集計を追加した。返金済み注文は手数料・受取予定額を0円とし、test注文は本番集計から除外する。
+- owner scoped queryを使う`no-store` CSV exportを追加した。UTF-8 BOM、表計算式注入対策、注文・作品・商品・購入者・状態・test/live・税込額・返金調整・純額を含み、決済秘密情報や管理者clientは使用しない。
+- 部分返金、税額内訳、適格請求書、確定台帳、精算・送金は対象外と画面／CSVへ明示した。DB／migration、Production、Stripe、返金処理、実決済は変更していない。
+- deps check、lint、typecheck、Hub 1307、Canvas 26、AI 50、Desktop 407、Desktop a11y violations 0、migration validate 100、Hub／Desktop build、集中3 test、diff checkが成功。RC structureはREADY、外部設定と手動E2EはPENDING。次はcommit・push・PR作成とPR checks確認。
+
+---
+
 ## 0.0 外部作品応募 PR-4 審査・公開・強制停止（2026-10-10）
 
 - PR #645 merge commit `c7161b7e`を基点にBranch `codex/external-submission-review-publish-20261010`を作成し、`EXTERNAL_SELLER_GAP_ANALYSIS.md`のPR-4だけを実装した。

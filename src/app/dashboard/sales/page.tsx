@@ -6,6 +6,7 @@ import {
   listSalesOrdersForCreator,
   type SalesOrderRecord,
 } from "@/modules/sales/infrastructure/sales-query-repository";
+import { buildSalesOperationalReport } from "@/modules/sales/domain/sales-operational-report";
 
 const orderDateTimeFormatter = new Intl.DateTimeFormat("ja-JP", {
   dateStyle: "medium",
@@ -117,6 +118,9 @@ export default async function SalesPage({
           ["failed", "refunded", "canceled"].includes(order.status),
         ).length,
       };
+  const liveOperationalReport = error
+    ? null
+    : buildSalesOperationalReport(orders, "live");
 
   return (
     <main className="page">
@@ -130,9 +134,14 @@ export default async function SalesPage({
             指定購入者が購入手続きを完了すると、注文と売上の状態がここに表示されます。
           </p>
         </div>
-        <Link className="button-secondary w-fit" href="/dashboard/sales">
-          注文・売上情報を再読み込み
-        </Link>
+        <div className="flex flex-wrap gap-2">
+          <Link className="button-secondary w-fit" href="/dashboard/sales/export">
+            売上CSVをダウンロード
+          </Link>
+          <Link className="button-secondary w-fit" href="/dashboard/sales">
+            注文・売上情報を再読み込み
+          </Link>
+        </div>
       </div>
       <div className="panel mt-6">
         <p className="text-lg text-stone-600">クリエイター受取予定額（参考）</p>
@@ -178,7 +187,7 @@ export default async function SalesPage({
           role="note"
         >
           <p>
-            支払い済みの本番注文だけを合計した参考値です。現在、MANGAIからの振込・精算確定は利用できません。
+            表示金額は税込です。支払い済みの本番注文だけを合計した参考値です。返金済み注文は受取予定額から除外します。現在、MANGAIからの振込・精算確定は利用できません。
           </p>
           <p className="mt-2">
             テスト購入は受取予定額に含みません。実際の請求・売上・振込も発生しません。
@@ -191,6 +200,25 @@ export default async function SalesPage({
           </Link>
         </div>
       </div>
+      <section className="panel mt-6">
+        <h2 className="text-2xl font-bold">本番売上 運用レポート</h2>
+        <p className="mt-2 text-sm leading-relaxed text-stone-600">
+          金額は税込です。全額返金は元の売上と同額を返金調整として差し引きます。部分返金、税額内訳、適格請求書、精算・送金はこのレポートの対象外です。
+        </p>
+        {liveOperationalReport === null ? (
+          <p className="mt-4 font-semibold text-stone-700">運用レポートを確認できません。</p>
+        ) : (
+          <dl aria-label="本番売上と返金の運用集計" className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="rounded-xl bg-stone-50 p-4"><dt className="text-sm text-stone-600">支払い済み</dt><dd className="mt-1 text-xl font-bold">{liveOperationalReport.paidOrderCount}件</dd></div>
+            <div className="rounded-xl bg-stone-50 p-4"><dt className="text-sm text-stone-600">全額返金</dt><dd className="mt-1 text-xl font-bold">{liveOperationalReport.refundedOrderCount}件 / {yen(liveOperationalReport.refundedAmount)}</dd></div>
+            <div className="rounded-xl bg-stone-50 p-4"><dt className="text-sm text-stone-600">決済完了総額</dt><dd className="mt-1 text-xl font-bold">{yen(liveOperationalReport.completedGrossSales)}</dd></div>
+            <div className="rounded-xl bg-stone-50 p-4"><dt className="text-sm text-stone-600">純売上</dt><dd className="mt-1 text-xl font-bold">{yen(liveOperationalReport.netSales)}</dd></div>
+            <div className="rounded-xl bg-stone-50 p-4"><dt className="text-sm text-stone-600">純手数料</dt><dd className="mt-1 text-xl font-bold">{yen(liveOperationalReport.netPlatformFees)}</dd></div>
+            <div className="rounded-xl bg-stone-50 p-4"><dt className="text-sm text-stone-600">純受取予定額</dt><dd className="mt-1 text-xl font-bold">{yen(liveOperationalReport.netCreatorRevenue)}</dd></div>
+          </dl>
+        )}
+        <p className="mt-3 text-sm text-stone-600">CSVにはテスト注文と不成立注文も含め、各行の区分・状態・返金調整を明示します。</p>
+      </section>
       {pageError ? (
         <InlineErrorMessage role="alert">{pageError}</InlineErrorMessage>
       ) : null}
@@ -311,19 +339,19 @@ export default async function SalesPage({
                     <div>
                       <dt className="text-stone-500">販売金額</dt>
                       <dd className="mt-1 text-stone-900">
-                        {yen(order.amount)}
+                        税込 {yen(order.amount)}
                       </dd>
                     </div>
                     <div>
                       <dt className="text-stone-500">手数料</dt>
                       <dd className="mt-1 text-stone-900">
-                        {yen(order.platform_fee)}
+                        税込 {order.status === "refunded" ? yen(0) : yen(order.platform_fee)}
                       </dd>
                     </div>
                     <div>
                       <dt className="text-stone-500">受取</dt>
                       <dd className="mt-1 font-semibold text-stone-900">
-                        {yen(order.creator_revenue)}
+                        税込 {order.status === "refunded" ? yen(0) : yen(order.creator_revenue)}
                       </dd>
                     </div>
                   </dl>
@@ -358,10 +386,10 @@ export default async function SalesPage({
                       <td className="py-3">
                         <OrderSourceLinks order={order} />
                       </td>
-                      <td className="py-3">{yen(order.amount)}</td>
-                      <td className="py-3">{yen(order.platform_fee)}</td>
+                      <td className="py-3">税込 {yen(order.amount)}</td>
+                      <td className="py-3">税込 {order.status === "refunded" ? yen(0) : yen(order.platform_fee)}</td>
                       <td className="py-3 font-semibold">
-                        {yen(order.creator_revenue)}
+                        税込 {order.status === "refunded" ? yen(0) : yen(order.creator_revenue)}
                       </td>
                       <td className="py-3">{statusLabel(order.status)}</td>
                       <td className="py-3">
