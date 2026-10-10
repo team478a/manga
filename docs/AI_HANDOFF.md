@@ -7,8 +7,8 @@
 - 検証済みpageから一般向け非公開draft作品とimmutable Publicationを作るadmin-only RPC、ownerのsample page指定、Cloud／external排他source、submission／work／publication linkを追加した。商品作成、公開、販売開始は含めていない。
 - 注文へ購入時Publication IDを固定し、Checkout再検証、本棚、Reader、進捗を同じ固定版へ接続した。既存注文とmigration未適用期間は、固定版を推測して権限を広げず、従来の現行版経路だけへfallbackする。
 - Migration `202610100003_external_submission_publications.sql`、rollback、canonical schema、manifest、DB assertion、contract testを追加。PostgreSQL 16で99 migrationのforward／rollback／reapply、canonical schema二重適用、data assertionを完走し、一時DBは削除済み。
-- deps check、lint、typecheck、Hub 1300、Canvas 26、AI 50、Desktop 407、migration validate 99、Hub／Desktop buildが成功。RC preflightは構造READY、外部設定と手動E2EはPENDING。Desktop a11yはbuildとruntime寸法取得後にHub接続timeoutを伴うexit 1でreport未生成のため、Desktop Windows CIを確認する。
-- Production、実upload、公開／販売、Stripe、実決済、実利用者、Provider、Job、creditは変更していない。次はCI確認とレビュー・merge判断。PR-4は本PRmerge後に別branchで扱う。
+- deps check、lint、typecheck、Hub 1300、Canvas 26、AI 50、Desktop 407、migration validate 99、Hub／Desktop buildが成功。RC preflightは構造READY、外部設定と手動E2EはPENDING。ローカルDesktop a11yはHub timeoutでreport未生成だったが、PRのDesktop Windows（Accessibilityを含む）は成功した。
+- Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功。Production、実upload、公開／販売、Stripe、実決済、実利用者、Provider、Job、creditは変更していない。次はレビュー・merge判断。PR-4は本PRmerge後に別branchで扱う。
 
 ---
 
