@@ -7,7 +7,7 @@
 - `tanaka`で管理画面を確認すると候補0件と誤表示された。Production dataは正しく、`external_seller_profiles.profile_id`から`profiles`へのPostgREST relation指定が曖昧でquery errorになり、そのerrorを画面が空一覧として扱っていたことが原因。
 - 管理一覧queryへ`external_seller_profiles_profile_id_fkey`のrelation hintを追加し、query error時は汎用エラーを表示するよう修正した。DB、migration、RPC、Production seller statusは変更していない。
 - 検証: 集中3/3、Hub 1310/1310、Hub/Desktop typecheck、ESLint、Hub Production build成功。
-- 次: diff check、commit、push、Draft PR、全CI／Vercel Previewを確認する。merge／Production反映後に`tanaka`で候補表示をread-only確認し、出品者承認は対象表示後に別のaction-time承認を得るまで実行しない。upload、worker、審査、公開、販売、Stripe、実決済へ進まない。
+- Commit `d80cd69e`をpushし、Draft PR [#654](https://github.com/team478a/manga/pull/654)を作成した。次は全CI／Vercel Previewを確認する。merge／Production反映後に`tanaka`で候補表示をread-only確認し、出品者承認は対象表示後に別のaction-time承認を得るまで実行しない。upload、worker、審査、公開、販売、Stripe、実決済へ進まない。
 
 ---
 
