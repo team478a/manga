@@ -7,7 +7,7 @@
 - クリエイター本人の売上一覧へ税込表示、本番売上の支払い済み／全額返金／純売上／純手数料／純受取予定額の運用集計を追加した。返金済み注文は手数料・受取予定額を0円とし、test注文は本番集計から除外する。
 - owner scoped queryを使う`no-store` CSV exportを追加した。UTF-8 BOM、表計算式注入対策、注文・作品・商品・購入者・状態・test/live・税込額・返金調整・純額を含み、決済秘密情報や管理者clientは使用しない。
 - 部分返金、税額内訳、適格請求書、確定台帳、精算・送金は対象外と画面／CSVへ明示した。DB／migration、Production、Stripe、返金処理、実決済は変更していない。
-- deps check、lint、typecheck、Hub 1307、Canvas 26、AI 50、Desktop 407、Desktop a11y violations 0、migration validate 100、Hub／Desktop build、集中3 test、diff checkが成功。RC structureはREADY、外部設定と手動E2EはPENDING。次はPR #647 checks確認。
+- deps check、lint、typecheck、Hub 1307、Canvas 26、AI 50、Desktop 407、Desktop a11y violations 0、migration validate 100、Hub／Desktop build、集中3 test、diff checkが成功。RC structureはREADY、外部設定と手動E2EはPENDING。PR #647のCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsもすべて成功。次はレビュー・merge判断。
 
 ---
 
