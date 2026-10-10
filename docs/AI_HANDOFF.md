@@ -1,5 +1,15 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 外部出品者role guard（2026-10-10）
+
+- PR #651 merge commit `f4d616f5`を基点にBranch `codex/external-seller-role-guard-20261010`を作成した。merge後のRequired QualityとDesktop Windowsも成功済み。
+- action-time承認後、Productionの`tanaka`で`external-seller-v1`規約同意を1回だけ送信したが、RPCが拒否した。read-only監査で`tanaka`は`admin`、seller rowなし、event 0件と確認し、creator専用RPCとのrole不一致が原因と特定した。transactionはrollbackされ、部分変更はない。
+- adminに失敗する規約フォームを表示しない画面guardとServer Actionの二重guardを追加した。adminにはcreatorアカウントへの切替案内と承認画面への導線を表示する。DB／RPC／migration／Production role／seller状態は変更していない。
+- 集中3/3、Hub 1310/1310、Hub/Desktop typecheck、ESLint、Hub Production build、diff check成功。
+- 次はPR作成と全CI確認。merge後も、責任者がcreatorアカウントを指定してログインし直すまで再試行しない。`tanaka`のrole変更、upload、worker、審査、公開、販売、Stripe、実決済は行わない。
+
+---
+
 ## 0.0 外部出品者onboarding導線（2026-10-10）
 
 - PR #649 merge commit `510e8a3a`を基点にBranch `codex/external-seller-onboarding-ui-20261010`を作成した。Productionのread-only確認で、creator画面が規約同意と招待承認を要求する一方、それらを実行する画面導線がなく実地受入れ開始不能と特定した。

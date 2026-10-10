@@ -23,7 +23,11 @@ export async function acceptExternalSellerTermsAction(formData: FormData) {
     redirect(
       `/dashboard/external-submissions?error=${encodeURIComponent("出品者規約への同意が必要です")}`,
     );
-  const { supabase } = await cloudCreatorContext();
+  const { supabase, profile } = await cloudCreatorContext();
+  if (profile.role !== "creator")
+    redirect(
+      `/dashboard/external-submissions?error=${encodeURIComponent("出品者登録にはcreatorアカウントが必要です")}`,
+    );
   const result = await supabase.rpc("accept_external_seller_terms", {
     p_terms_version: EXTERNAL_SELLER_TERMS_VERSION,
   });

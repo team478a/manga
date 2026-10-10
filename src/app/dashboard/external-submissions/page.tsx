@@ -28,7 +28,19 @@ export default async function ExternalSubmissionsPage({
         招待済みの一般向け作品を、非公開の隔離領域で検証してから審査に送ります。
       </p>
       {params.error ? <InlineErrorMessage>{params.error}</InlineErrorMessage> : null}
-      {!termsAccepted ? (
+      {profile.role !== "creator" ? (
+        <div className="panel mt-6">
+          <h2 className="text-xl font-semibold">creatorアカウントが必要です</h2>
+          <p className="mt-2 text-stone-600">
+            管理者アカウントでは出品者規約への同意を記録できません。応募するcreatorアカウントでログインしてください。
+          </p>
+          {profile.role === "admin" ? (
+            <Link className="mt-4 inline-block text-emerald-700" href="/admin/external-submissions">
+              出品者の招待承認を開く
+            </Link>
+          ) : null}
+        </div>
+      ) : !termsAccepted ? (
         <div className="panel mt-6">
           <h2 className="text-xl font-semibold">出品者規約の確認</h2>
           <p className="mt-2 text-stone-600">
