@@ -1,8 +1,18 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Marketplace実作品E2E PR #635統合完了（2026-10-10）
+
+- PR #635はmerge commit `4a7faf18`で`feature/manga-canvas-mvp`へmerge済み。S-01〜S-09、B-01〜B-11、E-01〜E-09、fixture cleanupまで基準ブランチへ統合された。
+- merge後のCore quality、Migration roundtrip、Desktop Windowsはすべて成功。Windows workflowではDesktop tests、Accessibility tests、unpacked buildも成功した。
+- Vercelは`mangai-hub-staging`へ正常deploy。GitHub上の環境表示は`Production`だが`production_environment=false`であり、実Production用projectではない。
+- fixtureは商品`paused`、作品`draft`／非公開。Production DB、Stripe live、実請求、実利用者、Provider、Job、creditへの追加変更は0件。
+- 隔離Supabase Branch、Vercel Preview設定、Stripe Sandbox endpointのteardownは破壊操作のため未実施。次は別の明示承認を得てteardownするか、責任者が指定する新規タスクへ進む。
+
+---
+
 ## 0.0 Marketplace隔離Preview fixture cleanup完了（2026-10-10）
 
-- PR #638はmerge commit `165e7e7a`でPR #635のheadへmerge済み。Branch `codex/marketplace-e2e-cleanup-complete-20261010`はこの最新headから分離し、PR [#639](https://github.com/team478a/manga/pull/639)をPR #635へstackedした。PR #635はOpen／非Draft／mergeable、5 checks成功。
+- PR #638はmerge commit `165e7e7a`でPR #635のheadへmerge済み。Branch `codex/marketplace-e2e-cleanup-complete-20261010`はこのheadから分離し、PR [#639](https://github.com/team478a/manga/pull/639)をmerge commit `a06a7295`でPR #635へ統合した。PR #635もmerge commit `4a7faf18`で基準ブランチへ統合済み。
 - Supabase Dashboardで対象が`mangai-hub-staging / marketplace-e2e-20261009 / PREVIEW`であることを確認した。別Projectの`main / PRODUCTION`画面には変更を加えていない。
 - fixture Sellerのrecovery／magic linkは非配送emailのため使わず、Vercel経由の管理キーも空値で取得不能だった。Auth user変更は0件。一時設定ファイルは削除し、秘密値と資格情報は表示・記録していない。
 - 対象作品・商品が各1件でなければ更新前に停止するSQLをPreview SQL Editorで1回実行し、商品を`paused`、作品を`draft`／非公開／`published_at=null`へ戻した。read-only再照会で価格100円を含むcleanup後状態を確認した。
