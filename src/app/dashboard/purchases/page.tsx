@@ -111,17 +111,24 @@ export default async function PurchasesPage({
                 const canDownload =
                   purchase.status === "paid" &&
                   Boolean(purchase.digital_products?.file_url);
-                const savedPage = work?.current_publication_id
+                const fixedPublicationId =
+                  purchase.publication_id ?? work?.current_publication_id ?? null;
+                const savedPage = fixedPublicationId
                   ? progress.pagesByPublication.get(
                       marketplaceReadingProgressKey(
-                        work.id,
-                        work.current_publication_id,
+                        work!.id,
+                        fixedPublicationId,
                       ),
                     )
                   : undefined;
+                const publicationQuery = fixedPublicationId
+                  ? `publication=${fixedPublicationId}`
+                  : "";
                 const readerHref = savedPage
-                  ? `/works/${work!.id}/read?page=${savedPage}`
-                  : `/works/${work!.id}/read`;
+                  ? `/works/${work!.id}/read?${publicationQuery}&page=${savedPage}`
+                  : publicationQuery
+                    ? `/works/${work!.id}/read?${publicationQuery}`
+                    : `/works/${work!.id}/read`;
 
                 return (
                   <article

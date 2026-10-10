@@ -106,6 +106,7 @@ export async function createPendingOrder(formData: FormData) {
     buyerEmail,
     buyerProfileId,
     productId: product.id,
+    publicationId: product.works.current_publication_id,
     creatorId: product.creator_id,
     amount,
     platformFee,

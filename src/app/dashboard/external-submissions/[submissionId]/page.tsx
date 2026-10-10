@@ -19,15 +19,15 @@ export default async function ExternalSubmissionPage({
   if (!submission) notFound();
   const [{ data: files }, { data: rawPages }, { data: job }] = await Promise.all([
     supabase.from("external_work_submission_files").select("id,original_name,validation_status,error_code").eq("submission_id", submissionId),
-    supabase.from("external_work_submission_pages").select("id,position,storage_path").eq("submission_id", submissionId).order("position"),
+    supabase.from("external_work_submission_pages").select("id,position,storage_path,is_sample").eq("submission_id", submissionId).order("position"),
     supabase.from("external_submission_ingest_jobs").select("status,attempt_count,error_code").eq("submission_id", submissionId).maybeSingle(),
   ]);
   const pages = (await Promise.all((rawPages ?? []).map(async (page) => {
     const signed = await supabase.storage.from("external-submission-pages").createSignedUrl(page.storage_path, 300);
     return signed.data?.signedUrl
-      ? { id: page.id, position: page.position, url: signed.data.signedUrl }
+      ? { id: page.id, position: page.position, url: signed.data.signedUrl, isSample: page.is_sample }
       : null;
-  }))).filter((page): page is { id: string; position: number; url: string } => page !== null);
+  }))).filter((page): page is { id: string; position: number; url: string; isSample: boolean } => page !== null);
   return <main className="page max-w-5xl">
     <Link className="text-emerald-700" href="/dashboard/external-submissions">← 応募一覧</Link>
     <h1 className="mt-4 text-3xl font-bold">{submission.title}</h1>

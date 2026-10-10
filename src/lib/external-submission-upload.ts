@@ -84,3 +84,19 @@ export async function reorderExternalSubmissionPages(
   if (result.error) throw new ValidationError("ページ順を保存できませんでした。");
   return result.data as string;
 }
+
+export async function setExternalSubmissionSamplePages(
+  submissionId: string,
+  pageIds: string[],
+) {
+  if (!pageIds.length || pageIds.length > 10)
+    throw new ValidationError("試し読みページは1〜10ページで選んでください。");
+  const { supabase } = await cloudCreatorContext();
+  const result = await supabase.rpc("set_external_submission_sample_pages", {
+    p_submission_id: submissionId,
+    p_page_ids: pageIds,
+  });
+  if (result.error)
+    throw new ValidationError("試し読みページを保存できませんでした。");
+  return result.data as string;
+}

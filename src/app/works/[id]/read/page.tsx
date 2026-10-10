@@ -5,18 +5,24 @@ import { getReadableWorkPublication } from "@/modules/publication/application/wo
 
 export default async function WorkReaderPage({ params, searchParams }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ page?: string }>;
+  searchParams: Promise<{ page?: string; publication?: string }>;
 }) {
   const { id } = await params;
   const query = await searchParams;
   const requested = query.page
     ? Math.max(1, Number.parseInt(query.page, 10) || 1)
     : null;
-  const publication = await getReadableWorkPublication(id, requested).catch(() => null);
+  const requestedPublicationId = query.publication?.trim() || null;
+  const publication = await getReadableWorkPublication(
+    id,
+    requested,
+    requestedPublicationId,
+  ).catch(() => null);
   if (!publication) notFound();
   const index = publication.accessiblePages.indexOf(publication.pageNumber);
   const previous = publication.accessiblePages[index - 1];
   const next = publication.accessiblePages[index + 1];
+  const publicationQuery = `publication=${publication.publicationId}`;
   return (
     <main className="page max-w-5xl">
       {publication.persistProgress ? (
@@ -44,9 +50,9 @@ export default async function WorkReaderPage({ params, searchParams }: {
         <img alt={`${publication.workTitle} ${publication.pageNumber}ページ`} className="h-auto max-h-[85vh] max-w-full object-contain" src={publication.imageUrl} />
       </div>
       <nav aria-label="本文ページ" className="mt-5 flex items-center justify-between gap-3">
-        {previous ? <Link className="button-secondary" href={`/works/${id}/read?page=${previous}`}>前のページ</Link> : <span />}
+        {previous ? <Link className="button-secondary" href={`/works/${id}/read?${publicationQuery}&page=${previous}`}>前のページ</Link> : <span />}
         <span className="font-semibold">{publication.pageNumber} / {publication.pageCount}</span>
-        {next ? <Link className="button-secondary" href={`/works/${id}/read?page=${next}`}>次のページ</Link> : <span />}
+        {next ? <Link className="button-secondary" href={`/works/${id}/read?${publicationQuery}&page=${next}`}>次のページ</Link> : <span />}
       </nav>
     </main>
   );

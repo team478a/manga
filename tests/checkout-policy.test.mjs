@@ -120,6 +120,31 @@ test("pending注文の商品・購入者・出品者・公開状態を照合す�
   );
 });
 
+test("pending注文は作成時のPublication固定版と現在版の不一致を拒否する", () => {
+  const value = {
+    ...order(),
+    publication_id: "publication-1",
+    digital_products: {
+      ...order().digital_products,
+      works: {
+        is_public: true,
+        content_class: "general",
+        source_project_id: null,
+        current_publication_id: "publication-2",
+      },
+    },
+  };
+  assert.throws(
+    () => assertCheckoutOrder(value, {
+      orderId: "order-1",
+      productId: "product-1",
+      buyerEmail: "buyer@example.com",
+      paymentMode: "test",
+    }),
+    /購入できません/,
+  );
+});
+
 test("本番URLは設定済みHTTPS originだけを許可する", () => {
   assert.equal(
     resolveCheckoutOrigin({

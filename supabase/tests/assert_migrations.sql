@@ -222,6 +222,18 @@ begin
   end if;
 end $$;
 
+do $$ begin
+  if to_regprocedure('public.set_external_submission_sample_pages(uuid,uuid[])') is null
+     or to_regprocedure('public.create_external_work_publication(uuid)') is null
+     or not exists(select 1 from information_schema.columns where table_schema='public' and table_name='works' and column_name='external_submission_id')
+     or not exists(select 1 from information_schema.columns where table_schema='public' and table_name='external_work_submissions' and column_name='publication_id')
+     or not exists(select 1 from information_schema.columns where table_schema='public' and table_name='orders' and column_name='publication_id')
+     or not exists(select 1 from pg_constraint where conrelid='public.cloud_work_publications'::regclass and conname='cloud_work_publications_source_check')
+     or has_function_privilege('anon','public.create_external_work_publication(uuid)','execute') then
+    raise exception 'External publication migration contract missing or exposed';
+  end if;
+end $$;
+
 do $$
 begin
   if to_regclass('public.cloud_generation_batches') is null
@@ -584,7 +596,7 @@ begin
     v_job,v_claim.lease_token,
     jsonb_build_array(jsonb_build_object(
       'id',v_page,'sourceFileId',v_file,'position',1,'sourceName','page.png',
-      'storagePath',v_page_path,'byteSize',128,'width',32,'height',48,'sha256',repeat('b',64)
+      'storagePath',v_page_path,'byteSize',128,'width',320,'height',480,'sha256',repeat('b',64)
     ))
   );
   if not exists(select 1 from public.external_work_submissions where id=v_submission and status='ready')
@@ -596,6 +608,26 @@ begin
   perform set_config('request.jwt.claim.role','authenticated',true);
   perform set_config('request.jwt.claim.sub',v_creator_user::text,true);
   perform public.reorder_external_submission_pages(v_submission,array[v_page]);
+  perform public.set_external_submission_sample_pages(v_submission,array[v_page]);
+  perform public.record_external_work_rights_declaration(
+    v_submission,'external-publication-v1',true,true,true,true
+  );
+  perform public.transition_external_work_submission(v_submission,'submitted',null);
+  perform set_config('request.jwt.claim.sub',v_admin_user::text,true);
+  perform public.transition_external_work_submission(v_submission,'in_review',null);
+  perform public.transition_external_work_submission(v_submission,'approved',null);
+  perform public.create_external_work_publication(v_submission);
+  if not exists(
+    select 1 from public.external_work_submissions submission
+    join public.works work on work.id=submission.work_id
+    join public.cloud_work_publications publication on publication.id=submission.publication_id
+    join public.cloud_work_publication_pages page on page.publication_id=publication.id
+    where submission.id=v_submission and submission.status='approved'
+      and work.external_submission_id=v_submission and not work.is_public and work.status='draft'
+      and publication.source_kind='external' and publication.external_submission_id=v_submission
+      and publication.project_id is null and publication.checkpoint_id is null
+      and publication.page_count=1 and page.page_number=1 and page.is_sample
+  ) then raise exception 'External fixed publication creation failed';end if;
 end $$;
 rollback;
 

@@ -17,6 +17,7 @@ export type CheckoutOrderPolicy = {
   amount: number;
   status: string;
   payment_mode: OrderPaymentMode;
+  publication_id?: string | null;
   digital_products: {
     id: string;
     status: string;
@@ -67,7 +68,9 @@ export function assertCheckoutOrder<T extends CheckoutOrderPolicy>(
     !order.digital_products.works?.is_public ||
     order.digital_products.works.content_class !== "general" ||
     (order.digital_products.works.source_project_id &&
-      !order.digital_products.works.current_publication_id)
+      !order.digital_products.works.current_publication_id) ||
+    (order.publication_id !== undefined &&
+      order.publication_id !== order.digital_products.works.current_publication_id)
   )
     throw new ValidationError("この商品は現在購入できません。");
   if (

@@ -22,6 +22,7 @@ export type WorkReaderEntitlement = {
   profileId: string | null;
   owner: boolean;
   purchased: boolean;
+  purchasedPublicationIds: string[];
   fullAccess: boolean;
 };
 
@@ -32,26 +33,49 @@ export async function getWorkReaderEntitlement(
   const { profile } = await getCurrentProfile();
   const owner = profile?.id === creatorProfileId;
   let purchased = false;
+  let purchasedPublicationIds: string[] = [];
 
   if (profile && !owner) {
     const admin = createAdminClient();
     const paid = await admin
       .from("orders")
-      .select("id,digital_products:product_id(work_id)")
+      .select("id,publication_id,paid_at,digital_products:product_id(work_id)")
       .eq("buyer_profile_id", profile.id)
-      .eq("status", "paid");
-    purchased = (paid.data ?? []).some((row) => {
+      .eq("status", "paid")
+      .order("paid_at", { ascending: false });
+    let paidRows: Array<{
+      publication_id: string | null;
+      digital_products: unknown;
+    }> = paid.data ?? [];
+    if (paid.error && (paid.error.code === "42703" || paid.error.code === "PGRST204" || paid.error.message.includes("publication_id"))) {
+      const legacyPaid = await admin
+        .from("orders")
+        .select("id,paid_at,digital_products:product_id(work_id)")
+        .eq("buyer_profile_id", profile.id)
+        .eq("status", "paid")
+        .order("paid_at", { ascending: false });
+      paidRows = (legacyPaid.data ?? []).map((row) => ({
+        ...row,
+        publication_id: null,
+      }));
+    }
+    const matching = paidRows.filter((row) => {
       const product = row.digital_products as unknown as {
         work_id?: string;
       } | null;
       return product?.work_id === workId;
     });
+    purchased = matching.length > 0;
+    purchasedPublicationIds = matching.flatMap((row) =>
+      typeof row.publication_id === "string" ? [row.publication_id] : [],
+    );
   }
 
   return {
     profileId: profile?.id ?? null,
     owner,
     purchased,
+    purchasedPublicationIds,
     fullAccess: owner || purchased,
   };
 }
@@ -81,6 +105,7 @@ export async function listOwnedWorkPublications(workId: string) {
 export async function getReadableWorkPublication(
   workId: string,
   requestedPage: number | null,
+  requestedPublicationId: string | null = null,
 ) {
   const admin = createAdminClient();
   const { data: work } = await admin.from("works")
@@ -96,15 +121,35 @@ export async function getReadableWorkPublication(
     status: work.status,
   }))
     throw new ValidationError("閲覧できる漫画原稿がありません。");
+  const selectedPublicationId = entitlement.owner
+    ? (requestedPublicationId ?? work.current_publication_id)
+    : entitlement.purchased
+      ? (requestedPublicationId &&
+        entitlement.purchasedPublicationIds.includes(requestedPublicationId)
+          ? requestedPublicationId
+          : entitlement.purchasedPublicationIds.includes(work.current_publication_id)
+            ? work.current_publication_id
+            : entitlement.purchasedPublicationIds[0] ?? work.current_publication_id)
+      : work.current_publication_id;
+  if (
+    requestedPublicationId &&
+    !entitlement.owner &&
+    requestedPublicationId !== work.current_publication_id &&
+    !entitlement.purchasedPublicationIds.includes(requestedPublicationId)
+  ) throw new ValidationError("閲覧できる公開版ではありません。");
   const publication = await admin.from("cloud_work_publications")
-    .select("id,version,page_count").eq("id", work.current_publication_id).eq("work_id", workId).maybeSingle();
+    .select("id,version,page_count").eq("id", selectedPublicationId).eq("work_id", workId).maybeSingle();
   if (!publication.data) throw new ValidationError("公開版を確認できませんでした。");
   const pages = await admin.from("cloud_work_publication_pages")
     .select("page_number,width,height,storage_bucket,storage_path,is_sample")
     .eq("publication_id", publication.data.id).order("page_number");
   if (pages.error || pages.data?.length !== Number(publication.data.page_count))
     throw new ValidationError("公開版のページ一覧を確認できませんでした。");
-  const allowed = entitlement.fullAccess
+  const hasPurchasedSelectedPublication =
+    entitlement.purchasedPublicationIds.includes(publication.data.id) ||
+    (entitlement.purchased && entitlement.purchasedPublicationIds.length === 0);
+  const fullAccess = entitlement.owner || hasPurchasedSelectedPublication;
+  const allowed = fullAccess
     ? pages.data
     : pages.data.filter((page) => page.is_sample);
   if (!allowed.length) throw new ValidationError("サンプルページは設定されていません。");
@@ -134,7 +179,7 @@ export async function getReadableWorkPublication(
     width: selected.width,
     height: selected.height,
     imageUrl: signed.data.signedUrl,
-    fullAccess: entitlement.fullAccess,
+    fullAccess,
     persistProgress: Boolean(entitlement.profileId),
     resumedFromProgress: requestedPage === null && savedPage === selected.page_number,
   };
