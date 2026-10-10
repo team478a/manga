@@ -1,5 +1,16 @@
 # MANGAI AI Handoff Log
 
+## 2026-10-10 Codex: 外部出品者管理一覧の取得修正
+
+- PR #653 merge commit `5ddbe639`からBranch `codex/fix-external-seller-admin-list-20261010`を作成した。
+- action-time承認後、Productionのcreator `test`で規約同意を1回だけ送信し、承認待ち表示、seller status=`draft`、terms accepted=true、event 1件を確認した。応募下書きは0件。
+- `tanaka`の管理画面が候補0件と誤表示した。Production dataではなく、複数FKを持つ`profiles` relationのhint欠落とquery errorの握りつぶしが原因だった。
+- `external_seller_profiles_profile_id_fkey`を明示し、query失敗時は汎用エラー表示へ切り替える。DB、migration、RPC、Production seller状態は変更していない。
+- 集中3/3、Hub 1310/1310、Hub/Desktop typecheck、ESLint、Hub Production build成功。
+- 次はdiff check、commit、push、Draft PR、全CI／Vercel Preview。merge／Production反映後に管理一覧をread-only確認し、出品者承認は新しいaction-time承認まで実行しない。
+
+---
+
 ## 2026-10-10 Codex: 外部出品者role guard
 
 - PR #651 merge commit `f4d616f5`からBranch `codex/external-seller-role-guard-20261010`を作成した。merge後のRequired QualityとDesktop Windowsは成功済み。

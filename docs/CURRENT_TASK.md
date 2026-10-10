@@ -1,5 +1,18 @@
 # MANGAI Current Task
 
+## 2026-10-10 外部出品者管理一覧の取得修正
+
+- 状態: `IMPLEMENTED / LOCAL_CHECKS_PASSED / PR_NOT_CREATED / PRODUCTION_APPROVAL_NOT_RUN`
+- Branch: `codex/fix-external-seller-admin-list-20261010`
+- 基点: PR #653 merge commit `5ddbe639`（`feature/manga-canvas-mvp`）。
+- 責任者のaction-time承認後、Productionのcreator `test`で`external-seller-v1`規約同意を1回だけ実行した。画面は「管理者の承認待ちです」へ遷移し、応募下書きは0件のまま。read-only監査ではseller status=`draft`、terms accepted=true、terms event 1件を確認した。
+- Productionの`tanaka`で管理画面をread-only確認したところ「規約同意済みの出品者候補はいません」と誤表示された。DB rowは正常で、管理画面のPostgREST relation `profiles:profile_id(display_name)`が複数FKのため解決できず、query errorを空一覧として扱っていたことが原因。
+- relationを`profiles:profiles!external_seller_profiles_profile_id_fkey(display_name)`へ固定し、query error時は「出品者候補を取得できませんでした。」を表示する。回帰contract testへrelation hintとerror表示を追加した。
+- 検証: 集中3/3、Hub 1310/1310、Hub/Desktop typecheck、ESLint、Hub Production build成功。DB、migration、RPC、Storage、seller承認、upload、worker、審査、公開、販売、Stripe、実決済は変更していない。
+- 次: `git diff --check`、commit、push、Draft PR、全CI／Vercel Preview確認。merge／Production反映後に候補表示をread-only確認し、その後の「出品者として承認」は別のaction-time承認まで実行しない。
+
+---
+
 ## 2026-10-10 外部出品者role guard
 
 - 状態: `MERGED / POST_MERGE_CHECKS_PASSED / PRODUCTION_UI_DEPLOYED / PRODUCTION_ACCEPTANCE_BLOCKED_BY_ACCOUNT_ROLE`

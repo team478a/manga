@@ -1,5 +1,16 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 外部出品者管理一覧の取得修正（2026-10-10）
+
+- PR #653 merge commit `5ddbe639`を基点にBranch `codex/fix-external-seller-admin-list-20261010`を作成した。
+- 責任者のaction-time承認後、Productionのcreator `test`で`external-seller-v1`規約同意を1回だけ送信し、「管理者の承認待ちです」へ遷移した。read-only監査ではseller status=`draft`、terms version=`external-seller-v1`、terms accepted=true、`terms_accepted` event 1件だった。
+- `tanaka`で管理画面を確認すると候補0件と誤表示された。Production dataは正しく、`external_seller_profiles.profile_id`から`profiles`へのPostgREST relation指定が曖昧でquery errorになり、そのerrorを画面が空一覧として扱っていたことが原因。
+- 管理一覧queryへ`external_seller_profiles_profile_id_fkey`のrelation hintを追加し、query error時は汎用エラーを表示するよう修正した。DB、migration、RPC、Production seller statusは変更していない。
+- 検証: 集中3/3、Hub 1310/1310、Hub/Desktop typecheck、ESLint、Hub Production build成功。
+- 次: diff check、commit、push、Draft PR、全CI／Vercel Previewを確認する。merge／Production反映後に`tanaka`で候補表示をread-only確認し、出品者承認は対象表示後に別のaction-time承認を得るまで実行しない。upload、worker、審査、公開、販売、Stripe、実決済へ進まない。
+
+---
+
 ## 0.0 外部出品者role guard（2026-10-10）
 
 - PR #651 merge commit `f4d616f5`を基点にBranch `codex/external-seller-role-guard-20261010`を作成した。merge後のRequired QualityとDesktop Windowsも成功済み。
