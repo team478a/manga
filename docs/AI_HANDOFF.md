@@ -1,5 +1,15 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 外部作品応募Production下書き作成（2026-10-11）
+
+- PR [#656](https://github.com/team478a/manga/pull/656)はmerge commit `4d519b5d0a56ca9d642e726ead5f7b5697048358`で`feature/manga-canvas-mvp`へ統合済み。merge後のRequired Quality run `38066331809`、Desktop Windows run `38066331823`、Production deployment `6983423813`はすべて成功した。
+- 責任者のaction-time承認後、Productionのcreator `test`で一般向けfixture `MANGAI External Submission E2E 2-page Fixture`の応募下書きを1件だけ作成した。説明は`Production受入れ専用の一般向け2ページfixture。実利用者コンテンツではありません。`、対象年齢は`全年齢`、原稿形式は`images`。
+- 作成後の詳細画面で`状態: draft`、`Job: 未開始`を確認した。作成buttonの再実行、ファイルupload、worker、権利宣言、審査提出、公開、販売、Stripe、決済は操作していない。
+- 証跡commit `7c6a6c0e`をpushし、Draft PR [#657](https://github.com/team478a/manga/pull/657)を作成した。証跡同期前HEAD `52d3345f`のCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功した。
+- 次は安全な2ページfixtureのuploadを独立したProduction mutationとして扱う。対象ファイル、保存先、件数、停止条件を提示し、別のaction-time承認を得るまで実行しない。実決済は禁止を維持する。
+
+---
+
 ## 0.0 外部出品者承認merge後確認（2026-10-11）
 
 - PR [#655](https://github.com/team478a/manga/pull/655)はmerge commit `f493206a216b5ac6abd36732a6b92c46c4a263b0`で`feature/manga-canvas-mvp`へ統合済み。merge後のRequired Quality run `38065093528`、Desktop Windows run `38065093573`、Production deployment `6983177056`はすべて成功した。

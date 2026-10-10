@@ -1,5 +1,14 @@
 # MANGAI AI Handoff Log
 
+## 2026-10-11 Codex: 外部作品応募Production下書き作成
+
+- PR #656はmerge commit `4d519b5d`で基準ブランチへ統合済み。merge後のRequired Quality、Desktop Windows、Production deploymentはいずれも成功した。
+- creator `test`のProduction画面で、action-time承認済みの一般向けfixture下書きを1件だけ作成した。作品名`MANGAI External Submission E2E 2-page Fixture`、対象年齢`全年齢`、原稿形式`images`。
+- 詳細画面で`draft`、`Job: 未開始`を確認した。追加作成、upload、worker、権利宣言、審査提出、公開、販売、Stripe、決済は操作していない。
+- 証跡commit `7c6a6c0e`をpushし、Draft PR [#657](https://github.com/team478a/manga/pull/657)を作成した。証跡同期前HEAD `52d3345f`の5チェックはすべて成功した。次は安全な2ページfixture uploadの対象と停止条件を提示し、別のaction-time承認まで進めない。
+
+---
+
 ## 2026-10-11 Codex: 外部出品者承認merge後確認
 
 - PR #655はmerge commit `f493206a`で基準ブランチへ統合済み。merge後のRequired Quality、Desktop Windows、Production deploymentはすべて成功した。
