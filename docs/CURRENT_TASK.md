@@ -4,7 +4,7 @@
 
 - 状態: `PR_654_MERGED / POST_MERGE_CHECKS_PASSED / PRODUCTION_DEPLOYED / SELLER_APPROVED / NEXT_MUTATION_NOT_AUTHORIZED`
 - Branch: `codex/external-seller-approval-record-20261011`
-- PR: [#655](https://github.com/team478a/manga/pull/655)（Draft）。証跡commit `b95b504e`。
+- PR: [#655](https://github.com/team478a/manga/pull/655)（Draft）。証跡commit `b95b504e`。Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功した。
 - 基点: PR #654 merge commit `90619a73ae2b0e269df5e454494e9edc7dfcb786`（`feature/manga-canvas-mvp`）。merge後のRequired Quality run `38061248958`、Desktop Windows run `38061249021`、Production deployment `6982481510`はすべて成功した。
 - Productionの`tanaka`管理画面で、creator `test`が`draft / external-seller-v1`として表示され、PR #654の一覧取得修正が反映されたことをread-only確認した。
 - 責任者のaction-time承認後、「出品者として承認」を1回だけ実行した。完了後は`eligible / external-seller-v1`表示へ変わり、承認ボタンが消えた。再実行、停止操作、理由入力は行っていない。
