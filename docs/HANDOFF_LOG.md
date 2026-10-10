@@ -1,5 +1,15 @@
 # MANGAI AI Handoff Log
 
+## 2026-10-10 Codex: Marketplace隔離E2E環境 teardown checkpoint
+
+- Branch `codex/marketplace-e2e-teardown-checkpoint-20261010`。PR #640はmerge commit `2a5db7db`で基準ブランチへ統合済みで、merge後のRequired Quality、Migration roundtrip、Desktop Windows、Accessibility、unpacked build、Vercel staging deploymentは成功した。
+- 責任者の明示承認後、Vercel project `mangai-hub-staging`のPreview設定を名前・target・作成時刻だけで監査し、隔離E2E用10件を削除した。削除後に対象10件の不在と、既存Cloud／branch限定／Production共有設定の保持を確認した。値は取得・表示していない。
+- Vercel CLIが一時作成した設定ファイルとリンク情報は、固定の一時ディレクトリ配下だけを削除し、残存なしを確認した。
+- Supabase Preview Branch `marketplace-e2e-20261009`とStripe Sandbox endpoint `we_1UOXSNHG2m6PnGC7Fi2o6o9T`は未削除。Dashboardを保持するChrome profile `tomoichiro`のbrowser connectionが再試行でもtimeoutし、Supabase／Stripe CLI認証もないため、安全に停止した。
+- 次は当該Chrome profileのbrowser connection再接続後、2対象だけを削除して不在確認する。Production、Stripe live、実請求、実利用者、Provider、Job、credit変更は0件。
+
+---
+
 ## 2026-10-10 Codex: Marketplace実作品E2E PR #635統合完了
 
 - PR #635はmerge commit `4a7faf18`で`feature/manga-canvas-mvp`へmerge済み。Marketplace実作品E2Eの正常系、異常系E-01〜E-09、fixture cleanupを基準ブランチへ統合した。

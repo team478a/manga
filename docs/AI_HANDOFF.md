@@ -1,5 +1,15 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Marketplace隔離E2E環境 teardown checkpoint（2026-10-10）
+
+- PR #640はmerge commit `2a5db7db`で基準ブランチへ統合済み。merge後のRequired Quality、Migration roundtrip、Desktop Windows、Accessibility、unpacked build、Vercel staging deploymentは成功した。
+- 明示承認後、Vercel `mangai-hub-staging`のPreview設定から隔離E2E専用10件を削除し、再一覧で不在を確認した。既存Cloud設定、branch限定設定、Production共有設定は保持した。値は取得・表示していない。
+- Vercel CLIの監査用一時ディレクトリは、生成された`.env.local`等を含めて削除し、残存なしを確認した。
+- Supabase Preview Branch `marketplace-e2e-20261009`とStripe Sandbox webhook endpoint `we_1UOXSNHG2m6PnGC7Fi2o6o9T`は、対象Dashboardを開くChrome profile `tomoichiro`のbrowser connectionがtimeoutするため未削除。Supabase／Stripe CLI認証はなく、秘密値を回避取得せず停止した。
+- 次はbrowser connection再接続後、上記2対象のみ削除して不在確認する。Production、Stripe live、実請求、実利用者、Provider、Job、credit変更は0件。
+
+---
+
 ## 0.0 Marketplace実作品E2E PR #635統合完了（2026-10-10）
 
 - PR #635はmerge commit `4a7faf18`で`feature/manga-canvas-mvp`へmerge済み。S-01〜S-09、B-01〜B-11、E-01〜E-09、fixture cleanupまで基準ブランチへ統合された。

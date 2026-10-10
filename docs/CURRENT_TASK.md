@@ -1,5 +1,17 @@
 # MANGAI Current Task
 
+## 2026-10-10 Marketplace隔離E2E環境 teardown checkpoint
+
+- 状態: `TEARDOWN_PARTIAL / VERCEL_PREVIEW_ENV_REMOVED / SUPABASE_AND_STRIPE_BLOCKED_BROWSER_CONNECTION / PRODUCTION_UNCHANGED`
+- Branch: `codex/marketplace-e2e-teardown-checkpoint-20261010`
+- PR #640はmerge commit `2a5db7db`で`feature/manga-canvas-mvp`へmerge済み。merge後のRequired Quality、Migration roundtrip、Desktop Windows（Accessibility testsとunpacked buildを含む）、Vercel staging deploymentはすべて成功した。
+- 責任者の明示承認後、Vercel project `mangai-hub-staging`をCLIでread-only監査し、Marketplace隔離E2E用として約20〜21時間前に追加されたPreview限定環境変数10件だけを削除した。削除後の再一覧で対象10件が存在せず、既存Cloud設定、Git branch限定設定、Production／Preview共有設定が保持されていることを確認した。値は取得・表示していない。
+- Vercel CLIが監査用一時ディレクトリへ作成した`.env.local`、`.vercel/`、`.gitignore`は、対象パスを照合後に削除し、ディレクトリが残っていないことを確認した。
+- Supabase Preview Branch `marketplace-e2e-20261009`とStripe Sandbox webhook endpoint `we_1UOXSNHG2m6PnGC7Fi2o6o9T`は未削除。両Dashboardを開いているChrome profile `tomoichiro`のbrowser connectionが複数回timeoutし、ローカルにSupabase／Stripe CLIまたは認証済み設定もないため、秘密値を回避取得せず停止した。
+- 次: `tomoichiro` profileでCodex browser connectionを再接続し、対象Supabase Preview Branchと専用Stripe Sandbox endpointを削除後、存在しないことを再確認する。Production DB、Stripe live、実請求、実利用者、Provider、Job、creditは変更しない。
+
+---
+
 ## 2026-10-10 Marketplace実作品E2E PR #635統合完了
 
 - 状態: `PR_635_MERGED / POST_MERGE_CHECKS_PASSED / E2E_AND_FIXTURE_CLEANUP_COMPLETE / PRODUCTION_UNCHANGED`
