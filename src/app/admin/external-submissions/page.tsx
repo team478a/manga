@@ -31,13 +31,13 @@ export default async function AdminExternalSubmissionsPage({ searchParams }: {
   await requireAdmin();
   const params = await searchParams;
   const supabase = await createClient();
-  const [{ data }, { data: sellers }] = await Promise.all([
+  const [{ data }, { data: sellers, error: sellersError }] = await Promise.all([
     supabase.from("external_work_submissions")
       .select("id,title,description,status,age_rating,asking_price,review_reason_code,owner_profile_id,work_id,product_id,publication_id")
       .in("status", ["submitted", "in_review", "approved", "rejected", "published", "paused"])
       .order("submitted_at", { ascending: true }).returns<Submission[]>(),
     supabase.from("external_seller_profiles")
-      .select("profile_id,status,terms_version,terms_accepted_at,approved_at,suspension_reason_code,profiles:profile_id(display_name)")
+      .select("profile_id,status,terms_version,terms_accepted_at,approved_at,suspension_reason_code,profiles:profiles!external_seller_profiles_profile_id_fkey(display_name)")
       .order("updated_at", { ascending: false }).returns<Seller[]>(),
   ]);
   return <main className="page max-w-6xl">
@@ -65,7 +65,7 @@ export default async function AdminExternalSubmissionsPage({ searchParams }: {
             <PendingSubmitButton className="button-secondary" pendingLabel="停止中…">出品者利用を停止</PendingSubmitButton>
           </form> : null}
         </div>
-      </article>)}{!sellers?.length ? <p className="text-stone-600">規約同意済みの出品者候補はいません。</p> : null}</div>
+      </article>)}{sellersError ? <InlineErrorMessage>出品者候補を取得できませんでした。</InlineErrorMessage> : !sellers?.length ? <p className="text-stone-600">規約同意済みの出品者候補はいません。</p> : null}</div>
     </section>
     <section className="mt-10">
       <h2 className="text-2xl font-semibold">作品の審査</h2>

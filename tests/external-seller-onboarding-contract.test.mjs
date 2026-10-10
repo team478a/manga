@@ -39,6 +39,8 @@ test("admin can approve or suspend only terms-registered external sellers", asyn
     read("supabase/migrations/202610100001_external_submission_foundation.sql"),
   ]);
   assert.match(page, /external_seller_profiles/);
+  assert.match(page, /profiles:profiles!external_seller_profiles_profile_id_fkey\(display_name\)/);
+  assert.match(page, /出品者候補を取得できませんでした/);
   assert.match(page, /出品者として承認/);
   assert.match(page, /出品者利用を停止/);
   assert.doesNotMatch(page, /email/);
