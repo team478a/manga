@@ -1,5 +1,17 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Marketplace隔離Preview E-03 同一test event再配送（2026-10-10）
+
+- PR #636 merge commit `89666c1a`からBranch `codex/marketplace-e03-duplicate-webhook-20261010`を作成し、Open／非DraftのPR [#637](https://github.com/team478a/manga/pull/637)をPR #635へstackedした。PR #635はOpen／非Draft／mergeable、5 checks成功、保護ルール待ちで、merge・base・履歴は変更していない。
+- PR #635 headのVercel Preview成功と非Production deploymentを確認した。paid webhookは`pending`注文だけを更新し、既に`paid`なら再更新せず存在確認だけを返すため、同一event再配送で`paid_at`や権限を増やさない契約である。
+- Sensitive値はCLIへ渡らずstrict preflightが安全停止し、ローカルにもStripe／隔離Supabase資格情報やStripe CLIはない。秘密値の回避取得やツール導入は行っていない。
+- action-time承認後、Stripe Sandboxの既存`checkout.session.completed`を同一event IDのまま隔離Previewへ1回だけ手動再配送した。HTTP 200、`received: true`、手動再送・回復済みを確認した。
+- 合成Buyerの本棚は再配送前後とも1冊、download countも1のままで、購入権限の重複はない。隔離Supabase Projectへの現行Dashboardアカウント権限がなく、`paid_at`のDB再照会は未取得。この制約を隠さず記録する。
+- 決済event／Checkout repository集中17/17と`git diff --check`成功。素の`node --test`は`.ts`非対応だったため、標準の`--experimental-strip-types`付きで再実行した。
+- E-01〜E-09は全PASS。隔離fixture cleanupは別承認で扱う。Production、Stripe live、実請求、新規Checkout／PaymentIntent、endpoint、Provider、Job、creditは未変更。
+
+---
+
 ## 0.0 Marketplace隔離Preview E-02 Checkout途中離脱（2026-10-09）
 
 - PR #635 head `893d3c56`からBranch `codex/marketplace-e02-checkout-abandonment-20261009`を作成し、Draft PR [#636](https://github.com/team478a/manga/pull/636)をPR #635へstackedした。PR #635はOpen／非Draft／mergeable、保護ルール待ちで、5 checksは成功。merge・base・履歴は変更していない。
