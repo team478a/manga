@@ -306,3 +306,19 @@ do $$ begin
     raise exception 'Cloud admin generation quality review objects remain after rollback';
   end if;
 end $$;
+
+do $$ begin
+  if to_regclass('public.external_seller_profiles') is not null
+     or to_regclass('public.external_seller_profile_events') is not null
+     or to_regclass('public.external_work_submissions') is not null
+     or to_regclass('public.external_work_rights_declarations') is not null
+     or to_regclass('public.external_work_submission_events') is not null
+     or to_regprocedure('public.accept_external_seller_terms(text)') is not null
+     or to_regprocedure('public.set_external_seller_status(uuid,text,text)') is not null
+     or to_regprocedure('public.create_external_work_submission(text,text,text,text)') is not null
+     or to_regprocedure('public.record_external_work_rights_declaration(uuid,text,boolean,boolean,boolean,boolean)') is not null
+     or to_regprocedure('public.prevent_external_submission_audit_mutation()') is not null
+     or to_regprocedure('public.transition_external_work_submission(uuid,text,text)') is not null then
+    raise exception 'External submission foundation objects remain after rollback';
+  end if;
+end $$;

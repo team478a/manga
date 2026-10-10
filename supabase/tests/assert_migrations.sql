@@ -1319,6 +1319,105 @@ do $$ begin
 end $$;
 
 do $$ begin
+  if to_regclass('public.external_seller_profiles') is null
+     or to_regclass('public.external_seller_profile_events') is null
+     or to_regclass('public.external_work_submissions') is null
+     or to_regclass('public.external_work_rights_declarations') is null
+     or to_regclass('public.external_work_submission_events') is null
+     or to_regprocedure('public.accept_external_seller_terms(text)') is null
+     or to_regprocedure('public.set_external_seller_status(uuid,text,text)') is null
+     or to_regprocedure('public.create_external_work_submission(text,text,text,text)') is null
+     or to_regprocedure('public.record_external_work_rights_declaration(uuid,text,boolean,boolean,boolean,boolean)') is null
+     or to_regprocedure('public.transition_external_work_submission(uuid,text,text)') is null
+     or not exists(
+       select 1 from pg_class c join pg_namespace n on n.oid=c.relnamespace
+       where n.nspname='public' and c.relname='external_work_submissions' and c.relrowsecurity
+     )
+     or has_table_privilege('authenticated','public.external_work_submissions','insert,update,delete')
+     or has_table_privilege('authenticated','public.external_work_rights_declarations','insert,update,delete')
+     or has_table_privilege('service_role','public.external_work_submissions','insert,update,delete')
+     or has_table_privilege('service_role','public.external_work_rights_declarations','insert,update,delete')
+     or has_table_privilege('anon','public.external_work_submissions','select')
+     or not has_function_privilege('authenticated','public.create_external_work_submission(text,text,text,text)','execute')
+     or has_function_privilege('anon','public.create_external_work_submission(text,text,text,text)','execute') then
+    raise exception 'External submission foundation missing or exposed';
+  end if;
+end $$;
+
+begin;
+do $$
+declare
+  v_creator_user uuid:='61000000-0000-4000-8000-000000000001';
+  v_creator_profile uuid:='61000000-0000-4000-8000-000000000002';
+  v_admin_user uuid:='61000000-0000-4000-8000-000000000003';
+  v_admin_profile uuid:='61000000-0000-4000-8000-000000000004';
+  v_submission uuid;
+  v_declaration uuid;
+begin
+  insert into auth.users(id,email) values
+    (v_creator_user,'external-creator@example.invalid'),
+    (v_admin_user,'external-admin@example.invalid')
+  on conflict(id) do nothing;
+  insert into public.profiles(id,user_id,role) values
+    (v_creator_profile,v_creator_user,'creator'),
+    (v_admin_profile,v_admin_user,'admin')
+  on conflict(id) do nothing;
+
+  perform set_config('request.jwt.claim.sub',v_creator_user::text,true);
+  perform set_config('request.jwt.claim.role','authenticated',true);
+  perform public.accept_external_seller_terms('external-seller-v1');
+
+  perform set_config('request.jwt.claim.sub',v_admin_user::text,true);
+  perform public.set_external_seller_status(v_creator_profile,'eligible',null);
+
+  perform set_config('request.jwt.claim.sub',v_creator_user::text,true);
+  v_submission:=public.create_external_work_submission(
+    'External foundation test','', '全年齢','images'
+  );
+  v_declaration:=public.record_external_work_rights_declaration(
+    v_submission,'rights-v1',true,true,true,true
+  );
+  perform public.transition_external_work_submission(v_submission,'uploading',null);
+
+  perform set_config('request.jwt.claim.sub','',true);
+  perform set_config('request.jwt.claim.role','service_role',true);
+  perform public.transition_external_work_submission(v_submission,'validating',null);
+  perform public.transition_external_work_submission(v_submission,'ready',null);
+
+  perform set_config('request.jwt.claim.sub',v_creator_user::text,true);
+  perform set_config('request.jwt.claim.role','authenticated',true);
+  perform public.transition_external_work_submission(v_submission,'submitted',null);
+
+  perform set_config('request.jwt.claim.sub',v_admin_user::text,true);
+  perform public.transition_external_work_submission(v_submission,'in_review',null);
+  perform public.transition_external_work_submission(v_submission,'rejected','rights_revision_required');
+
+  if not exists(
+       select 1 from public.external_work_submissions
+       where id=v_submission and owner_profile_id=v_creator_profile
+         and status='rejected' and content_class='general' and version=6
+     )
+     or not exists(
+       select 1 from public.external_work_rights_declarations
+       where id=v_declaration and declared_by_profile_id=v_creator_profile
+     )
+     or (select count(*) from public.external_work_submission_events where submission_id=v_submission)<>8
+     or (select count(*) from public.external_seller_profile_events where profile_id=v_creator_profile)<>2 then
+    raise exception 'External submission state machine failed';
+  end if;
+
+  begin
+    update public.external_work_rights_declarations
+    set declaration_version='mutated'
+    where id=v_declaration;
+    raise exception 'External rights declaration mutation was not rejected';
+  exception when raise_exception then
+    if sqlerrm<>'external_submission_audit_append_only' then raise; end if;
+  end;
+end $$;
+rollback;
+
+do $$ begin
   if position(
        'cardinality(requested_page_ids) = 2' in
        pg_get_constraintdef(
