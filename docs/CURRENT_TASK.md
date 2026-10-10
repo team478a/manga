@@ -1,5 +1,16 @@
 # MANGAI Current Task
 
+## 2026-10-11 外部作品応募Production下書き作成
+
+- 状態: `PR_656_MERGED / POST_MERGE_CHECKS_PASSED / PRODUCTION_DEPLOYED / SUBMISSION_DRAFT_CREATED / UPLOAD_NOT_AUTHORIZED`
+- Branch: `codex/external-submission-draft-record-20261011`
+- 基点: PR #656 merge commit `4d519b5d0a56ca9d642e726ead5f7b5697048358`（`feature/manga-canvas-mvp`）。merge後のRequired Quality run `38066331809`、Desktop Windows run `38066331823`、Production deployment `6983423813`はすべて成功した。
+- 責任者へ対象値と停止条件を提示し、action-time承認を得た後、Productionのcreator `test`で応募下書きを1件だけ作成した。作品名は`MANGAI External Submission E2E 2-page Fixture`、説明は`Production受入れ専用の一般向け2ページfixture。実利用者コンテンツではありません。`、対象年齢は`全年齢`、原稿形式は`images`。
+- 詳細画面で`状態: draft`、`Job: 未開始`を確認して停止した。追加作成、upload、worker、権利宣言、審査提出、公開、販売、Stripe、決済は行っていない。
+- 次: 安全な2ページfixtureのuploadについて、対象ファイル、保存先、件数、停止条件を提示し、別のaction-time承認を得てから実行する。upload後もworker開始以降は別承認単位とし、実決済は禁止を維持する。
+
+---
+
 ## 2026-10-11 外部出品者承認merge後確認
 
 - 状態: `PR_655_MERGED / POST_MERGE_CHECKS_PASSED / PRODUCTION_DEPLOYED / CREATOR_ELIGIBLE_CONFIRMED / NEXT_MUTATION_NOT_AUTHORIZED`
