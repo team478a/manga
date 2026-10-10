@@ -1,5 +1,15 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Marketplace隔離E2E Supabase teardown完了（2026-10-10）
+
+- PR #641はmerge commit `952c9bfd`で基準ブランチへ統合済み。merge後のRequired QualityとDesktop Windowsは成功した。
+- action-time承認後、Supabase親Project `mangai-hub-staging`のPreview Branch `marketplace-e2e-20261009`を削除し、成功toastとBranch一覧からの消失を確認した。
+- Vercel隔離E2E用Preview設定10件は削除・不在確認済みで、共有設定は保持した。
+- Stripe Sandbox webhook endpoint `we_1UOXSNHG2m6PnGC7Fi2o6o9T`は未削除。対象タブは検出できるがChrome connectionのfocus切替がtimeoutするため停止した。
+- 次はStripe対象タブをforegroundにしてbrowser connectionを再開し、対象endpointだけを削除・不在確認する。Production、Stripe live、実決済、実利用者、Provider、Job、credit変更は0件。
+
+---
+
 ## 0.0 Marketplace隔離E2E環境 teardown checkpoint（2026-10-10）
 
 - PR #640はmerge commit `2a5db7db`で基準ブランチへ統合済み。merge後のRequired Quality、Migration roundtrip、Desktop Windows、Accessibility、unpacked build、Vercel staging deploymentは成功した。
