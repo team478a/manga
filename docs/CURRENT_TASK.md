@@ -1,5 +1,20 @@
 # MANGAI Current Task
 
+## 2026-10-10 外部作品応募 Production migration適用
+
+- 状態: `PRODUCTION_MIGRATIONS_APPLIED / POSTFLIGHT_PASSED / APPLICATION_DATA_UNCHANGED / MANUAL_ACCEPTANCE_NOT_STARTED`
+- Branch: `codex/external-submission-production-migrations-20261010`
+- PR: [#649](https://github.com/team478a/manga/pull/649)。Commit `9b584ab4`。Core quality、Migration roundtrip、Desktop Windows、Vercel、Vercel Preview Commentsはすべて成功した。
+- 基点: PR #648 merge commit `bea0dbfe`（`feature/manga-canvas-mvp`）。責任者へ対象Project、4 migration ID、原本SHA-256、適用順、影響範囲、停止条件を提示し、action-time明示承認を得て実行した。
+- 対象はSupabase Project `mangai-hub-staging`、ref `vmdsyxykcrgxcdbrwlkv`、`main PRODUCTION`。実行前は`Healthy`、最新backupは7時間前で、system catalog監査は4 migrationすべてmarker `0`、部分適用なしだった。
+- `202610100001_external_submission_foundation`、`202610100002_external_submission_ingest`、`202610100003_external_submission_publications`、`202610100004_external_submission_review_publish`をrepository原本SHA-256と照合し、この順で各1回だけtransaction適用した。各実行は`Success. No rows returned`で完了した。
+- 適用後marker監査は順に`6/6`、`6/6`、`4/4`、`4/4`。外部seller、submission、file、page、ingest job、notification、private Storage object、external由来work／product／publicationはすべて0件で、Projectは引き続き`Healthy`。
+- 初回read-only marker-count SQLはEditorの旧文字列混在でsyntax error、2本目直後の簡易監査は監査SQLのRPC署名指定漏れで`5/6`となった。いずれもSELECTだけでDB mutationはなく、正しい署名で再監査して`6/6`を確認してから後続へ進んだ。
+- Production schemaとprivate bucket／RLS／RPC／triggerだけを適用した。実upload、ClamAV接続、seller適格化、審査、作品公開、商品active化、注文、Stripe、実決済、Provider、生成Job、creditは操作していない。次は対象と停止条件を示した別の明示承認後に、一般向けfixtureで段階的なProduction受入れを行う。成人向け、精算・送金は引き続き別仕様・別承認。
+- 運用注意: Supabase Dashboardにorganizationの未払い請求通知が表示されている。Projectは現在`Healthy`だが、service disruption回避のため担当者がBillingを別途確認する。Codexは請求・支払い操作を行っていない。
+
+---
+
 ## 2026-10-10 外部作品応募 PR-5 売上運用
 
 - 状態: `MERGED / POST_MERGE_CHECKS_PASSED / PRODUCTION_NOT_APPLIED / EXTERNAL_SUBMISSION_MVP_IMPLEMENTATION_COMPLETE`
