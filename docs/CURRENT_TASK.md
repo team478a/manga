@@ -2,15 +2,16 @@
 
 ## 2026-10-11 外部作品応募ClamAV疎通preflight
 
-- 状態: `IMPLEMENTED / LOCAL_GATES_PASSED / DRAFT_PR_PENDING / PRODUCTION_CONFIG_UNCHANGED / WORKER_NOT_RUN`
+- 状態: `IMPLEMENTED / LOCAL_GATES_PASSED / DRAFT_PR_OPEN / PRODUCTION_CONFIG_UNCHANGED / WORKER_NOT_RUN`
 - Branch: `codex/external-submission-clamav-preflight-20261011`
+- PR: [#662](https://github.com/team478a/manga/pull/662)（Draft）。実装commit `a8e6b0ae`。
 - 基点: PR #661 merge commit `61478882744f5b1840f3964105362d03d7a3e864`（`feature/manga-canvas-mvp`）。merge後のRequired Quality run `38094224584`、Desktop Windows run `38094224594`、Production deployment `6988185716`はすべて成功した。
 - Worker endpointへ同じBearer secretで認証するread-only `GET`を追加し、ClamAVへNUL終端の`zPING\0`を送って厳密な`PONG`だけをreadyと判定する。Feature Flagがfalseのまま疎通確認でき、DB参照、Job claim、Storage、応募状態変更は行わない。設定欠損、timeout、不正応答は本文や秘密値を出さず`503 unavailable`へfail closedする。
 - schedulerの手動modeへ`probe`を追加した。固定HTTPS Worker pathへ1回だけGETし、HTTP成功かつ`{"status":"ready"}`だけを成功とする。scheduled `run`と既定の非通信`check`は変更していない。
 - clamdのTCP socketには組み込み認証・暗号化がないため、ClamAVを公開Internetへ露出せず、Vercel Functionから到達可能なprivate network／tunnelなどで接続する運用境界を文書化した。
 - 検証: 集中11/11、Hub 1319/1319、Canvas 26/26、AI 50/50、Desktop 407/407、migration 100件、deps（error 0、既知warning 2）、lint、Hub/Desktop typecheck、Hub Production build、Desktop build、diff check成功。`rc:preflight`はrepository structure READY、外部設定とmanual E2Eは既知のPENDING／REQUIRED。
 - Production環境変数、GitHub secret／variable、redeploy、probe、Worker POST、Job claim、ClamAV scan、Storage、審査、公開、販売、Stripe、決済は変更・実行していない。既存応募`906ff7c3-c00a-42ed-aa9f-20d330233911`のqueued Jobは未処理のまま。
-- 次: commit、push、Draft PR、最終HEADの全CI／Vercel Preview成功まで確認する。merge後のClamAV接続先・secret設定、redeploy、probe、Worker runはそれぞれ別のaction-time承認まで実行しない。実決済は禁止を維持する。
+- 次: PR #662の最終HEADで全CI／Vercel Preview成功まで確認する。merge後のClamAV接続先・secret設定、redeploy、probe、Worker runはそれぞれ別のaction-time承認まで実行しない。実決済は禁止を維持する。
 
 ---
 
