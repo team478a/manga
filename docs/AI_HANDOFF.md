@@ -3,12 +3,12 @@
 ## 0.0 外部作品応募 PR-2 隔離upload・検証worker（2026-10-10）
 
 - PR #643 merge commit `40c0f7e5`を基点にBranch `codex/external-submission-ingest-20261010`を作成し、`EXTERNAL_SELLER_GAP_ANALYSIS.md`のPR-2だけを実装した。
-- Commit `f43d88de`をpushし、PR [#644](https://github.com/team478a/manga/pull/644)を作成した。CI確認中。
+- Commit `f43d88de`をpushし、PR [#644](https://github.com/team478a/manga/pull/644)を作成した。Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功した。
 - PDF／ZIP／複数画像をprivate quarantineへ保存し、magic、容量／展開量／page数／pixel数／圧縮比、ZIP traversal／CRC、PDF暗号化、重複pageを検査して、metadataを除いたPNG pageへ正規化する。source合計quotaは500MB。
 - ClamAV INSTREAM hookは設定欠落・timeout・不明応答をfail closedにする。内部WorkerはBearer認証とstrict Feature Flagが必須で既定停止。lease回収、3回retry、部分page cleanup、冪等Job、ページ順UI／RPCを追加した。
 - Migration／rollback／canonical schema／manifest／DB assertionとunit／contract testを同期した。Next server buildではネイティブCanvasをserver external packageとして扱い、Web build成功を確認した。
 - 全品質ゲート成功。Hub 1296、Canvas 26、AI 50、Desktop 407、Desktop a11y violations 0、migration 98件。ローカルPostgreSQL 16のforward／rollback／reapply、canonical二重適用と関連assertionも成功し、一時DBは削除済み。
-- Production migration、実upload、ClamAV実接続、公開／販売、Stripe、実決済、実利用者、Provider、Job、creditは変更していない。次はPR #644のCI確認。merge後のPR-3を先回りしない。
+- Production migration、実upload、ClamAV実接続、公開／販売、Stripe、実決済、実利用者、Provider、Job、creditは変更していない。次はPR #644のレビュー・merge判断。merge後のPR-3を先回りしない。
 
 ---
 
