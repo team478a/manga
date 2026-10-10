@@ -1,5 +1,17 @@
 # MANGAI Current Task
 
+## 2026-10-11 外部出品者Production承認
+
+- 状態: `PR_654_MERGED / POST_MERGE_CHECKS_PASSED / PRODUCTION_DEPLOYED / SELLER_APPROVED / NEXT_MUTATION_NOT_AUTHORIZED`
+- Branch: `codex/external-seller-approval-record-20261011`
+- 基点: PR #654 merge commit `90619a73ae2b0e269df5e454494e9edc7dfcb786`（`feature/manga-canvas-mvp`）。merge後のRequired Quality run `38061248958`、Desktop Windows run `38061249021`、Production deployment `6982481510`はすべて成功した。
+- Productionの`tanaka`管理画面で、creator `test`が`draft / external-seller-v1`として表示され、PR #654の一覧取得修正が反映されたことをread-only確認した。
+- 責任者のaction-time承認後、「出品者として承認」を1回だけ実行した。完了後は`eligible / external-seller-v1`表示へ変わり、承認ボタンが消えた。再実行、停止操作、理由入力は行っていない。
+- 変更は既存の管理者RPCによるProduction seller状態遷移だけ。DB schema、migration、profile role、submission、Storage、worker、作品、商品、公開、販売、注文、Stripe、決済、Provider、Job、creditは変更していない。
+- 次: creator `test`へ切り替えてeligible表示をread-only確認する。応募下書き作成以降は別のProduction mutationであり、新しいaction-time承認まで実行しない。実決済は禁止を維持する。
+
+---
+
 ## 2026-10-10 外部出品者管理一覧の取得修正
 
 - 状態: `IMPLEMENTED / LOCAL_AND_PR_CHECKS_PASSED / DRAFT_PR_OPEN / PRODUCTION_APPROVAL_NOT_RUN`

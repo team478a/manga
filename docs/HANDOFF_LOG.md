@@ -1,5 +1,15 @@
 # MANGAI AI Handoff Log
 
+## 2026-10-11 Codex: 外部出品者Production承認
+
+- PR #654はmerge commit `90619a73`で基準ブランチへ統合済み。merge後のRequired Quality、Desktop Windows、Production deploymentはいずれも成功した。
+- `tanaka`管理画面で`test`が`draft / external-seller-v1`として表示され、一覧取得修正のProduction反映を確認した。
+- action-time承認後、「出品者として承認」を1回だけ実行した。画面は`eligible / external-seller-v1`へ遷移し、承認ボタンは消えた。追加操作は行っていない。
+- Production変更はseller状態遷移だけ。DB schema、migration、role、submission、Storage、worker、公開、販売、Stripe、決済、Provider、Job、creditは変更していない。
+- 次はcreator `test`のeligible表示をread-only確認する。応募下書き作成以降は新しいaction-time承認まで進めない。
+
+---
+
 ## 2026-10-10 Codex: 外部出品者管理一覧の取得修正
 
 - PR #653 merge commit `5ddbe639`からBranch `codex/fix-external-seller-admin-list-20261010`を作成した。
