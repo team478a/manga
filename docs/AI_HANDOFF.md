@@ -6,7 +6,9 @@
 - creatorの版付き規約同意、承認待ち／停止中／eligible表示と、adminのseller候補一覧・承認・理由付き停止を実装した。既存の監査付きRPCだけを利用し、migrationやDB契約は変更していない。メールと秘密値は取得せず、通常表示はdisplay nameと状態だけに限定した。
 - 集中10/10、Hub 1309/1309、deps error 0（既知warning 2）、Hub typecheck、ESLint、Hub Production build、diff check成功。Production、Storage、worker設定、seller状態、submission、公開、販売、注文、Stripe、実決済は変更していない。
 - 実装commit `d13fda49`をpushし、Draft PR [#650](https://github.com/team478a/manga/pull/650)を作成した。Core quality、Migration roundtrip、Desktop Windows、Vercel、Vercel Preview Commentsはすべて成功した。
-- 次はPR #650のレビュー・merge判断待ち。merge後の規約同意とseller承認、upload、worker、審査、公開、販売、Stripe testはそれぞれ別のaction-time承認が必要で、実決済は行わない。
+- PR #650はmerge commit `d5e4eaac7782a5aadb2e910f34cf0398f9dea9c3`で`feature/manga-canvas-mvp`へ統合済み。merge後のRequired Quality run `38042759234`とDesktop Windows run `38042759248`も成功した。
+- Production画面をread-only確認し、`tanaka`へ`external-seller-v1`同意UIが表示され、応募下書き0件であることを確認した。規約同意、申請、管理者承認、upload、worker、審査、公開、販売、Stripe、決済は操作していない。
+- 次は当初指示のProduction変更禁止を維持して停止する。規約同意とseller承認へ進むには制約変更と各mutation直前のaction-time承認が必要。以降のupload、worker、審査、公開、販売、Stripe testも別承認単位で、実決済は行わない。
 
 ---
 
