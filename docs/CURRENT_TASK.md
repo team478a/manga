@@ -4,6 +4,7 @@
 
 - 状態: `CLEANUP_BLOCKED_EXTERNAL_BROWSER_CONTROL / NO_MUTATION / PRODUCTION_UNCHANGED`
 - Branch: `codex/marketplace-e2e-cleanup-blocked-20261010`
+- Draft PR: [#638](https://github.com/team478a/manga/pull/638)（PR #635へstacked）
 - PR #637はmerge commit `733309ff`でPR #635のheadへmerge済み。PR #635はOpen／非Draft／mergeableで、merge後のCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsは5/5成功した。
 - 責任者のaction-time承認を受け、隔離Previewの合成fixtureだけを商品`active→paused`、作品`公開→非公開`へ戻し、注文・Webhook結果をread-only確認する予定だった。
 - Chrome連携が`Unable to load browser request-header policy`で2回失敗し、computer-use session初期化後の再接続も同じエラーで停止した。安全な復旧手順を使い切ったため、UI操作を継続していない。
