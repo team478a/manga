@@ -1,5 +1,15 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 外部作品応募 PR-1 安全基盤（2026-10-10）
+
+- PR #642 merge commit `308ce19a`を基点にBranch `codex/external-submission-foundation-20261010`を作成し、`EXTERNAL_SELLER_GAP_ANALYSIS.md`のPR-1だけを実装した。
+- 招待制seller適格性、一般向け限定の非公開submission、権利申告snapshot、追記専用event、owner／admin read RLS、直接write禁止、役割別状態遷移RPCを追加した。提出にはeligible sellerと最新の完全な権利申告が必要。
+- Migration、空table時だけ許可するrollback、canonical schema、manifest、DB assertion、静的契約テストを更新した。ローカルPostgreSQL 16で全97 migrationのforward／rollback／reapply、canonical schema二重適用、関連監査を成功確認し、一時DBは削除した。
+- 全品質ゲートは成功。RC preflightはrepository structure READY、外部資格情報と手動E2EはPENDING。Production migration、公開、販売、Storage upload、Stripe、実決済、Provider、Job、creditは変更していない。
+- 次はDraft PRのCIを確認し、merge後にPR-2（安全なupload／検証worker）を別branchで扱う。Production適用は明示承認があるまで行わない。
+
+---
+
 ## 0.0 Marketplace隔離E2E環境 teardown完了（2026-10-10）
 
 - PR #641はmerge commit `952c9bfd`で基準ブランチへ統合済み。merge後のRequired QualityとDesktop Windowsは成功した。
