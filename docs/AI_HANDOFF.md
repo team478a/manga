@@ -1,11 +1,13 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
-## 0.0 Marketplace隔離Preview fixture cleanup環境ブロック（2026-10-10）
+## 0.0 Marketplace隔離Preview fixture cleanup完了（2026-10-10）
 
-- PR #637はmerge commit `733309ff`でPR #635のheadへmerge済み。PR #635はOpen／非Draft／mergeableで、merge後の5 checksは全成功した。Branch `codex/marketplace-e2e-cleanup-blocked-20261010`はこのheadから分離し、Draft PR [#638](https://github.com/team478a/manga/pull/638)をPR #635へstackedした。
-- action-time承認後、隔離fixtureの商品`paused`化・作品非公開化と注文／Webhookのread-only確認を開始したが、Chrome連携がrequest-header policy読込みエラーで停止した。2回失敗後にcomputer-use sessionを初期化して再接続したが同じエラーとなり、安全規約に従って操作を終了した。
-- cleanup mutationは0件で、商品は`active`、作品は公開のまま。注文、権限、Stripe Sandbox event、Webhook endpoint、Production、Stripe live、実決済、Provider、Job、creditは未変更。
-- 次はChrome連携復旧後に隔離対象をread-only再確認し、同じ承認範囲でcleanupを1回だけ実施して、商品`paused`・作品非公開・既存注文／Webhook不変を確認する。
+- PR #638はmerge commit `165e7e7a`でPR #635のheadへmerge済み。Branch `codex/marketplace-e2e-cleanup-complete-20261010`はこの最新headから分離した。PR #635はOpen／非Draft／mergeable、5 checks成功。
+- Supabase Dashboardで対象が`mangai-hub-staging / marketplace-e2e-20261009 / PREVIEW`であることを確認した。別Projectの`main / PRODUCTION`画面には変更を加えていない。
+- fixture Sellerのrecovery／magic linkは非配送emailのため使わず、Vercel経由の管理キーも空値で取得不能だった。Auth user変更は0件。一時設定ファイルは削除し、秘密値と資格情報は表示・記録していない。
+- 対象作品・商品が各1件でなければ更新前に停止するSQLをPreview SQL Editorで1回実行し、商品を`paused`、作品を`draft`／非公開／`published_at=null`へ戻した。read-only再照会で価格100円を含むcleanup後状態を確認した。
+- 注文はすべて`test`で、`canceled`／`failed`／`paid`／`pending`が各1件。`paid`だけdownload count 1・`paid_at`あり、他はcount 0・`paid_at`なし。注文、Stripe event、Webhook endpointは更新していない。
+- S-01〜S-09、B-01〜B-11、E-01〜E-09、fixture cleanupまで完了。Production、Stripe live、実請求、実利用者、Provider、Job、credit変更は0件。
 
 ---
 
