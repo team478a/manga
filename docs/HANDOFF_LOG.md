@@ -1,5 +1,16 @@
 # MANGAI AI Handoff Log
 
+## 2026-10-10 Codex: 外部作品応募 Production migration適用
+
+- Branch `codex/external-submission-production-migrations-20261010`。PR #648 merge commit `bea0dbfe`を基点に、責任者のaction-time明示承認後、Supabase `mangai-hub-staging / main PRODUCTION / vmdsyxykcrgxcdbrwlkv`へ外部作品応募の4 migrationを適用した。
+- 実行前にProject `Healthy`、最新backup 7時間前、4 migrationのmarkerがすべて0で部分適用なしを確認した。各原本SHA-256をrepositoryと照合し、`202610100001`、`202610100002`、`202610100003`、`202610100004`の順に各1回だけ実行した。
+- 4 transactionはすべて`Success. No rows returned`。適用後のsystem catalog markerは`6/6`、`6/6`、`4/4`、`4/4`で、Projectは引き続き`Healthy`。
+- 外部seller／submission／file／page／ingest job／notification、対象private Storage object、external由来work／product／publicationの件数はすべて0。実upload、審査、公開、販売、注文、Stripe、実決済、Provider、Job、creditへの操作は0件。
+- 初回read-only監査のEditor残存文字によるsyntax errorと、監査SQLのRPC署名指定漏れによる一時的な`5/6`は、いずれもDB mutationなし。正しい署名で`6/6`を確認後に後続へ進んだ。
+- 次は別のaction-time承認後、一般向けfixtureだけでProduction受入れを段階実施する。成人向け、精算・送金は対象外。Dashboardにorganizationの未払い請求通知があるため、担当者はBillingを別途確認すること。Codexは請求・支払いを操作していない。
+
+---
+
 ## 2026-10-10 Codex: 外部作品応募 PR-5 売上運用
 
 - Branch `codex/external-submission-sales-ops-20261010`。PR #646 merge commit `13a888e5`から分離し、`EXTERNAL_SELLER_GAP_ANALYSIS.md`のPR-5だけを実装した。
