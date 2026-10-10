@@ -9,7 +9,8 @@
 - clamd TCPは組み込み認証・暗号化を持たないため公開Internetへ露出させず、Vercelから到達可能なprivate接続を使う前提を運用文書へ記録した。
 - 集中11/11、Hub 1319/1319、Canvas 26/26、AI 50/50、Desktop 407/407、migration 100件、deps、lint、typecheck、Hub/Desktop build、diff check成功。`rc:preflight`の外部設定とmanual E2Eは既知のPENDING／REQUIRED。
 - Production環境変数、GitHub設定、redeploy、probe、Worker POST、Job claim、ClamAV scan、Storage、審査、公開、販売、Stripe、決済は0件。応募`906ff7c3-c00a-42ed-aa9f-20d330233911`のqueued Jobは未処理。
-- 次はPR #662の最終HEADで全CI／Vercel Previewを確認する。merge後もClamAV接続先・secret設定、redeploy、probe、Worker runを分離し、各action-time承認まで実行しない。実決済は禁止を維持する。
+- 証跡同期前HEAD `6db3219c`のRequired Quality run `38094958658`、Desktop Windows run `38094958655`、Vercel、Vercel Preview Commentsはすべて成功した。
+- 次は証跡同期後の最終HEADでも全CI／Vercel Preview成功を確認して停止する。merge後もClamAV接続先・secret設定、redeploy、probe、Worker runを分離し、各action-time承認まで実行しない。実決済は禁止を維持する。
 
 ---
 

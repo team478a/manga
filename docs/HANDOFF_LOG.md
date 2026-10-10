@@ -8,7 +8,8 @@
 - probeはDB参照、Job claim、Storage、応募状態変更を行わない。設定欠損、timeout、不正応答は秘密値・本文をログへ出さずfail closedする。scheduled runと既定の非通信checkは維持した。
 - 集中11/11、Hub 1319/1319、Canvas 26/26、AI 50/50、Desktop 407/407、migration 100件、deps、lint、Hub/Desktop typecheck、Hub/Desktop build、diff check成功。外部設定とmanual E2Eは既知の保留。
 - Production環境変数、GitHub設定、redeploy、probe、Worker、Job、ClamAV scan、Storage、審査、公開、販売、Stripe、決済操作0件。既存queued Jobは未処理のまま。
-- 次はPR #662の最終HEADで全チェックを確認する。ProductionのClamAV接続・設定・probe・Worker runは、それぞれ新しいaction-time承認まで実行しない。
+- 証跡同期前HEAD `6db3219c`のRequired Quality `38094958658`、Desktop Windows `38094958655`、Vercel、Vercel Preview Commentsはすべて成功した。
+- 次は証跡同期後の最終HEADでも全チェック成功を確認して停止する。ProductionのClamAV接続・設定・probe・Worker runは、それぞれ新しいaction-time承認まで実行しない。
 
 ---
 
