@@ -1,5 +1,17 @@
 # MANGAI AI Handoff Log
 
+## 2026-10-10 Codex: 外部作品応募 PR-2 隔離upload・検証worker
+
+- Branch `codex/external-submission-ingest-20261010`。PR #643 merge commit `40c0f7e5`から分離し、外部作品応募MVPのPR-2だけを実装した。
+- Commit `f43d88de`をpushし、PR [#644](https://github.com/team478a/manga/pull/644)を作成した。Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功した。
+- private quarantine、PDF／ZIP／複数画像、magic／quota／展開上限／hash／malware hook、正規化PNG page、順序UIを追加。ClamAV未設定・障害時はfail closedで、Workerは認証＋strict Flagがなければ起動しない。
+- DBはsource合計500MB、100ページ、owner RLS、登録済みsourceの直接削除禁止、lease／期限切れ回収、3回retry、連続page／Storage存在検証、順序更新を強制する。失敗時は途中生成pageをcleanupする。
+- Migration `202610100002_external_submission_ingest.sql`、rollback、canonical schema、manifest、DB assertion、unit／contract testを追加。ローカルPostgreSQL 16で98 migrationのforward／rollback／reapplyとcanonical schema二重適用を成功確認し、一時DBは削除した。
+- deps check、lint、typecheck、Hub 1296、Canvas 26、AI 50、Desktop 407、Desktop a11y violations 0、migration validate 98、Hub／Desktop build、diff checkが成功。RC preflightは構造READY、外部設定と手動E2EはPENDING。
+- Production、実upload、ClamAV実接続、公開／販売、Stripe、実決済、実利用者、Provider、creditは変更していない。次はPR #644のレビュー・merge判断。PR-3はPR-2 merge後の別作業とする。
+
+---
+
 ## 2026-10-10 Codex: 外部作品応募 PR-1 安全基盤
 
 - Branch `codex/external-submission-foundation-20261010`。PR #642 merge commit `308ce19a`から分離し、外部作品応募MVPのうちDB安全基盤だけを実装した。
@@ -8,7 +20,7 @@
 - `works`、`digital_products`、Publication、Reader、Storage upload、検証worker、公開／販売開始、Stripeは変更していない。Production migration、実決済、実利用者、Provider、Job、creditへの変更は0件。
 - PostgreSQL 16の一時Docker DBで97 migrationのforward／assertion、全rollback、reapply、canonical schema冪等性、Marketplace監査を完走した。一時DBは削除済み。
 - deps check、lint、typecheck、Hub 1289、Canvas 26、AI 50、Desktop 407、Desktop a11y violations 0、migration validate 97、Hub／Desktop build、diff checkが成功。RC preflightは構造READY、外部設定と手動E2Eは未設定のためPENDING。
-- 次はPR #643のレビュー・merge判断。Production適用は別の明示承認なしに行わない。PR-2のupload／workerは本PR merge後の別作業とする。
+- PR #643はmerge commit `40c0f7e5`で基準ブランチへ統合され、merge後checksも成功した。PR-2は別branchで開始済み。Production適用は別の明示承認なしに行わない。
 
 ---
 

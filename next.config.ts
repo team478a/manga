@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  serverExternalPackages: ["@napi-rs/canvas"],
   outputFileTracingIncludes: {
     "/*": [
       "./node_modules/@img/sharp-linux-x64/**/*",
