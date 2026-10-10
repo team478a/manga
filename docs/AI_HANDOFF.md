@@ -1,5 +1,16 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 外部作品応募Production隔離upload（2026-10-11）
+
+- PR [#657](https://github.com/team478a/manga/pull/657)はmerge commit `e33ee2d1a6ef8fab25f218a8eac7bd2e8418b669`で`feature/manga-canvas-mvp`へ統合済み。merge後のRequired Quality run `38071199657`、Desktop Windows run `38071199655`、Production deployment `6984220162`はすべて成功した。
+- 責任者のaction-time承認後、Productionのcreator `test`で応募`906ff7c3-c00a-42ed-aa9f-20d330233911`の`Uploadを開始`を1回だけ実行し、状態が`draft`から`uploading`へ遷移した。
+- 非公開quarantineへ一般向けrepo fixture 2件だけをuploadした。`01-market-analysis-guide-poster.webp`（38,130 bytes、SHA-256 `ab8ed76ab468c753a5fe167f375d9a7e309e276a9707cfcb879ce3cf7ecba90c`）と`02-proposal-guide-poster.webp`（35,256 bytes、SHA-256 `1ebea14b9ccd106a43d8cf220994926bfbfa141714bce1cc68f1304f41c409cd`）はいずれも画面上で`uploaded`を確認した。
+- 完了時は`状態: uploading`、`Job: 未開始`。`検証を開始`は操作せず、worker、権利宣言、審査提出、公開、販売、Stripe、決済も実行していない。
+- 証跡commit `0a76dd2f`をpushし、Draft PR [#658](https://github.com/team478a/manga/pull/658)を作成した。証跡同期前HEAD `d32c76d6`のCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功した。
+- 次は`検証を開始`とworker処理を独立したProduction mutationとして扱う。対象、実行回数、停止条件を提示し、別のaction-time承認を得るまで実行しない。実決済は禁止を維持する。
+
+---
+
 ## 0.0 外部作品応募Production下書き作成（2026-10-11）
 
 - PR [#656](https://github.com/team478a/manga/pull/656)はmerge commit `4d519b5d0a56ca9d642e726ead5f7b5697048358`で`feature/manga-canvas-mvp`へ統合済み。merge後のRequired Quality run `38066331809`、Desktop Windows run `38066331823`、Production deployment `6983423813`はすべて成功した。
