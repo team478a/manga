@@ -284,6 +284,8 @@ MANGAI以外で完成した漫画を、販売用ファイルだけ登録してMa
 
 ## 13. 検証結果
 
+### 13.1 調査時点
+
 - 既存Marketplace／Publication／Storage／Checkout関連: 61/61 PASS
 - Hub全テスト: 1262/1262 PASS
 - Canvas: 26/26 PASS
@@ -298,4 +300,11 @@ MANGAI以外で完成した漫画を、販売用ファイルだけ登録してMa
 - Desktop accessibility: violation 0（自動判定不能の既存color contrast項目は手動確認対象）
 - `git diff --check`: PASS
 
-実環境への外部作品upload、審査、公開、販売、決済は機能未実装のため未実施であり、PASSとは報告しない。
+上記はGap Analysis作成時点の結果である。
+
+### 13.2 PR-1〜PR-5実装後（2026-10-10）
+
+- PR #643〜#647が`feature/manga-canvas-mvp`へ統合され、安全な申請基盤、隔離upload／検証worker、固定Publication／Reader、審査／公開／強制停止、税込売上／全額返金調整／CSV／運用レポートまで実装済み。
+- PR #647 merge commit `9d2faf93`のmerge後Required QualityはCore qualityと全100 migration roundtripが成功し、Desktop WindowsもAccessibilityとunpacked buildを含めて成功した。
+- Production migration、実作品upload、審査、公開、販売開始、Stripe test実地決済は未実施であり、受入れPASSとは報告しない。これらは対象・停止条件を示した実行時明示承認後に限る。
+- 成人向けMarketplace、精算・送金、部分返金、税額内訳、適格請求書、確定台帳は実装範囲外であり、別仕様・別承認とする。
