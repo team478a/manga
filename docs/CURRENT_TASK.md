@@ -1,5 +1,19 @@
 # MANGAI Current Task
 
+## 2026-10-10 外部出品者onboarding導線
+
+- 状態: `IMPLEMENTED / LOCAL_AND_PR_CHECKS_PASSED / REVIEW_READY / PRODUCTION_UNCHANGED`
+- Branch: `codex/external-seller-onboarding-ui-20261010`
+- PR: [#650](https://github.com/team478a/manga/pull/650)。実装commit `d13fda49`のCore quality、Migration roundtrip、Desktop Windows、Vercel、Vercel Preview Commentsはすべて成功した。
+- 基点: PR #649 merge commit `510e8a3a`（`feature/manga-canvas-mvp`）。PR #649のCore quality、Migration roundtrip、Desktop Windows、Vercel、Vercel Preview Commentsはすべて成功している。
+- Productionをread-only確認し、Supabase `mangai-hub-staging / main PRODUCTION`は`Healthy`、最新backupは8時間前だった。`app.mang-ai.com/dashboard/external-submissions`ではログイン済みcreatorに「出品者規約への同意と管理者の招待承認が必要」と表示されたが、既存画面には規約同意とseller承認を実行する導線がなく、Production実地受入れを開始できないことを確認した。
+- seller本人の版付き規約同意、同意済み承認待ち、停止中、eligibleの表示を分離した。管理画面へ規約同意済みseller一覧、招待承認、理由必須の停止操作を追加した。すべて既存の`accept_external_seller_terms`／`set_external_seller_status` RPCを利用し、規約版変更時の再承認、admin限定、未同意承認拒否、append-only監査eventを維持する。
+- seller一覧は表示名と状態だけを通常表示し、メールや秘密値を取得しない。profile UUIDは管理用details内だけに表示する。成人向け、精算・送金、部分返金、税額、適格請求書は追加していない。
+- 検証: 集中10/10、Hub 1309/1309、deps error 0（既知warning 2）、Hub typecheck、ESLint、Hub Production build、`git diff --check`成功。DB／migration／Storage／worker／環境変数／seller状態／submission／作品／商品／公開／注文／Stripe／実決済／Provider／Job／creditは変更していない。
+- 次: PR #650のレビュー・merge判断待ち。merge後のProduction規約同意と管理者承認は別のaction-time承認が必要。実upload、worker有効化、審査、公開、販売、Stripe testも各停止条件を示した後の別承認単位とし、実決済は行わない。
+
+---
+
 ## 2026-10-10 外部作品応募 Production migration適用
 
 - 状態: `PRODUCTION_MIGRATIONS_APPLIED / POSTFLIGHT_PASSED / APPLICATION_DATA_UNCHANGED / MANUAL_ACCEPTANCE_NOT_STARTED`

@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { cloudCreatorContext } from "@/modules/cloud-creator/auth-context";
+import { EXTERNAL_SELLER_TERMS_VERSION } from "./constants";
 
 const createSchema = z.object({
   title: z.string().trim().min(1).max(160),
@@ -15,6 +16,22 @@ const submissionIdSchema = z.string().uuid();
 
 function checked(formData: FormData, name: string) {
   return formData.get(name) === "on";
+}
+
+export async function acceptExternalSellerTermsAction(formData: FormData) {
+  if (!checked(formData, "termsAccepted"))
+    redirect(
+      `/dashboard/external-submissions?error=${encodeURIComponent("出品者規約への同意が必要です")}`,
+    );
+  const { supabase } = await cloudCreatorContext();
+  const result = await supabase.rpc("accept_external_seller_terms", {
+    p_terms_version: EXTERNAL_SELLER_TERMS_VERSION,
+  });
+  if (result.error)
+    redirect(
+      `/dashboard/external-submissions?error=${encodeURIComponent("出品者規約への同意を記録できませんでした")}`,
+    );
+  redirect("/dashboard/external-submissions");
 }
 
 export async function createExternalSubmissionAction(formData: FormData) {
