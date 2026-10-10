@@ -1,5 +1,18 @@
 # MANGAI Current Task
 
+## 2026-10-10 外部出品者role guard
+
+- 状態: `IMPLEMENTED / LOCAL_CHECKS_PASSED / PRODUCTION_ACCEPTANCE_BLOCKED_BY_ACCOUNT_ROLE`
+- Branch: `codex/external-seller-role-guard-20261010`
+- 基点: PR #651 merge commit `f4d616f5`（`feature/manga-canvas-mvp`）。merge後のRequired QualityとDesktop Windowsも成功した。
+- 責任者のaction-time承認後、Productionのログイン済み`tanaka`で`external-seller-v1`規約同意申請を1回だけ実行した。画面は「出品者規約への同意を記録できませんでした」と返したため、再送信と管理者承認を停止した。
+- Supabase `mangai-hub-staging / main PRODUCTION`をread-only監査し、`tanaka`のprofile roleは`admin`、seller rowなし、規約同意event 0件と確認した。RPCは`creator`だけを許可するため、transactionは失敗してrollbackされ、部分変更はない。creator profileは12件あるが、全件seller未登録で、管理画面の承認候補も0件だった。
+- adminへ失敗するcreator専用規約フォームを表示しないrole guardと、Server Action側の二重guardを追加した。adminにはcreatorアカウントでのログイン案内と出品者承認画面への導線を表示する。DB、RPC、migration、role、seller row、submission、Storage、公開、販売、Stripe、決済は変更していない。
+- 検証: 集中3/3、Hub 1310/1310、Hub/Desktop typecheck、ESLint、Hub Production build、`git diff --check`成功。
+- 次: PR作成と全CI成功後、creatorアカウントを責任者が指定してログインし直すまでProduction規約同意を再試行しない。`tanaka`をcreatorへ変更しない。upload、worker、審査、公開、販売、Stripe、実決済へ進まない。
+
+---
+
 ## 2026-10-10 外部出品者onboarding導線
 
 - 状態: `MERGED / POST_MERGE_CHECKS_PASSED / PRODUCTION_UI_DEPLOYED / PRODUCTION_DATA_UNCHANGED`

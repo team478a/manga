@@ -1,5 +1,15 @@
 # MANGAI AI Handoff Log
 
+## 2026-10-10 Codex: 外部出品者role guard
+
+- PR #651 merge commit `f4d616f5`からBranch `codex/external-seller-role-guard-20261010`を作成した。merge後のRequired QualityとDesktop Windowsは成功済み。
+- action-time承認後、Productionの`tanaka`で`external-seller-v1`規約同意を1回送信したが失敗表示となったため、再送信と管理者承認を停止した。read-only監査でprofile role=`admin`、seller rowなし、event 0件を確認し、creator専用RPCとのrole不一致と特定した。部分変更はない。
+- adminへcreator専用フォームを表示しない画面guardとServer Actionの二重guardを追加した。adminにはcreatorアカウントへの切替案内と承認画面への導線を表示する。DB、RPC、migration、Production role、seller状態、submission、Storage、公開、販売、Stripe、決済は変更していない。
+- 集中3/3、Hub 1310/1310、Hub/Desktop typecheck、ESLint、Hub Production build、diff check成功。
+- 次はPR作成と全CI確認。merge後も責任者がcreatorアカウントを指定してログインし直すまで再試行しない。
+
+---
+
 ## 2026-10-10 Codex: 外部出品者onboarding導線
 
 - PR #649 merge commit `510e8a3a`からBranch `codex/external-seller-onboarding-ui-20261010`を作成した。Productionをread-only確認し、Supabase Projectは`Healthy`、`app.mang-ai.com`のcreator画面は規約同意と招待承認を要求する一方、それらを実行するUI／Server Actionがないため受入れ開始不能と特定した。
