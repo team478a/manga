@@ -6,8 +6,9 @@
 - 責任者の費用方針により、正式稼働前は月額固定費0円、ClamAV gateway／`clamd`常設なしとする。hosting、DNS、証明書、secret、監視、schedulerを作成・有効化しない。
 - 将来の一時受入れをGate 0（費用・対象）、isolated検証、Production readiness、1 Job canaryに分離し、各resource作成とProduction操作を別のaction-time承認単位とした。
 - docs-only検証はRC repository structure READY、外部設定PENDING、manual E2E REQUIRED、diff check成功。
+- 文書commit `fc34e665`をpushし、Draft PR [#665](https://github.com/team478a/manga/pull/665)を作成した。証跡同期前HEADのRequired Quality `38103578491`、Desktop Windows `38103578460`、Vercel、Preview Commentsはすべて成功した。
 - Production、GitHub設定、network、ClamAV、secret、redeploy、probe、Worker、Job、Storage、公開、販売、Stripe、決済操作は0件。応募`906ff7c3-c00a-42ed-aa9f-20d330233911`は`queued`のまま。
-- 次はdocs-only差分の検証、Draft PR、全CI／Preview確認。月額0円方針のままresource作成へ進まない。
+- 次は証跡同期後の最終HEADでも全CI／Preview成功を確認する。月額0円方針のままresource作成へ進まない。
 
 ---
 

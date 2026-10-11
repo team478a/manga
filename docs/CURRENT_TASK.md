@@ -2,14 +2,16 @@
 
 ## 2026-10-11 外部作品応募ClamAV 稼働前0円運用
 
-- 状態: `DOCUMENTED / LOCAL_DOCS_CHECKS_PASSED / ZERO_MONTHLY_CAP / NO_HOSTING_CREATED / PRODUCTION_UNCHANGED / WORKER_NOT_RUN`
+- 状態: `DOCUMENTED / ALL_PR_CHECKS_PASSED / DRAFT_PR_OPEN / ZERO_MONTHLY_CAP / NO_HOSTING_CREATED / PRODUCTION_UNCHANGED / WORKER_NOT_RUN`
 - Branch: `codex/clamav-zero-cost-ondemand-runbook-20261011`
+- PR: [#665](https://github.com/team478a/manga/pull/665)（Draft）。文書commit `fc34e665`。
 - 基点: PR #664 merge commit `3fd7ac09779f259ddcf57c820d1fe2c674f55242`（`feature/manga-canvas-mvp`）。merge後のRequired Quality run `38102212588`、Desktop Windows run `38102212571`、Vercel deploymentはすべて成功した。
 - 正式稼働前はClamAV gateway／`clamd`を常設せず、月額固定費上限0円とする。hosting、DNS、証明書、secret、監視、schedulerを作成・有効化しない。
 - 将来の一時受入れは、provider／region／最大稼働時間／最大実費／停止・削除条件を先に提示し、isolated検証、Production readiness、1 Job canaryを別承認単位に分離する。
 - Production、GitHub設定、network、ClamAV、secret、redeploy、probe、Worker、Job、Storage、公開、販売、Stripe、決済は変更・実行していない。応募`906ff7c3-c00a-42ed-aa9f-20d330233911`のJobは`queued`のまま。
 - 検証: `npm run rc:preflight`はrepository structure READY。外部設定は未投入のため既知のPENDING、manual E2EはREQUIRED。`git diff --check`成功。
-- 次: docs-only差分を検証し、commit、push、Draft PR、全CI／Vercel Preview成功で停止する。月額0円方針のままresource作成へ進まない。
+- 証跡同期前HEAD `fc34e665`のRequired Quality run `38103578491`（Core quality、Migration roundtrip）、Desktop Windows run `38103578460`（Accessibility、unpacked buildを含む）、Vercel、Vercel Preview Commentsはすべて成功した。
+- 次: 証跡同期後の最終HEADでも全CI／Vercel Preview成功を確認して停止する。月額0円方針のままresource作成へ進まない。
 
 ---
 
