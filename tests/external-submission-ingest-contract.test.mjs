@@ -43,8 +43,11 @@ test("external ingest enforces lease, bounded retries, page continuity, and fail
   assert.match(migration, /v_job\.lease_expires_at<=now\(\)/);
   assert.match(migration, /attempt_count>=v_job\.max_attempts/);
   assert.match(migration, /generate_series\(1,jsonb_array_length\(p_pages\)\)/);
-  assert.match(worker, /return async \(\) => "unavailable"/);
+  assert.match(worker, /scanClamAvBytes\(\{ bytes, \.\.\.input \}\)/);
   assert.match(clamav, /MANGAI_EXTERNAL_CLAMAV_HOST/);
+  assert.match(clamav, /MANGAI_EXTERNAL_CLAMAV_GATEWAY_URL/);
+  assert.match(clamav, /MANGAI_EXTERNAL_CLAMAV_GATEWAY_SECRET/);
+  assert.match(clamav, /body\?\.status === "clean" \|\| body\?\.status === "infected"/);
   assert.match(clamav, /socket\?\.write\("zPING\\0"\)/);
   assert.match(clamav, /=== "PONG" \? "ready" : "unavailable"/);
   assert.match(validator, /malware_scan_unavailable/);
