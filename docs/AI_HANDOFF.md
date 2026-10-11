@@ -6,8 +6,9 @@
 - Branch `codex/external-submission-clamav-https-gateway-20261011`でportable gatewayとWorker HTTPS adapterを実装した。認証、TLS proxy境界、50 MiB上限、1 process 1 scan、private clamd INSTREAM、fail-closedを固定した。
 - 実装commit `493d4ba9`をpushし、Draft PR [#664](https://github.com/team478a/manga/pull/664)を作成した。
 - 集中8/8、Hub 1323/1323、Canvas 26/26、AI 50/50、Desktop 407/407、migration 100件、deps、lint、全typecheck、Hub/Desktop build、a11y blocking violation 0、RC structure、diff check成功。
+- 証跡同期前HEAD `f40fc4ac`のCore quality run `38101441112`、Migration roundtrip、Windows build run `38101441105`、Vercel、Vercel Preview Commentsはすべて成功した。
 - hosting／region／費用／運用担当は未決定。Production、GitHub、network、ClamAV、secret、redeploy、probe、Worker、Job、Storage、Stripe、決済操作は0件。queued Jobは未処理。
-- 次は最終HEADの全CI／Preview確認。merge後もgateway配置、Vercel設定、redeploy、probe、Worker runは個別のaction-time承認まで行わない。
+- 次は証跡同期後の最終HEADでも全CI／Preview確認。merge後もgateway配置、Vercel設定、redeploy、probe、Worker runは個別のaction-time承認まで行わない。
 
 ---
 
