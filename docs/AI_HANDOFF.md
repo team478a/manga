@@ -1,5 +1,15 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 外部作品応募ClamAV 稼働前0円運用 merge後確認（2026-10-11）
+
+- PR [#665](https://github.com/team478a/manga/pull/665)はmerge commit `97fc9ff1fcdc3375688eacbfc64d5cd27f018440`で基準ブランチへ統合済み。
+- merge後のRequired Quality `38105022931`、Desktop Windows `38105022936`、Vercel deployment `6989869770`はすべて成功した。deployment metadataは`production_environment=false`。
+- docs-only検証はRC repository structure READY、外部設定PENDING、manual E2E REQUIRED、diff check成功。
+- 月額固定費0円、ClamAV gateway／`clamd`常設なし、Worker停止を維持する。Production、GitHub設定、network、ClamAV、secret、probe、Worker、Job、Storage、公開、販売、Stripe、決済操作は0件。queued Jobは未処理。
+- 次はmerge後証跡のdocs-only PRと全CI／Preview確認。provider、region、最大一時実費、最大稼働時間、操作担当が決まるまでGate 1以降へ進まない。
+
+---
+
 ## 0.0 外部作品応募ClamAV 稼働前0円運用（2026-10-11）
 
 - PR #664はmerge commit `3fd7ac09779f259ddcf57c820d1fe2c674f55242`で統合済み。merge後のRequired Quality `38102212588`、Desktop Windows `38102212571`、Vercel deploymentはすべて成功した。
