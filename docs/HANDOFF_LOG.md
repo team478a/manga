@@ -1,5 +1,17 @@
 # MANGAI AI Handoff Log
 
+## 2026-10-11 Codex: 外部作品応募ClamAV 稼働前0円運用
+
+- PR #664 merge `3fd7ac09`後のRequired Quality `38102212588`、Desktop Windows `38102212571`、Vercel deployment成功を確認した。
+- 稼働前は月額固定費0円、ClamAV gateway／`clamd`常設なしとし、hosting、DNS、証明書、secret、監視、schedulerを作成・有効化しない方針を固定した。
+- 将来の一時受入れについて、費用と削除条件、isolated検証、Production readiness、対象1 Job canaryを別々のgateとaction-time承認へ分離した。
+- `npm run rc:preflight`はrepository structure READY。外部設定は既知のPENDING、manual E2EはREQUIRED。`git diff --check`成功。
+- 文書commit `fc34e665`をpushし、Draft PR [#665](https://github.com/team478a/manga/pull/665)を作成した。証跡同期前HEADのRequired Quality `38103578491`、Desktop Windows `38103578460`、Vercel、Preview Commentsはすべて成功した。
+- Production、GitHub設定、network、ClamAV、secret、redeploy、probe、Worker、Job、Storage、公開、販売、Stripe、決済操作0件。queued Jobは未処理。
+- 次は証跡同期後の最終HEADでも全CI／Vercel Preview成功を確認して停止する。月額0円方針のままresource作成へ進まない。
+
+---
+
 ## 2026-10-11 Codex: 外部作品応募ClamAV HTTPS gateway
 
 - PR #663 merge `03a1ef7e`後、責任者選択のB（認証付きHTTPS gateway）を別branchで実装した。

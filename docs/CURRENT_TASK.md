@@ -1,17 +1,32 @@
 # MANGAI Current Task
 
+## 2026-10-11 外部作品応募ClamAV 稼働前0円運用
+
+- 状態: `DOCUMENTED / ALL_PR_CHECKS_PASSED / DRAFT_PR_OPEN / ZERO_MONTHLY_CAP / NO_HOSTING_CREATED / PRODUCTION_UNCHANGED / WORKER_NOT_RUN`
+- Branch: `codex/clamav-zero-cost-ondemand-runbook-20261011`
+- PR: [#665](https://github.com/team478a/manga/pull/665)（Draft）。文書commit `fc34e665`。
+- 基点: PR #664 merge commit `3fd7ac09779f259ddcf57c820d1fe2c674f55242`（`feature/manga-canvas-mvp`）。merge後のRequired Quality run `38102212588`、Desktop Windows run `38102212571`、Vercel deploymentはすべて成功した。
+- 正式稼働前はClamAV gateway／`clamd`を常設せず、月額固定費上限0円とする。hosting、DNS、証明書、secret、監視、schedulerを作成・有効化しない。
+- 将来の一時受入れは、provider／region／最大稼働時間／最大実費／停止・削除条件を先に提示し、isolated検証、Production readiness、1 Job canaryを別承認単位に分離する。
+- Production、GitHub設定、network、ClamAV、secret、redeploy、probe、Worker、Job、Storage、公開、販売、Stripe、決済は変更・実行していない。応募`906ff7c3-c00a-42ed-aa9f-20d330233911`のJobは`queued`のまま。
+- 検証: `npm run rc:preflight`はrepository structure READY。外部設定は未投入のため既知のPENDING、manual E2EはREQUIRED。`git diff --check`成功。
+- 証跡同期前HEAD `fc34e665`のRequired Quality run `38103578491`（Core quality、Migration roundtrip）、Desktop Windows run `38103578460`（Accessibility、unpacked buildを含む）、Vercel、Vercel Preview Commentsはすべて成功した。
+- 次: 証跡同期後の最終HEADでも全CI／Vercel Preview成功を確認して停止する。月額0円方針のままresource作成へ進まない。
+
+---
+
 ## 2026-10-11 外部作品応募ClamAV HTTPS gateway
 
-- 状態: `IMPLEMENTED / LOCAL_AND_PR_CHECKS_PASSED / DRAFT_PR_OPEN / HOSTING_NOT_SELECTED / PRODUCTION_UNCHANGED / WORKER_NOT_RUN`
+- 状態: `MERGED / POST_MERGE_CHECKS_PASSED / HOSTING_NOT_SELECTED / PRODUCTION_UNCHANGED / WORKER_NOT_RUN`
 - Branch: `codex/external-submission-clamav-https-gateway-20261011`
-- PR: [#664](https://github.com/team478a/manga/pull/664)（Draft）。実装commit `493d4ba9`。
+- PR: [#664](https://github.com/team478a/manga/pull/664)。merge commit `3fd7ac09779f259ddcf57c820d1fe2c674f55242`。実装commit `493d4ba9`。
 - 基点: PR #663 merge commit `03a1ef7e189ff420dc56ebd8bbc4812e0d1d5818`。責任者はtopology B（認証付きHTTPS gateway）を選択した。
 - portable Node.js gateway、認証済みreadiness／scan、50 MiB上限、1 process 1 scan、private clamd INSTREAM、Worker HTTPS adapterを追加した。既存private TCP modeは後方互換として維持する。
 - TLS終端proxyの明示信頼、32文字以上のsecret、固定origin、bounded response、timeout、不明応答のfail-closedを強制する。原稿、ClamAV応答、Storage path、利用者情報、secretをログへ出さない。
 - hosting provider、region、費用上限、運用担当、DNS、証明書、ClamAV、secretは未決定・未作成。Production環境、GitHub設定、redeploy、probe、Worker、Job、Storage、審査、公開、販売、Stripe、決済は変更・実行していない。queued Jobは未処理。
 - 検証: 集中8/8、Hub 1323/1323、Canvas 26/26、AI 50/50、Desktop 407/407、migration 100件、deps（error 0、既知warning 2）、lint、Hub/Desktop typecheck、Hub/Desktop build、a11y 29画面blocking violation 0、RC structure、diff check成功。
 - 証跡同期前HEAD `f40fc4ac`でCore quality run `38101441112`、Migration roundtrip、Windows build run `38101441105`、Vercel、Vercel Preview Commentsはすべて成功した。
-- 次: 証跡同期後の最終HEADでも全CI／Vercel Preview成功を確認して停止する。merge後もhosting決定と各Production操作は別のaction-time承認が必要。
+- merge後のRequired Quality run `38102212588`、Desktop Windows run `38102212571`、Vercel deploymentはすべて成功した。hosting決定と各Production操作は別のaction-time承認が必要。
 
 ---
 
