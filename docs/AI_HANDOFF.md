@@ -1,5 +1,15 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 外部作品応募ClamAV HTTPS gateway（2026-10-11）
+
+- PR #663はmerge commit `03a1ef7e189ff420dc56ebd8bbc4812e0d1d5818`で統合済み。責任者はtopology Bを選択した。
+- Branch `codex/external-submission-clamav-https-gateway-20261011`でportable gatewayとWorker HTTPS adapterを実装した。認証、TLS proxy境界、50 MiB上限、1 process 1 scan、private clamd INSTREAM、fail-closedを固定した。
+- 集中8/8、Hub 1323/1323、Canvas 26/26、AI 50/50、Desktop 407/407、migration 100件、deps、lint、全typecheck、Hub/Desktop build、a11y blocking violation 0、RC structure、diff check成功。
+- hosting／region／費用／運用担当は未決定。Production、GitHub、network、ClamAV、secret、redeploy、probe、Worker、Job、Storage、Stripe、決済操作は0件。queued Jobは未処理。
+- 次はローカル品質ゲート、Draft PR、全CI／Preview。merge後もgateway配置、Vercel設定、redeploy、probe、Worker runは個別のaction-time承認まで行わない。
+
+---
+
 ## 0.0 外部作品応募ClamAV Production topology判断（2026-10-11）
 
 - PR #662はmerge commit `b6a4fa6d736284986959c93c3bc8c0cb0d9d208b`で基準ブランチへ統合済み。merge後のRequired Quality `38098015722`、Desktop Windows `38098015764`、Production deployment `6988788173`はすべて成功した。

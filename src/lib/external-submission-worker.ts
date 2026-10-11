@@ -1,12 +1,11 @@
 import crypto from "node:crypto";
-import net from "node:net";
 import {
   ExternalSubmissionIngestError,
   type ExternalSubmissionMalwareScanner,
   type ExternalSubmissionSourceFormat,
   validateExternalSubmissionSource,
 } from "./external-submission-ingest";
-import { readClamAvConnection } from "./external-submission-clamav";
+import { scanClamAvBytes } from "./external-submission-clamav";
 import { createAdminClient } from "./supabase/admin";
 
 export { checkClamAvReadiness } from "./external-submission-clamav";
@@ -26,47 +25,15 @@ type SourceFile = {
 };
 
 export function createClamAvScanner(input: {
+  transport?: "tcp" | "https_gateway";
   host?: string;
   port?: number;
+  gatewayUrl?: string;
+  gatewaySecret?: string;
   timeoutMs?: number;
+  fetchImpl?: typeof fetch;
 } = {}): ExternalSubmissionMalwareScanner {
-  const connection = readClamAvConnection(input);
-  const timeoutMs = input.timeoutMs ?? 15_000;
-  if (!connection) return async () => "unavailable";
-
-  return async ({ bytes }) =>
-    new Promise((resolve) => {
-      const socket = net.createConnection(connection);
-      let response = "";
-      let settled = false;
-      const finish = (status: "clean" | "infected" | "unavailable") => {
-        if (settled) return;
-        settled = true;
-        socket.destroy();
-        resolve(status);
-      };
-      socket.setTimeout(timeoutMs, () => finish("unavailable"));
-      socket.on("error", () => finish("unavailable"));
-      socket.on("data", (chunk) => {
-        response += chunk.toString("utf8");
-        if (response.includes("FOUND")) finish("infected");
-        else if (response.includes("OK")) finish("clean");
-      });
-      socket.on("close", () => {
-        if (!settled) finish(response.includes("OK") ? "clean" : "unavailable");
-      });
-      socket.on("connect", () => {
-        socket.write("zINSTREAM\0");
-        for (let offset = 0; offset < bytes.byteLength; offset += 64 * 1024) {
-          const chunk = Buffer.from(bytes.subarray(offset, offset + 64 * 1024));
-          const length = Buffer.allocUnsafe(4);
-          length.writeUInt32BE(chunk.byteLength);
-          socket.write(length);
-          socket.write(chunk);
-        }
-        socket.end(Buffer.alloc(4));
-      });
-    });
+  return async ({ bytes }) => scanClamAvBytes({ bytes, ...input });
 }
 
 function errorCode(error: unknown) {

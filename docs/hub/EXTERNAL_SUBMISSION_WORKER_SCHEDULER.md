@@ -52,14 +52,16 @@ Schedulerの`run`を実行する前にProduction側で次を確認します。`p
 
 - `MANGAI_EXTERNAL_SUBMISSION_WORKER_ENABLED=true`
 - `MANGAI_EXTERNAL_SUBMISSION_WORKER_SECRET`: GitHub Secretと同じ32文字以上の値
-- `MANGAI_EXTERNAL_CLAMAV_HOST`: Vercel ProductionからTCP接続できる専用ClamAV endpoint
-- `MANGAI_EXTERNAL_CLAMAV_PORT`: 通常は`3310`
+- `MANGAI_EXTERNAL_CLAMAV_TRANSPORT=https_gateway`
+- `MANGAI_EXTERNAL_CLAMAV_GATEWAY_URL`: 選択済みgatewayのHTTPS origin
+- `MANGAI_EXTERNAL_CLAMAV_GATEWAY_SECRET`: gatewayと同じ32文字以上のSecret
 - `MANGAI_EXTERNAL_SUBMISSION_WORKER_ID`: 任意。未設定時は既定値を使用する
 - `NEXT_PUBLIC_SUPABASE_URL`
 - `SUPABASE_SERVICE_ROLE_KEY`
 
-ClamAV endpointはインターネットへ無認証公開しません。接続元制限、private network、または同等の
-network controlを必須とし、疎通確認前にFeature Flagを有効化しません。ClamAVが未設定または接続不能の
+gatewayはHTTPSとBearer認証を必須とし、背後のClamAV TCP endpointはインターネットへ公開しません。
+gatewayとClamAV間はprivate networkまたは同一hostに限定し、疎通確認前にFeature Flagを有効化しません。
+gatewayまたはClamAVが未設定・接続不能の
 場合、scanは`unavailable`となり、Jobはretryable failureとして安全に停止します。
 
 ## 安全な開始手順

@@ -105,6 +105,7 @@
     "external-submission:worker:scheduler": "node scripts/run-external-submission-worker-scheduler.mjs",
     "external-submission:worker:scheduler:preflight": "node scripts/run-external-submission-worker-scheduler.mjs --check",
     "external-submission:worker:scheduler:probe": "node scripts/run-external-submission-worker-scheduler.mjs --probe",
+    "external-submission:clamav-gateway:start": "node services/external-submission-clamav-gateway/server.mjs",
     "manual:cloud:video": "node scripts/build-cloud-operation-video.mjs",
     "cloud:storage:preflight": "node scripts/check-cloud-storage-preflight.mjs",
     "cloud:longform:acceptance": "node --experimental-strip-types --test tests/cloud-100-page-acceptance.test.mjs",

@@ -1,5 +1,15 @@
 # MANGAI AI Handoff Log
 
+## 2026-10-11 Codex: 外部作品応募ClamAV HTTPS gateway
+
+- PR #663 merge `03a1ef7e`後、責任者選択のB（認証付きHTTPS gateway）を別branchで実装した。
+- stdlibだけのcontainer service、Bearer認証、trusted TLS proxy、入力・応答上限、直列scan、private clamd接続とWorker adapterを追加。raw TCP modeは後方互換として維持した。
+- 集中8/8、Hub 1323/1323、Canvas 26/26、AI 50/50、Desktop 407/407、migration 100件、deps、lint、全typecheck、Hub/Desktop build、a11y blocking violation 0、RC structure、diff check成功。
+- hosting provider、region、費用上限、運用担当は未決定。Production設定、GitHub設定、network、ClamAV、probe、Worker、Job、Storage、公開、販売、Stripe、決済操作0件。queued Jobは未処理。
+- 次は品質ゲートとDraft PR。Production接続は段階ごとのaction-time承認まで行わない。
+
+---
+
 ## 2026-10-11 Codex: 外部作品応募ClamAV Production topology判断
 
 - PR #662 merge commit `b6a4fa6d`のRequired Quality、Desktop Windows、Production deploymentはすべて成功した。

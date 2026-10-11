@@ -1,5 +1,18 @@
 # MANGAI Current Task
 
+## 2026-10-11 外部作品応募ClamAV HTTPS gateway
+
+- 状態: `IMPLEMENTED / LOCAL_CHECKS_PASSED / HOSTING_NOT_SELECTED / PRODUCTION_UNCHANGED / WORKER_NOT_RUN`
+- Branch: `codex/external-submission-clamav-https-gateway-20261011`
+- 基点: PR #663 merge commit `03a1ef7e189ff420dc56ebd8bbc4812e0d1d5818`。責任者はtopology B（認証付きHTTPS gateway）を選択した。
+- portable Node.js gateway、認証済みreadiness／scan、50 MiB上限、1 process 1 scan、private clamd INSTREAM、Worker HTTPS adapterを追加した。既存private TCP modeは後方互換として維持する。
+- TLS終端proxyの明示信頼、32文字以上のsecret、固定origin、bounded response、timeout、不明応答のfail-closedを強制する。原稿、ClamAV応答、Storage path、利用者情報、secretをログへ出さない。
+- hosting provider、region、費用上限、運用担当、DNS、証明書、ClamAV、secretは未決定・未作成。Production環境、GitHub設定、redeploy、probe、Worker、Job、Storage、審査、公開、販売、Stripe、決済は変更・実行していない。queued Jobは未処理。
+- 検証: 集中8/8、Hub 1323/1323、Canvas 26/26、AI 50/50、Desktop 407/407、migration 100件、deps（error 0、既知warning 2）、lint、Hub/Desktop typecheck、Hub/Desktop build、a11y 29画面blocking violation 0、RC structure、diff check成功。
+- 次: commit、push、Draft PR、全CI／Vercel Preview成功で停止する。merge後もhosting決定と各Production操作は別のaction-time承認が必要。
+
+---
+
 ## 2026-10-11 外部作品応募ClamAV Production topology判断
 
 - 状態: `DOCUMENTED / ALL_PR_CHECKS_PASSED / BLOCKED_TOPOLOGY_DECISION / PRODUCTION_UNCHANGED / WORKER_NOT_RUN`

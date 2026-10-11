@@ -1,7 +1,13 @@
 # External Submission ClamAV Production Topology
 
 更新日: 2026-10-11
-状態: `DECISION_REQUIRED / PRODUCTION_DISABLED`
+状態: `B_SELECTED / GATEWAY_IMPLEMENTED / HOSTING_REQUIRED / PRODUCTION_DISABLED`
+
+## 決定（2026-10-11）
+
+責任者は **B. 認証付きHTTPS scan gateway** を選択した。PR #663はmerge commit
+`03a1ef7e189ff420dc56ebd8bbc4812e0d1d5818`で基準ブランチへ統合済み。gatewayとWorker adapterは
+別branchで実装するが、hosting provider、region、費用上限、運用担当は未決定のためProductionへは接続しない。
 
 ## 目的
 
@@ -41,14 +47,14 @@ Vercel FunctionとClamAVをVPC peeringまたはVPNでprivate接続する。現�
 - 前提: Vercel EnterpriseのSecure Compute、接続先cloud/VPC、region/CIDR、firewall、運用担当、費用承認。
 - 公式資料: [Vercel Secure Computeによるprivate backend接続](https://vercel.com/kb/guide/hosting-backend-apis)、[Secure Computeのself-service管理](https://vercel.com/changelog/secure-compute-is-now-self-serve)
 
-### B. 認証付きHTTPS scan gateway（代替。別実装が必要）
+### B. 認証付きHTTPS scan gateway（選択済み）
 
 TLS終端と強いservice-to-service認証を持つ専用gatewayだけをVercelから呼び、gatewayと`clamd`は同一private
 networkまたは同一hostに置く。Vercel側はraw TCP clientではなくHTTPS adapterへ変更する。
 
 - 長所: Vercel Secure Computeを前提にせず、標準HTTPSで認証・暗号化・timeoutを制御できる。
 - 前提: gatewayの設計・hosting・認証方式・request上限・streaming・監視・key rotation・費用承認。
-- 現在のコードは未対応。設計承認前に推測実装しない。
+- portable gatewayとWorker adapterは実装済み。配置・secret設定・redeploy・probeは未実施。
 
 ### 不採用: 公開clamd TCP + Vercel Static IP allowlistだけ
 
