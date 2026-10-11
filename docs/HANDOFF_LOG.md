@@ -1,5 +1,15 @@
 # MANGAI AI Handoff Log
 
+## 2026-10-11 Codex: 外部作品応募ClamAV 稼働前0円運用 merge後確認
+
+- PR #665はmerge commit `97fc9ff1`で基準ブランチへ統合済み。merge後のRequired Quality `38105022931`、Desktop Windows `38105022936`、Vercel deployment `6989869770`は成功した。deployment metadataは`production_environment=false`。
+- `npm run rc:preflight`はrepository structure READY。外部設定は既知のPENDING、manual E2EはREQUIRED。`git diff --check`成功。
+- 証跡commit `dce5605d`をpushし、Draft PR [#666](https://github.com/team478a/manga/pull/666)を作成した。証跡同期前HEADのRequired Quality `38105799648`、Desktop Windows `38105799636`、Vercel、Preview Commentsはすべて成功した。
+- 月額固定費0円、ClamAV gateway／`clamd`常設なし、Worker停止を維持した。Production、GitHub設定、network、ClamAV、secret、probe、Worker、Job、Storage、公開、販売、Stripe、決済操作0件。queued Jobは未処理。
+- 次は証跡同期後の最終HEADでも全CI／Vercel Preview成功を確認して停止する。provider、region、最大一時実費、最大稼働時間、操作担当が決まるまでGate 1以降へ進まない。
+
+---
+
 ## 2026-10-11 Codex: 外部作品応募ClamAV 稼働前0円運用
 
 - PR #664 merge `3fd7ac09`後のRequired Quality `38102212588`、Desktop Windows `38102212571`、Vercel deployment成功を確認した。

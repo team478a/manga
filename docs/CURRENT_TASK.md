@@ -1,10 +1,25 @@
 # MANGAI Current Task
 
+## 2026-10-11 外部作品応募ClamAV 稼働前0円運用 merge後確認
+
+- 状態: `PR_665_MERGED / POST_MERGE_CHECKS_PASSED / DRAFT_PR_OPEN / ZERO_MONTHLY_CAP / NO_HOSTING_CREATED / PRODUCTION_UNCHANGED / WORKER_NOT_RUN`
+- Branch: `codex/clamav-zero-cost-merge-record-20261011`
+- PR: [#666](https://github.com/team478a/manga/pull/666)（Draft）。証跡commit `dce5605d`。
+- 基点: PR [#665](https://github.com/team478a/manga/pull/665)はmerge commit `97fc9ff1fcdc3375688eacbfc64d5cd27f018440`で`feature/manga-canvas-mvp`へ統合済み。
+- merge後のRequired Quality run `38105022931`（Core quality、Migration roundtrip）とDesktop Windows run `38105022936`（Accessibility、unpacked buildを含む）は成功した。
+- Vercel deployment `6989869770`は成功。GitHub metadataは`production_environment=false`で、staging projectへの反映である。
+- 月額固定費0円、ClamAV gateway／`clamd`常設なし、Worker停止を維持する。Production、GitHub設定、network、ClamAV、secret、probe、Worker、Job、Storage、公開、販売、Stripe、決済は変更・実行していない。応募`906ff7c3-c00a-42ed-aa9f-20d330233911`は`queued`のまま。
+- 検証: `npm run rc:preflight`はrepository structure READY。外部設定は既知のPENDING、manual E2EはREQUIRED。`git diff --check`成功。
+- 証跡同期前HEAD `dce5605d`のRequired Quality run `38105799648`（Core quality、Migration roundtrip）、Desktop Windows run `38105799636`（Accessibility、unpacked buildを含む）、Vercel、Vercel Preview Commentsはすべて成功した。
+- 次: 証跡同期後の最終HEADでも全CI／Vercel Preview成功を確認して停止する。provider、region、最大一時実費、最大稼働時間、操作担当が決まるまでGate 1以降へ進まない。
+
+---
+
 ## 2026-10-11 外部作品応募ClamAV 稼働前0円運用
 
-- 状態: `DOCUMENTED / ALL_PR_CHECKS_PASSED / DRAFT_PR_OPEN / ZERO_MONTHLY_CAP / NO_HOSTING_CREATED / PRODUCTION_UNCHANGED / WORKER_NOT_RUN`
+- 状態: `MERGED / POST_MERGE_CHECKS_PASSED / ZERO_MONTHLY_CAP / NO_HOSTING_CREATED / PRODUCTION_UNCHANGED / WORKER_NOT_RUN`
 - Branch: `codex/clamav-zero-cost-ondemand-runbook-20261011`
-- PR: [#665](https://github.com/team478a/manga/pull/665)（Draft）。文書commit `fc34e665`。
+- PR: [#665](https://github.com/team478a/manga/pull/665)。merge commit `97fc9ff1fcdc3375688eacbfc64d5cd27f018440`。文書commit `fc34e665`。
 - 基点: PR #664 merge commit `3fd7ac09779f259ddcf57c820d1fe2c674f55242`（`feature/manga-canvas-mvp`）。merge後のRequired Quality run `38102212588`、Desktop Windows run `38102212571`、Vercel deploymentはすべて成功した。
 - 正式稼働前はClamAV gateway／`clamd`を常設せず、月額固定費上限0円とする。hosting、DNS、証明書、secret、監視、schedulerを作成・有効化しない。
 - 将来の一時受入れは、provider／region／最大稼働時間／最大実費／停止・削除条件を先に提示し、isolated検証、Production readiness、1 Job canaryを別承認単位に分離する。
