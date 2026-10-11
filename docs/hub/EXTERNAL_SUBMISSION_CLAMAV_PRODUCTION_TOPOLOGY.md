@@ -1,6 +1,6 @@
 # External Submission ClamAV Production Topology
 
-更新日: 2026-10-11  
+更新日: 2026-10-11
 状態: `DECISION_REQUIRED / PRODUCTION_DISABLED`
 
 ## 目的
