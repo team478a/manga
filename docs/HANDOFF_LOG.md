@@ -5,8 +5,9 @@
 - PR #662 merge commit `b6a4fa6d`のRequired Quality、Desktop Windows、Production deploymentはすべて成功した。
 - Production readiness endpointはcredentialなしGETを401で拒否した。GitHubには外部作品Worker用secret／有効化variableがなく、repositoryにもClamAV network／hosting IaCがない。
 - Production topology判断文書を追加し、現行raw TCPと整合するSecure Compute＋private VPCを推奨、認証付きHTTPS gatewayを別実装の代替、公開clamd TCP＋Static IPだけを不採用とした。
+- 文書commit `a282bae8`とformat修正commit `3be92084`をpushし、Draft PR [#663](https://github.com/team478a/manga/pull/663)を作成した。
 - 責任者が方式、Vercel plan／費用上限、cloud／region／運用担当を決めるまで`BLOCKED_TOPOLOGY_DECISION`。Production、GitHub設定、ClamAV、Worker、Job、Storage、公開、販売、Stripe、決済操作は0件。
-- 次はdocs-only Draft PRと全CI／Vercel Preview確認。その後のIaC／adapter実装はtopology選択後の別PR、Production操作は段階ごとのaction-time承認単位とする。
+- 次はPR #663の最終HEADで全CI／Vercel Preview確認。その後のIaC／adapter実装はtopology選択後の別PR、Production操作は段階ごとのaction-time承認単位とする。
 
 ---
 
