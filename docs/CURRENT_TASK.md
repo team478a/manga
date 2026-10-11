@@ -2,7 +2,7 @@
 
 ## 2026-10-11 外部作品応募ClamAV Production topology判断
 
-- 状態: `DOCUMENTED / BLOCKED_TOPOLOGY_DECISION / PRODUCTION_UNCHANGED / WORKER_NOT_RUN`
+- 状態: `DOCUMENTED / ALL_PR_CHECKS_PASSED / BLOCKED_TOPOLOGY_DECISION / PRODUCTION_UNCHANGED / WORKER_NOT_RUN`
 - Branch: `codex/external-submission-clamav-topology-20261011`
 - PR: [#663](https://github.com/team478a/manga/pull/663)（Draft）。文書commit `a282bae8`、format修正commit `3be92084`。
 - 基点: PR #662 merge commit `b6a4fa6d736284986959c93c3bc8c0cb0d9d208b`（`feature/manga-canvas-mvp`）。merge後のRequired Quality run `38098015722`、Desktop Windows run `38098015764`、Production deployment `6988788173`はすべて成功した。
@@ -10,7 +10,8 @@
 - `docs/hub/EXTERNAL_SUBMISSION_CLAMAV_PRODUCTION_TOPOLOGY.md`を追加し、現行raw TCP実装と整合する推奨A（Vercel Secure Compute＋private VPC ClamAV）、別実装が必要な代替B（認証付きHTTPS scan gateway）、不採用（公開clamd TCP＋Static IP allowlistだけ）を固定した。
 - AはVercel Enterprise／VPC／費用判断、Bはgatewayの設計・hosting・認証・費用判断が必要。責任者が方式、plan／費用上限、cloud／region／運用担当を決めるまで`BLOCKED_TOPOLOGY_DECISION`とする。
 - Production環境変数、GitHub secret／variable、network、ClamAV、redeploy、probe、Worker POST、Job、Storage、審査、公開、販売、Stripe、決済は変更・実行していない。応募`906ff7c3-c00a-42ed-aa9f-20d330233911`のqueued Jobは未処理。
-- 次: PR #663の最終HEADで全CI／Vercel Preview成功を確認して停止する。その後は責任者のtopology選択を待ち、選択方式のIaC／adapterを別PRで実装する。Production設定と実行は段階ごとのaction-time承認まで行わない。
+- 証跡同期前HEAD `c9534a0e`でRequired Quality run `38098438279`（Core quality、Migration roundtrip）、Desktop Windows run `38098438274`（Accessibility、unpacked buildを含む）、Vercel、Vercel Preview Commentsはすべて成功した。
+- 次: 証跡同期後の最終HEADでも全CI／Vercel Preview成功を確認して停止する。その後は責任者のtopology選択を待ち、選択方式のIaC／adapterを別PRで実装する。Production設定と実行は段階ごとのaction-time承認まで行わない。
 
 ---
 
