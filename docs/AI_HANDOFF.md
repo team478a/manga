@@ -1,14 +1,25 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 外部作品応募ClamAV 稼働前0円運用（2026-10-11）
+
+- PR #664はmerge commit `3fd7ac09779f259ddcf57c820d1fe2c674f55242`で統合済み。merge後のRequired Quality `38102212588`、Desktop Windows `38102212571`、Vercel deploymentはすべて成功した。
+- 責任者の費用方針により、正式稼働前は月額固定費0円、ClamAV gateway／`clamd`常設なしとする。hosting、DNS、証明書、secret、監視、schedulerを作成・有効化しない。
+- 将来の一時受入れをGate 0（費用・対象）、isolated検証、Production readiness、1 Job canaryに分離し、各resource作成とProduction操作を別のaction-time承認単位とした。
+- docs-only検証はRC repository structure READY、外部設定PENDING、manual E2E REQUIRED、diff check成功。
+- Production、GitHub設定、network、ClamAV、secret、redeploy、probe、Worker、Job、Storage、公開、販売、Stripe、決済操作は0件。応募`906ff7c3-c00a-42ed-aa9f-20d330233911`は`queued`のまま。
+- 次はdocs-only差分の検証、Draft PR、全CI／Preview確認。月額0円方針のままresource作成へ進まない。
+
+---
+
 ## 0.0 外部作品応募ClamAV HTTPS gateway（2026-10-11）
 
 - PR #663はmerge commit `03a1ef7e189ff420dc56ebd8bbc4812e0d1d5818`で統合済み。責任者はtopology Bを選択した。
 - Branch `codex/external-submission-clamav-https-gateway-20261011`でportable gatewayとWorker HTTPS adapterを実装した。認証、TLS proxy境界、50 MiB上限、1 process 1 scan、private clamd INSTREAM、fail-closedを固定した。
-- 実装commit `493d4ba9`をpushし、Draft PR [#664](https://github.com/team478a/manga/pull/664)を作成した。
+- 実装commit `493d4ba9`をpushし、PR [#664](https://github.com/team478a/manga/pull/664)はmerge commit `3fd7ac09779f259ddcf57c820d1fe2c674f55242`で統合済み。
 - 集中8/8、Hub 1323/1323、Canvas 26/26、AI 50/50、Desktop 407/407、migration 100件、deps、lint、全typecheck、Hub/Desktop build、a11y blocking violation 0、RC structure、diff check成功。
 - 証跡同期前HEAD `f40fc4ac`のCore quality run `38101441112`、Migration roundtrip、Windows build run `38101441105`、Vercel、Vercel Preview Commentsはすべて成功した。
 - hosting／region／費用／運用担当は未決定。Production、GitHub、network、ClamAV、secret、redeploy、probe、Worker、Job、Storage、Stripe、決済操作は0件。queued Jobは未処理。
-- 次は証跡同期後の最終HEADでも全CI／Preview確認。merge後もgateway配置、Vercel設定、redeploy、probe、Worker runは個別のaction-time承認まで行わない。
+- merge後のRequired Quality `38102212588`、Desktop Windows `38102212571`、Vercel deploymentは成功した。gateway配置、Vercel設定、redeploy、probe、Worker runは個別のaction-time承認まで行わない。
 
 ---
 

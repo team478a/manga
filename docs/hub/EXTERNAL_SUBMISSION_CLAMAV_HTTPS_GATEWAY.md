@@ -1,7 +1,7 @@
 # External Submission ClamAV HTTPS Gateway
 
 更新日: 2026-10-11
-状態: `IMPLEMENTED / HOSTING_NOT_SELECTED / PRODUCTION_DISABLED`
+状態: `IMPLEMENTED / ZERO_MONTHLY_CAP / HOSTING_NOT_CREATED / PRODUCTION_DISABLED`
 
 ## 目的と範囲
 
@@ -59,3 +59,7 @@ cloud、region、DNS、証明書、secret、Production環境変数はこの工�
 Productionへ進む前に、hosting provider、region、月額上限、運用担当、trusted proxy設定、private clamd、
 signature監視、secret rotation手順を決定する。その後もgateway配置、Vercel設定、redeploy、readiness probe、
 対象Job 1件のWorker runは別々のaction-time承認を必要とする。実決済は行わない。
+
+正式稼働前は月額固定費0円、常設resourceなしとする。将来の一時受入れもresource作成前に最大実費と
+削除条件を別承認する。詳細は
+[`EXTERNAL_SUBMISSION_CLAMAV_ZERO_COST_PRELAUNCH.md`](./EXTERNAL_SUBMISSION_CLAMAV_ZERO_COST_PRELAUNCH.md)を参照する。

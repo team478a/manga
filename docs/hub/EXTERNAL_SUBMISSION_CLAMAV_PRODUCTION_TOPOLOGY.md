@@ -1,13 +1,14 @@
 # External Submission ClamAV Production Topology
 
 更新日: 2026-10-11
-状態: `B_SELECTED / GATEWAY_IMPLEMENTED / HOSTING_REQUIRED / PRODUCTION_DISABLED`
+状態: `B_SELECTED / GATEWAY_IMPLEMENTED / ZERO_MONTHLY_CAP / HOSTING_DEFERRED / PRODUCTION_DISABLED`
 
 ## 決定（2026-10-11）
 
 責任者は **B. 認証付きHTTPS scan gateway** を選択した。PR #663はmerge commit
 `03a1ef7e189ff420dc56ebd8bbc4812e0d1d5818`で基準ブランチへ統合済み。gatewayとWorker adapterは
-別branchで実装するが、hosting provider、region、費用上限、運用担当は未決定のためProductionへは接続しない。
+別branchで実装済み。正式稼働前は月額固定費0円、常設resourceなしとし、hosting provider、region、
+一時受入れの最大実費、運用担当が未決定のためProductionへは接続しない。
 
 ## 目的
 
@@ -71,6 +72,9 @@ Static IPは接続元を絞れるが、`clamd` protocol自体へ認証・暗号�
 4. 障害通知先、signature更新監視、保持しないことの運用確認。
 
 これらが未決定の間は`BLOCKED_TOPOLOGY_DECISION`とし、Production設定とqueued Jobを変更しない。
+
+稼働前の停止状態と将来の一時受入れgateは
+[`EXTERNAL_SUBMISSION_CLAMAV_ZERO_COST_PRELAUNCH.md`](./EXTERNAL_SUBMISSION_CLAMAV_ZERO_COST_PRELAUNCH.md)を正本とする。
 
 ## 選択後の段階ゲート
 
