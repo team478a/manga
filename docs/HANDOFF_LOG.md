@@ -1,5 +1,18 @@
 # MANGAI AI Handoff Log
 
+## 2026-10-11 Codex: 外部作品応募ClamAV疎通preflight
+
+- PR #661はmerge commit `61478882`で基準ブランチへ統合済み。merge後のRequired Quality `38094224584`、Desktop Windows `38094224594`、Production deployment `6988185716`はすべて成功した。
+- Branch `codex/external-submission-clamav-preflight-20261011`で、同じWorker secretによる認証済みGET readiness endpointとschedulerの手動`probe`を追加した。Feature Flag falseのままClamAVへ`zPING\0`を送り、厳密な`PONG`だけをreadyとする。
+- 実装commit `a8e6b0ae`をpushし、Draft PR [#662](https://github.com/team478a/manga/pull/662)を作成した。
+- probeはDB参照、Job claim、Storage、応募状態変更を行わない。設定欠損、timeout、不正応答は秘密値・本文をログへ出さずfail closedする。scheduled runと既定の非通信checkは維持した。
+- 集中11/11、Hub 1319/1319、Canvas 26/26、AI 50/50、Desktop 407/407、migration 100件、deps、lint、Hub/Desktop typecheck、Hub/Desktop build、diff check成功。外部設定とmanual E2Eは既知の保留。
+- Production環境変数、GitHub設定、redeploy、probe、Worker、Job、ClamAV scan、Storage、審査、公開、販売、Stripe、決済操作0件。既存queued Jobは未処理のまま。
+- 証跡同期前HEAD `6db3219c`のRequired Quality `38094958658`、Desktop Windows `38094958655`、Vercel、Vercel Preview Commentsはすべて成功した。
+- 次は証跡同期後の最終HEADでも全チェック成功を確認して停止する。ProductionのClamAV接続・設定・probe・Worker runは、それぞれ新しいaction-time承認まで実行しない。
+
+---
+
 ## 2026-10-11 Codex: 外部作品応募Worker scheduler
 
 - PR #660はmerge commit `67aeb9ca`で基準ブランチへ統合済み。merge後のRequired Quality `38092177579`、Desktop Windows `38092177603`、Production deployment `6987863224`はすべて成功した。

@@ -1,5 +1,19 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 外部作品応募ClamAV疎通preflight（2026-10-11）
+
+- PR [#661](https://github.com/team478a/manga/pull/661)はmerge commit `61478882744f5b1840f3964105362d03d7a3e864`で`feature/manga-canvas-mvp`へ統合済み。merge後のRequired Quality run `38094224584`、Desktop Windows run `38094224594`、Production deployment `6988185716`はすべて成功した。
+- Branch `codex/external-submission-clamav-preflight-20261011`で、認証済みGETによるClamAV readiness endpointとschedulerの手動`probe` modeを追加した。Feature Flag falseのまま`zPING\0`／`PONG`疎通だけを確認し、DB、Job、Storage、応募状態には触れない。
+- 実装commit `a8e6b0ae`をpushし、Draft PR [#662](https://github.com/team478a/manga/pull/662)を作成した。
+- 接続設定欠損、timeout、過大・不正応答は`unavailable`へfail closedする。秘密値やClamAV応答本文はログへ出さず、probeも固定HTTPS Worker pathへ1 requestだけ送る。
+- clamd TCPは組み込み認証・暗号化を持たないため公開Internetへ露出させず、Vercelから到達可能なprivate接続を使う前提を運用文書へ記録した。
+- 集中11/11、Hub 1319/1319、Canvas 26/26、AI 50/50、Desktop 407/407、migration 100件、deps、lint、typecheck、Hub/Desktop build、diff check成功。`rc:preflight`の外部設定とmanual E2Eは既知のPENDING／REQUIRED。
+- Production環境変数、GitHub設定、redeploy、probe、Worker POST、Job claim、ClamAV scan、Storage、審査、公開、販売、Stripe、決済は0件。応募`906ff7c3-c00a-42ed-aa9f-20d330233911`のqueued Jobは未処理。
+- 証跡同期前HEAD `6db3219c`のRequired Quality run `38094958658`、Desktop Windows run `38094958655`、Vercel、Vercel Preview Commentsはすべて成功した。
+- 次は証跡同期後の最終HEADでも全CI／Vercel Preview成功を確認して停止する。merge後もClamAV接続先・secret設定、redeploy、probe、Worker runを分離し、各action-time承認まで実行しない。実決済は禁止を維持する。
+
+---
+
 ## 0.0 外部作品応募Worker scheduler（2026-10-11）
 
 - PR [#660](https://github.com/team478a/manga/pull/660)はmerge commit `67aeb9caf62393d041e44a04b162fddb54eec1ac`で`feature/manga-canvas-mvp`へ統合済み。merge後のRequired Quality run `38092177579`、Desktop Windows run `38092177603`、Production deployment `6987863224`はすべて成功した。

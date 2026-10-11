@@ -30,9 +30,10 @@ test("external ingest storage is private, owner scoped, and write RPC only", asy
 });
 
 test("external ingest enforces lease, bounded retries, page continuity, and fail closed scanning", async () => {
-  const [migration, worker, validator, uploadRoute, workerRoute, nextConfig] = await Promise.all([
+  const [migration, worker, clamav, validator, uploadRoute, workerRoute, nextConfig] = await Promise.all([
     read("supabase/migrations/202610100002_external_submission_ingest.sql"),
     read("src/lib/external-submission-worker.ts"),
+    read("src/lib/external-submission-clamav.ts"),
     read("src/lib/external-submission-ingest.ts"),
     read("src/app/api/creator/external-submissions/[submissionId]/uploads/route.ts"),
     read("src/app/api/internal/external-submissions/worker/route.ts"),
@@ -42,8 +43,10 @@ test("external ingest enforces lease, bounded retries, page continuity, and fail
   assert.match(migration, /v_job\.lease_expires_at<=now\(\)/);
   assert.match(migration, /attempt_count>=v_job\.max_attempts/);
   assert.match(migration, /generate_series\(1,jsonb_array_length\(p_pages\)\)/);
-  assert.match(worker, /MANGAI_EXTERNAL_CLAMAV_HOST/);
   assert.match(worker, /return async \(\) => "unavailable"/);
+  assert.match(clamav, /MANGAI_EXTERNAL_CLAMAV_HOST/);
+  assert.match(clamav, /socket\?\.write\("zPING\\0"\)/);
+  assert.match(clamav, /=== "PONG" \? "ready" : "unavailable"/);
   assert.match(validator, /malware_scan_unavailable/);
   assert.match(validator, /EXTERNAL_SUBMISSION_MAX_ZIP_RATIO = 100/);
   assert.match(validator, /zip_path_unsafe/);
@@ -53,5 +56,7 @@ test("external ingest enforces lease, bounded retries, page continuity, and fail
   assert.match(uploadRoute, /EXTERNAL_SUBMISSION_UPLOAD_MAX_REQUEST_BYTES/);
   assert.match(workerRoute, /hasValidInternalWorkerAuthorization/);
   assert.match(workerRoute, /MANGAI_EXTERNAL_SUBMISSION_WORKER_ENABLED/);
+  assert.match(workerRoute, /export async function GET/);
+  assert.match(workerRoute, /checkClamAvReadiness/);
   assert.match(nextConfig, /serverExternalPackages:\s*\["@napi-rs\/canvas"\]/);
 });

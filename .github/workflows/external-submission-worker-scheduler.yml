@@ -12,6 +12,7 @@ on:
         type: choice
         options:
           - check
+          - probe
           - run
 
 permissions:
@@ -38,6 +39,24 @@ jobs:
           MANGAI_EXTERNAL_SUBMISSION_WORKER_URL: ${{ secrets.MANGAI_EXTERNAL_SUBMISSION_WORKER_URL }}
           MANGAI_EXTERNAL_SUBMISSION_WORKER_SECRET: ${{ secrets.MANGAI_EXTERNAL_SUBMISSION_WORKER_SECRET }}
         run: node scripts/run-external-submission-worker-scheduler.mjs --check
+
+  probe-worker:
+    name: Probe ClamAV readiness without claiming a job
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.mode == 'probe' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - name: Send one authenticated read-only readiness request
+        env:
+          MANGAI_EXTERNAL_SUBMISSION_SCHEDULER_ENABLED: "true"
+          MANGAI_EXTERNAL_SUBMISSION_WORKER_URL: ${{ secrets.MANGAI_EXTERNAL_SUBMISSION_WORKER_URL }}
+          MANGAI_EXTERNAL_SUBMISSION_WORKER_SECRET: ${{ secrets.MANGAI_EXTERNAL_SUBMISSION_WORKER_SECRET }}
+          MANGAI_EXTERNAL_SUBMISSION_SCHEDULER_TIMEOUT_SECONDS: "30"
+        run: node scripts/run-external-submission-worker-scheduler.mjs --probe
 
   run-worker:
     name: Process at most one external submission ingest job
