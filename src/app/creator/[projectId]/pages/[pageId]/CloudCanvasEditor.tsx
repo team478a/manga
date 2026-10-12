@@ -99,6 +99,7 @@ import {
   listProjectAssets,
   recordMangaQualityEvent,
   retryGeneration,
+  retryPlacement,
   uploadProjectAsset,
 } from "./services/creator-api";
 
@@ -1313,6 +1314,31 @@ export function CloudCanvasEditor({
     }
   }
 
+  async function retrySavedImagePlacement(job: CloudGenerationJob) {
+    if (requestingPanelGeneration || pageLockState !== "acquired") return;
+    if (saveState !== "saved" || hasUnsavedChanges()) {
+      setMessage("編集中の内容を保存・確認してから配置だけ再試行してください。");
+      return;
+    }
+    setRequestingPanelGeneration(true);
+    setMessage("保存済み画像の配置だけ再試行しています（追加生成・credit消費なし）…");
+    try {
+      const result = await retryPlacement(job.id, page.id);
+      setMessage(result.status === "auto_placed"
+        ? "保存先の配置を確認しました。この画面への反映と品質・原稿完成は別に確認してください。"
+        : result.status === "review_required"
+          ? "編集状態を保護しました。候補と対象コマを手動で確認してください。"
+          : result.status === "rejected"
+            ? "不採用の候補は配置できません。"
+            : "配置を完了できませんでした。追加生成はしていません。候補と保存状態を確認してください。");
+      await refreshGenerationJobs();
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "配置を再試行できませんでした。");
+    } finally {
+      setRequestingPanelGeneration(false);
+    }
+  }
+
   function movePanelLayer(layerId: string, delta: -1 | 1) {
     commit((draft) => {
       const target = draft.panelLayers.find((layer) => layer.id === layerId);
@@ -2412,6 +2438,19 @@ export function CloudCanvasEditor({
                       <p>採用: {buildCandidateProductionPresentation(job, canvas, saveState === "saved" && !hasUnsavedChanges()).adoptionLabel}</p>
                       <p>配置: {buildCandidateProductionPresentation(job, canvas, saveState === "saved" && !hasUnsavedChanges()).placementLabel}</p>
                       <p>原稿完成は別判定です。保存後にページの完成条件を確認してください。</p>
+                      {job.output_asset_id && job.panel_adoption_status === "placement_failed" &&
+                      job.panel_adoption_retryable && job.quality_review_status !== "rejected" ? (
+                        <div className="mt-2">
+                          <button className="button-secondary w-full" type="button"
+                            disabled={requestingPanelGeneration || pageLockState !== "acquired" || saveState !== "saved" || hasUnsavedChanges()}
+                            onClick={() => void retrySavedImagePlacement(job)}>
+                            配置だけ再試行（追加生成・credit消費なし）
+                          </button>
+                          {saveState !== "saved" || hasUnsavedChanges() ? (
+                            <p>未保存編集があります。先に保存・確認してください。</p>
+                          ) : null}
+                        </div>
+                      ) : null}
                     </div>
                   ) : null}
                   <details className="mt-2 rounded bg-stone-50 p-2">

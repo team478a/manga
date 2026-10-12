@@ -1,5 +1,18 @@
 # MANGAI Current Task
 
+## 2026-10-12 漫画生成改善 C4b: 保存済み画像の配置だけ再試行
+
+- PR #674はmerge `e10a1e65`で統合済み。最終HEADのCore quality／Migration roundtrip／Windows build／Vercel／Preview Comments全5チェック成功。Branch `codex/manga-placement-retry-20261012`。
+- `POST /api/creator/generation-jobs/[jobId]/retry-placement`を追加。本人所有Project・本人作成Job・指定Page・画像completed・保存済みAsset・placement_failed/retryableを確認し、既存の自動配置処理とrevision付きRPCを再利用する。生成retry API／enqueue／Provider／quota／monitor AI要求消費は呼ばない。
+- 不採用記録は拒否、auto_placedは成功no-op、review_requiredは手動確認のまま。Asset欠落／削除、Page不一致、手動画像、生成後の非自動revision変更、finalizedは上書きしない。競合再読込時も本人権限・不採用・retryableを再確認する。既存DBのJob/Page lockとalready_applied判定を維持し、DB migrationは追加・変更しない。
+- 候補履歴に「配置だけ再試行（追加生成・credit消費なし）」を追加。未保存編集／保存中／編集lock未取得／要求中は操作不可。再試行成功は保存先の状態であり、実表示・品質確認・原稿完成と区別する。未保存編集を含む自動reload保護は既存処理を維持する。
+- 集中35/35、最終Hub全体1414/1414、lint／最終Hub typecheck／最終Hub build／diff check成功。deps（error 0、既知warning 2、新規5source fileのsize検査を含む）、migration 101件、Canvas 27/27、AI 50/50成功。初回の同時要求fixtureはRPCのalready_applied動作を模しておらず1件失敗、fixtureを修正して集中／全体とも再実行成功。
+- 同時要求はRepository契約の模擬テスト＋既存SQLのlock／重複検査確認であり、実DBでの同時実行受入れではない。不採用は読み取り時点の記録で拒否する。別画面の品質イベントと保存の同時操作を新たに直列化するDB契約は追加していない。実Cloudブラウザ／実DB受入れは未実施。
+- 依存変更なしでinstall不要。Desktop/shared packageの実装変更なしでDesktop build/test/a11yは対象外。RC structure READY、外部設定PENDING、manual E2E REQUIRED。
+- Production変更、外部DB操作、Provider呼出し、有料生成、credit、実決済、model downloadは0件。C4全体は未完了。次はCI／レビュー後にpolling／未保存編集保護・実表示telemetry・実画面確認。C5／D2/D3/D1と実AI作画品質も未完了。
+
+---
+
 ## 2026-10-12 漫画生成改善 C4a: 生成・採用・配置・完成の表示分離
 
 - PR #673はmerge `34e9321e`で統合済み。最終HEADのCore quality／Migration roundtrip／Windows build／Vercel／Preview Comments全5チェック成功。Branch `codex/manga-placement-state-20261012`。
