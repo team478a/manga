@@ -1,5 +1,18 @@
 # MANGAI AI Handoff Log
 
+## 2026-10-12 Codex: C4b 保存済み画像の配置だけ再試行
+
+- Base PR #674 merge `e10a1e65`、最終HEAD全5チェック成功。Branch `codex/manga-placement-retry-20261012`。
+- `retry-panel-placement.ts`で本人所有／作成／Pageとcompleted image／Asset／配置失敗retryableを検査する。infrastructure serviceでRLS付きJob・Project・配置・不採用記録を確認し、認可後にだけ配置用admin repositoryを生成する。routeはUUID、pageIdだけのstrict body、既存request rate limitを要求する。
+- 通常の生成retryとは異なる`retry-placement` APIとUIボタンを追加した。Provider、Queue、生成Job作成、quota／monitor AI要求消費を依存として持たない。未保存／保存中／lock未取得を禁止し、成功messageは保存先の配置だけとする。
+- 同じJob/Assetを使い、auto_placed no-op、途中中断時の既存layer検出、revision競合時の再認可、手動画像／finalized保護、他人／別Page／欠落出力／不採用拒否を模擬Repositoryで検証した。DBの実同時操作とブラウザ受入れは未実施。別画面の品質イベントとの原子的な直列化は既存契約の範囲外として残す。
+- 集中35/35、最終Hub1414/1414、lint／最終Hub typecheck・build／Canvas27/27／AI50/50／deps（既知warning 2、新規5source file size検査を含む）／migration101件／diff成功。初回同時要求fixtureの冪等保存未実装を修正して再実行成功。PR状態はCURRENT_TASKに記録する。
+- APIは追加のみ。DB migration／Storage／Worker／既存保存形式／依存／Desktopは不変。Production、外部DB操作、Provider、有料生成、credit、実決済、model downloadは0件。
+- 次の担当者はgit status／PR最終HEAD CIを確認する。C4のpolling／未保存編集保護／実表示telemetry／実画面確認と、C5／D2/D3/D1／実AI作画品質は未完了。
+- 実装commit `40b47c84`をpushし、[Draft PR #675](https://github.com/team478a/manga/pull/675)を作成／taskへattachした。確認時点Core quality QUEUED、Migration roundtrip／Windows build実行中、Vercel PENDING、Preview Comments成功。文書追記後の最終HEADは`gh pr view 675 --json headRefOid,statusCheckRollup`で確認する。
+
+---
+
 ## 2026-10-12 Codex: C4a 生成・採用・配置・完成の表示分離
 
 - Base PR #673 merge `34e9321e`、最終HEAD全5チェック成功。Branch `codex/manga-placement-state-20261012`。

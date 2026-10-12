@@ -46,6 +46,14 @@
 
 ## 安全境界
 
+### 保存済み画像の配置だけ再試行（C4b、2026-10-12）
+
+- 候補履歴の`placement_failed`かつ`panel_adoption_retryable=true`の完了画像へ専用操作を表示する。APIは`POST /api/creator/generation-jobs/[jobId]/retry-placement`、bodyは`{pageId}`だけ。生成条件・Canvas・Asset IDを利用者入力で指定しない。
+- 認証済みCreator/Adminであっても本人所有Project／本人作成Job／指定Pageが一致する場合だけ扱う。画像completedと保存済みAssetを確認し、不採用記録・再試行不可・未知状態は配置しない。auto_placedの再要求はno-op、review_requiredは手動確認を維持する。
+- 既存Assetと`save_cloud_generation_panel_adoption_v2`を使用する。DBのJob/Page lock、already_applied、source revision／自動配置revision chain、Asset所属／削除チェックを維持し、新規Job／Provider呼出し／credit・monitor AI要求消費／Storage uploadはしない。通常の生成retry APIとは分離する。
+- 未保存編集、保存中、編集lock未取得、要求中はUI操作不可。競合再読込でも本人権限と不採用を確認する。手動配置・finalized・非自動revision変更は上書きせず手動確認へ送る。成功は保存先の配置状態であり、画面への実反映・品質・原稿完成ではない。
+- 同時要求のローカル検証は既存RPCの原子的な冪等契約を模したRepository testであり、実DBの受入れではない。別画面の品質イベントと保存の同時実行を新たに直列化するmigrationは含めない。実ブラウザ・polling・未保存編集保護の追加検証・実表示telemetryはC4の後続単位で扱う。
+
 ### 生成・採用・配置・完成の表示（C4a、2026-10-12）
 
 - `completed`／progress 100%は生成結果の保存を意味し、採用・配置・原稿完成の承認ではない。候補カードで生成工程／採用・品質確認／配置を独立表示し、原稿完成は既存の完成条件判定へ委ねる。

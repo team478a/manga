@@ -155,6 +155,17 @@ export async function retryGeneration(jobId: string) {
   );
 }
 
+export async function retryPlacement(jobId: string, pageId: string) {
+  return responseJson<import("@/modules/manga/application/retry-panel-placement").PlacementRetryResult>(
+    await fetch(`/api/creator/generation-jobs/${encodeURIComponent(jobId)}/retry-placement`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ pageId }),
+    }),
+    "保存済み画像の配置を再試行できませんでした。",
+  );
+}
+
 export async function recordMangaQualityEvent(body: {
   event: "displayed" | "selected" | "rejected";
   generationJobId: string;
