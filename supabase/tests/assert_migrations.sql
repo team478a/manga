@@ -1,4 +1,5 @@
 \set ON_ERROR_STOP on
+\ir assert_storyboard_text_region.sql
 
 do $$begin
   if to_regclass('public.cloud_character_reference_bindings') is null or to_regprocedure('public.save_cloud_character_reference_binding(uuid,uuid,uuid,uuid,text,text,integer,text)') is null then raise exception 'Cloud character reference binding objects are missing';end if;

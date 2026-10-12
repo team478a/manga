@@ -600,7 +600,13 @@
       "description": "外部作品の審査・固定価格公開・取下げ・管理者停止とCheckout防御を追加",
       "forwardSha256": "1f5ff524f9b182197a095025bee19b44e478700a8e89bf367a1b782d492335d6",
       "rollbackSha256": "430e8dca61038b93f8d56c4d3b17f6a7e1c593154e10587e5b41cacf1990f2cf"
+    },
+    {
+      "id": "202610120001_cloud_storyboard_text_inner_region",
+      "description": "新規ネーム下書きの文字枠を形状別内接領域へ変更し読みづらい初期配置を削減",
+      "forwardSha256": "c5631dd68e65bd925e093d5c390c012187580899797e96b5a94bbbc53ed29bd8",
+      "rollbackSha256": "9e4d0eeb2a39865a80c25de0260a65422dffce2814f733a7d5d2f335c2f9414d"
     }
   ],
-  "schemaSha256": "aff4842dd0ff4ec3fa90a3d7ce7c085721d0ff4dfdd05f9699b175480f709274"
+  "schemaSha256": "6126a16078460520b2aff9972100222a8cec0cb44f7813e4f0c2c74a6ee84e99"
 }
