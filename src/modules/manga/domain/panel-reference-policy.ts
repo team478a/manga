@@ -46,12 +46,14 @@ export function resolveVersionedCharacterReferences(input: {
         right.priority - left.priority ||
         left.assetId.localeCompare(right.assetId),
       );
-    if (!matches.some((binding) => binding.role === "front" || binding.role === "face"))
-      missingProfileIds.push(character.profileId);
     for (const match of matches.slice(0, 2)) {
-      if (resolved.length < 8 && !resolved.some((item) => item.assetId === match.assetId))
+      if (resolved.length < 12 &&
+          (new Set(resolved.map((item) => item.assetId)).size < 8 || resolved.some((item) => item.assetId === match.assetId)) &&
+          !resolved.some((item) => item.assetId === match.assetId && item.subjectId === match.subjectId && item.role === match.role))
         resolved.push(match);
     }
+    if (!resolved.some((binding) => binding.subjectId === character.profileId && (binding.role === "front" || binding.role === "face")))
+      missingProfileIds.push(character.profileId);
   }
   const warnings = missingProfileIds.map((profileId) => ({
     code: "major_character_identity_reference_missing" as const,
@@ -65,6 +67,21 @@ export function resolveVersionedCharacterReferences(input: {
     warnings,
     blocked: input.policy === "block" && warnings.length > 0,
   };
+}
+
+export function retainSentCharacterReferences(
+  resolution: ReturnType<typeof resolveVersionedCharacterReferences>,
+  assetIds: readonly string[],
+) {
+  const references = resolution.references.filter((item) => assetIds.includes(item.assetId));
+  const missing = [...new Set(resolution.references.map((item) => item.subjectId))].filter(
+    (profileId) => !references.some((item) => item.subjectId === profileId && (item.role === "front" || item.role === "face")),
+  );
+  const warnings = [...new Map([
+    ...resolution.warnings,
+    ...missing.map((profileId) => ({ code: "major_character_identity_reference_missing" as const, profileId })),
+  ].map((warning) => [warning.profileId, warning])).values()];
+  return { ...resolution, references, warnings, blocked: resolution.policy === "block" && warnings.length > 0 };
 }
 
 const PER_SUBJECT_LIMIT: Record<PanelReferenceSubjectKind, number> = {

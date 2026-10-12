@@ -1,5 +1,6 @@
 import { z } from "zod";
 import sharp from "sharp";
+import { cloudImageReferenceCapacity } from "../../../lib/cloud-image-reference-capacity.ts";
 import {
   AIProviderError,
   type CloudGenerationContext,
@@ -289,10 +290,13 @@ export class BlackForestLabsFluxImageProvider implements CloudImageGenerationPro
           "画像修正方式とProvider設定が一致しません。",
           false,
         );
-      const referenceImageUrls = (context.referenceImageUrls ?? []).slice(
-        0,
-        this.config.model === "flux-2-klein-9b" ? 4 : 8,
-      );
+      const referenceImageUrls = context.referenceImageUrls ?? [];
+      if (!context.providerJobId && referenceImageUrls.length > cloudImageReferenceCapacity(this.config.model))
+        throw new AIProviderError("provider_rejected", "参照画像がモデルの対応枚数を超えています。生成条件を確認してください。", false);
+      if (!context.providerJobId && input.referenceAssetIds && input.referenceAssetIds.length !== referenceImageUrls.length)
+        throw new AIProviderError("provider_rejected", "参照画像の送信条件が一致しません。", false);
+      if (!context.providerJobId && input.sourceAssetId && input.referenceAssetIds?.[0] !== input.sourceAssetId)
+        throw new AIProviderError("provider_rejected", "修正元画像が参照順序の先頭にありません。", false);
       let fillInput: { image: string; mask: string } | null = null;
       if (input.operation === "inpainting") {
         const [image, mask] = await Promise.all([

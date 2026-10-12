@@ -18,6 +18,32 @@ const context = {
   idempotencyKey: "30000000-0000-4000-8000-000000000031",
 };
 
+for (const [model, count] of [["flux-2-klein-9b",5],["flux-2-pro",9],["flux-2-max",9],["flux-pro-1.0-fill",2]]) {
+  test(`${model}は上限超過参照を黙って切らずHTTP送信前に拒否する`, async()=>{
+    let calls=0;
+    const provider=new BlackForestLabsFluxImageProvider({
+      apiKey:"bfl-test-key-with-at-least-twenty-characters",model,
+      capability:{...capability,modelId:model},fetcher:async()=>{calls++;throw new Error("unexpected request");},
+    });
+    await assert.rejects(provider.generate({kind:"image",jobType:"background",prompt:"quiet street",negativePrompt:"",operation:model.includes("fill")?"inpainting":"text_to_image"},
+      {...context,referenceImageUrls:Array.from({length:count},(_,i)=>`https://example.test/${i}.png`)}),/参照画像がモデル/);
+    assert.equal(calls,0);
+  });
+}
+test("保存IDと署名URL数が違う場合は送信前に拒否する",async()=>{
+  let calls=0;
+  const provider=new BlackForestLabsFluxImageProvider({apiKey:"bfl-test-key-with-at-least-twenty-characters",model:"flux-2-pro",capability,fetcher:async()=>{calls++;throw new Error("unexpected request");}});
+  await assert.rejects(provider.generate({kind:"image",jobType:"background",prompt:"quiet street",negativePrompt:"",referenceAssetIds:[context.jobId]},context),/送信条件が一致/);
+  assert.equal(calls,0);
+});
+test("修正元が参照先頭にない入力は画像取得も送信も行わない",async()=>{
+  let calls=0;
+  const provider=new BlackForestLabsFluxImageProvider({apiKey:"bfl-test-key-with-at-least-twenty-characters",model:"flux-2-pro",capability,fetcher:async()=>{calls++;throw new Error("unexpected request");}});
+  await assert.rejects(provider.generate({kind:"image",jobType:"background",prompt:"quiet street",negativePrompt:"",operation:"image_to_image",sourceAssetId:context.jobId,referenceAssetIds:[context.projectId,context.jobId]},
+    {...context,referenceImageUrls:["https://example.test/character.png","https://example.test/source.png"]}),/参照順序の先頭/);
+  assert.equal(calls,0);
+});
+
 test("BFL adapter submits a strict general request, polls, and downloads immediately", async () => {
   const calls = [];
   const provider = new BlackForestLabsFluxImageProvider({

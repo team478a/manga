@@ -34,6 +34,16 @@
 - 既存Jobを再書換えせず、新規登録時の既存保存経路を使用する。DB、API、Storage、料金・承認契約は変更しない。参照画像の最終送信順序・モデル上限の整合（C2）は別の変更単位。
 - 実Builderの0〜3人×3画角、配置・視線、override、長文予算、通常／短縮契約一致の回帰テストはコード保証であり、生成画像の人物同一性・作画品質や4ページ原稿完成を保証しない。
 
+### 確定した参照送信契約（C2、2026-10-12）
+
+- 送信前のProvider選択結果から上限を確定し、修正元→人物→画風→場所→小物の順で最終bundleを作る。同一Assetは1回送るが、複数人物・用途のroleは保持する。Promptの`input_image`、`input_image_2`等と保存する`referenceAssetIds`はこのbundleから作成する。
+- FLUX.2 Pro/Maxは8枚、Klein 9Bは4枚。既存の固定モデル契約を[BFL公式モデル一覧](https://help.bfl.ai/articles/7655484417-what-flux-models-are-available)で照合した。モデル切替で上限が変われば登録時に再検証し、送信adapterは黙ってsliceしない。
+- Fillは修正元1枚と既存mask／outpainting変換だけを使用する。別の人物・画風・世界参照の送信は非対応とPromptに明示し、人物参照追跡へ含めない。元画像とmaskのサイズ・所有者検査は維持する。
+- 版付き人物参照と品質仕様の参照IDも最終送信Assetだけを追跡する。上限内に主要人物のfront/faceを保持できなければ、既存のblock方針で登録停止、warn方針では不足を記録する。
+- WorkerはJobのowner/project/deleted_at条件で読み、DB返却順でなく保存ID順に署名URLを準備する。欠損・重複・空path・署名失敗は部分的な参照で続行しない。
+- 既存Jobの入力は再書換えしない。再試行で上限超過・修正元順序不整合がある場合は新規送信前に拒否する。既にProvider Job IDがあるpolling再開は追加submitしない既存契約を維持する。
+- 実Builder→署名準備→実adapterのmock HTTP検証は送信契約の保証であり、実生成の同一人物再現・4ページ漫画完成を保証しない。Production／有料生成は別の明示承認が必要。
+
 ## 安全境界
 
 - `CLOUD_PANEL_IMAGE_GENERATION_ENABLED=true`の場合だけ実行

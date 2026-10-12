@@ -5,6 +5,7 @@ import {
   type CloudTextGenerationProvider,
 } from "@mangai/ai-core";
 import { CLOUD_ASSET_BUCKET } from "../../../lib/cloud-creator-contract.ts";
+import { resolveReferenceImageUrls } from "../infrastructure/reference-image-urls.ts";
 import { createAdminClient } from "../../../lib/supabase/admin.ts";
 import { claimNextCloudGenerationJob } from "./claim-next-job.ts";
 import { createCloudJobLeaseHeartbeat } from "./lease-heartbeat.ts";
@@ -188,21 +189,13 @@ export async function processNextCloudGenerationJob(input: {
           "参照画像を確認できませんでした。",
           false,
         );
-      const byId = new Map(referenceAssets.map((asset) => [asset.id, asset.storage_path]));
-      for (const assetId of generation.referenceAssetIds) {
-        const storagePath = byId.get(assetId);
-        if (!storagePath) continue;
-        const { data: signed, error: signedError } = await client.storage
-          .from(CLOUD_ASSET_BUCKET)
-          .createSignedUrl(storagePath, 600);
-        if (signedError || !signed?.signedUrl)
-          throw new AIProviderError(
-            "provider_rejected",
-            "参照画像を準備できませんでした。",
-            false,
-          );
-        context.referenceImageUrls.push(signed.signedUrl);
-      }
+      context.referenceImageUrls = await resolveReferenceImageUrls(
+        generation.referenceAssetIds, referenceAssets, async (storagePath) => {
+          const { data: signed, error: signedError } = await client.storage
+            .from(CLOUD_ASSET_BUCKET)
+            .createSignedUrl(storagePath, 600);
+          return signedError ? null : signed?.signedUrl ?? null;
+        });
     }
     if (generation.kind === "image" && generation.maskAssetId) {
       const { data: maskAsset, error: maskError } = await client

@@ -1,5 +1,19 @@
 # MANGAI Current Task
 
+## 2026-10-12 漫画生成改善 C2: 参照画像の送信契約
+
+- PR #668 merge `3fa40a39`を基点に、`codex/manga-reference-send-contract-20261012`でC2を実装する。
+- 修正元を先頭に固定し、重複Assetの複数roleを保持した最終bundleを、Promptの番号・保存する参照ID・人物参照追跡に共通利用する。モデル上限は番号付け前に確定し、adapterの黙った切捨てを廃止する。Fillは元画像とmaskだけを送信する契約を維持する。
+- 新規Jobだけへ確定bundleを保存し、既存Jobは書換えない。古い入力の再試行は黙って参照を減らさず、送信前に不整合を拒否する。所有者・Project・読取失敗のfail-closedを維持する。
+- Production、有料生成、credit、実決済、モデルdownloadは0件を維持する。C3以降・実画像品質は今回の完了範囲に含めない。
+- 実装修正済み。旧mergeの実Builderで保存ID先頭は修正元なのにPrompt先頭roleが人物、修正元role未宣言になることを再現した。実Builder→署名準備→実adapterのmock HTTPでPromptと最終ID/URL順序を検証した。
+- 検証: 集中91/91、Hub 1364/1364、Canvas 26/26、AI Core 50/50、Hub typecheck、lint、dependency/module boundaries（error 0、既知warning 2）、migration 100件、Hub build、diff check成功。RC structure READY、外部設定PENDING、manual E2E REQUIRED。依存・Desktop変更なしのためinstall/Desktop build/a11yは今回対象外。
+- PR #668の最終HEADではCore quality、Migration roundtrip、Windows build、Vercel、Preview Commentsすべて成功を確認済み。
+- 実装commit `121e4b9a`をpushし、[Draft PR #669](https://github.com/team478a/manga/pull/669)を作成した。確認時点ではCI/Preview PENDING、Preview Commentsのみ成功。
+- 次: 最終HEADのCI確認とPRレビュー。`git status --short`、`gh pr view 669 --json statusCheckRollup`から再開する。次の実装単位はC3（楕円などの形状・回転を考慮した文字内包）。実際の有料作画品質・ブラウザ原稿完成は未受入れ。
+
+---
+
 ## 2026-10-12 漫画生成改善指示書: C1 確定した人物・構図契約
 
 - 利用者の「実装を進めてください」を受け、`MANGAI_Manga_Generation_Implementation_Instructions_20261012.docx`の改善を小さなPRで進める。基点はPR #667 merge `7d7f4625`。
