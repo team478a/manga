@@ -11,6 +11,7 @@
 - 製品のrenderer／PDF exporterを使用し、各PDF 4ページ、Cloud/Desktop全4PNGの復号RGBA画素一致、実UI修復→保存→再読込成功。初回fixtureのPDF入力mimeType欠落と、PNG圧縮byte比較の誤りはtest側を修正して再実行成功。画素一致で圧縮方式差を誤検知しない。
 - 検証: Desktop 411/411、Hub 1385/1385、Canvas 27/27、AI 50/50、Hub/Desktop build、deps（error 0、既知warning 2）、migration 101件、最終lint／全typecheck／diff check成功。a11y成功／blocking violation 0、color-contrast incompleteは完全WCAG受入れではない。RC structure READY、外部設定PENDING、manual E2E REQUIRED。依存変更なしでinstall不要。
 - 再現手順と範囲は`docs/desktop/MANGA_EDITOR.md`のC3d節。隔離runtimeと証拠画像はgitignore対象としてローカルに保持する。次は最終CI／レビュー後、C4（生成・採用・配置／完成の分離と配置だけの再試行）。有料生成／外部DB操作の承認は含まない。
+- 実装commit `0fd5128b`をpushし、[Draft PR #673](https://github.com/team478a/manga/pull/673)を作成／taskへattachした。確認時点のCore quality／Migration roundtrip／Windows buildは実行中、Vercel PENDING、Preview Comments成功。最終HEAD CIは未完了。再開: `git status --short`、`gh pr view 673 --json statusCheckRollup`。
 
 ---
 

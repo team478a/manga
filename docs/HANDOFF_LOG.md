@@ -11,6 +11,7 @@
 - e2eスキルのrunner未導入／Node要件未達により既存Electron test機構へfallback。PDFスキルのrender-and-inspectを実施。新しい外部AIや認証依存は追加していない。
 - Production、外部DB、Provider、有料生成、credit、実決済、model downloadは0件。合成図形は実AI漫画の証拠ではない。Cloudブラウザ操作、任意font、実画像同一人物／物語品質は未受入れ。C4/C5、D2/D3/D1は未完了。
 - 隔離runtime／PNG／PDFはgitignore対象として保持。再現手順はMANGA_EDITORのC3d節。次は最終CI／レビュー後にC4を別branchで進める。
+- 実装commit `0fd5128b`、[Draft PR #673](https://github.com/team478a/manga/pull/673)をpush／taskへattachした。確認時点のCore quality／Migration roundtrip／Windows buildは実行中、Vercel PENDING、Preview Comments成功。最終HEAD CIは`gh pr view 673 --json statusCheckRollup`で再確認する。commit後のdeps再実行は新規4source fileのsize検査を含め成功した。
 
 ---
 
