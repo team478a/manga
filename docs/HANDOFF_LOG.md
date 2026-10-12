@@ -1,5 +1,22 @@
 # MANGAI AI Handoff Log
 
+## 2026-10-12 Codex: C3c Desktop関連文字の回転・内包
+
+- Base PR #671 merge `a88a42df`、最終HEADの全5チェック成功。Branch `codex/desktop-linked-dialogue-20261012`。
+- `packages/canvas-core/src/dialogue-region.ts`／`dialogue-layout.ts`へC3aの既存数学・fitを移動し、CloudのfacadeとAPIを維持した。Desktopは新しいmain domain helper `modules/canvas/linked-balloon-text.ts`を利用する。依存方向はDesktop／Hub→canvas-coreのまま。
+- `saveBalloon`／`saveCanvasBatch`で旧Canvasからの回転差・寸法比と内接fitを計画し、親→子を同じSQLite transactionへ保存する。groupの明示文字は二重移動しない。子文字lockで全幾何変更を拒否し、色／opacity・lock解除は許可する。失敗注入で子保存失敗時の親rollbackを確認した。
+- Rendererはdragのpreview追従、locked子を持つ親のdrag拒否、新規子文字のshared fit、本文・ルビ／親／ページ外警告、明示修復を追加した。旧原稿の読込や一括rewrite、SQLite schema／相対比率／IPC／snapshot形式は変更しない。
+- 実DB集中4/4で型3種、回転／リサイズ／ルビ／本文保持／lock／Undo/Redo／再起動／groupの暗黙・明示移動／保存失敗rollback／長文不適合を検証した。既存の相対比率migration testも成功。
+- Desktop全体410/410、Hub 1385/1385、Canvas 26/26、AI 50/50、lint、全typecheck、Hub/Desktop build、deps（error 0、既知warning 2）、migration 101件、diff check成功。RC structure READY、外部設定PENDING、manual E2E REQUIRED。依存変更なしのためinstall不要。Viteの既知chunk警告は残る。
+- `node apps/desktop/scripts/test-accessibility.mjs`をbuild済みartifactで実行し成功、blocking violation 0。color-contrast incompleteは目視残件。これは日本語PNG/PDFや本C3cのvisual acceptance完了を意味しない。
+- 初回全体Desktopは既存ComfyUI timeout testが1件失敗（408/409）。ビルド等完了後に再実行して410/410成功（追加test 1件を含む）。fixture初期paths不足、履歴timestampの誤期待、renderer重複座標のtype errorも修正して最終gate成功を確認した。
+- 初回fixture失敗時のTemp内`mangai-c3c-k1iLcy`／`mangai-c3c-xGaYF9`の削除はpolicyで拒否された。実データなし、commit対象外の一時SQLiteのみが残る。削除を別手段で回避していない。通常の成功test fixtureはcleanup済み。
+- Production、外部DB、Provider、有料生成、credit、実決済、モデルdownloadは0件。次は最終HEAD CIとPRレビュー後、実画面／日本語PNG/PDF目視。C4/C5、D2/D3/D1、4ページ16コマ実画像品質は未完了。
+- 実装commit `3a50ad39`をpushし、[Draft PR #672](https://github.com/team478a/manga/pull/672)を作成／taskへattachした。確認時点のCore quality／Migration roundtrip／Windows buildはQUEUED、Vercel PENDING、Preview Comments成功。最終HEAD CIを成功扱いにしない。
+- 次の担当者は`git status --short`、`gh pr view 672 --json statusCheckRollup`から再開し、`docs/desktop/MANGA_EDITOR.md`のC3c契約と目視残件を確認する。実漫画のvisual acceptanceは4件のunit test／a11y結果から推測しない。
+
+---
+
 ## 2026-10-12 Codex: C3b 新規下書きの文字領域
 
 - 基点: PR #670 merge `1b450876`、最終HEADのCore quality、Migration roundtrip、Windows build、Vercel、Preview Commentsはすべて成功。Branch `codex/manga-storyboard-safe-text-20261012`。
