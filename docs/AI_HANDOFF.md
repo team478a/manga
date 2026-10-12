@@ -7,6 +7,7 @@
 - Desktopのsingle/batchで回転・寸法・形状を関連文字と同じtransaction／履歴へ保存し、子文字lockの幾何編集拒否と文字保存エラー時の親rollbackを追加した。旧原稿は一括変更せず、明示修復操作を使う。
 - Desktop集中4/4、全体410/410、Hub 1385/1385、Canvas 26/26、AI 50/50、lint、全typecheck、Hub/Desktop build、deps、migration、diff check成功。a11y blocking 0、color-contrast incompleteは目視残件。初回既存timeout test失敗は全体再実行で成功した。
 - Production、有料生成、credit、実決済、モデルdownloadは0件。次は実画面／日本語PNG/PDF目視。C4/C5、D2/D3/D1、4ページ16コマ実画像品質は未完了。commit／PR詳細はCURRENT_TASK/HANDOFF_LOG。
+- 実装commit `3a50ad39`、Draft PR [#672](https://github.com/team478a/manga/pull/672)。CI／PreviewはQUEUED／PENDING、Preview Comments成功。最終HEADはCURRENT_TASKのコマンドで確認する。
 
 ---
 

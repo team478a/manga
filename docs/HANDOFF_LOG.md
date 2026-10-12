@@ -12,6 +12,8 @@
 - 初回全体Desktopは既存ComfyUI timeout testが1件失敗（408/409）。ビルド等完了後に再実行して410/410成功（追加test 1件を含む）。fixture初期paths不足、履歴timestampの誤期待、renderer重複座標のtype errorも修正して最終gate成功を確認した。
 - 初回fixture失敗時のTemp内`mangai-c3c-k1iLcy`／`mangai-c3c-xGaYF9`の削除はpolicyで拒否された。実データなし、commit対象外の一時SQLiteのみが残る。削除を別手段で回避していない。通常の成功test fixtureはcleanup済み。
 - Production、外部DB、Provider、有料生成、credit、実決済、モデルdownloadは0件。次は最終HEAD CIとPRレビュー後、実画面／日本語PNG/PDF目視。C4/C5、D2/D3/D1、4ページ16コマ実画像品質は未完了。
+- 実装commit `3a50ad39`をpushし、[Draft PR #672](https://github.com/team478a/manga/pull/672)を作成／taskへattachした。確認時点のCore quality／Migration roundtrip／Windows buildはQUEUED、Vercel PENDING、Preview Comments成功。最終HEAD CIを成功扱いにしない。
+- 次の担当者は`git status --short`、`gh pr view 672 --json statusCheckRollup`から再開し、`docs/desktop/MANGA_EDITOR.md`のC3c契約と目視残件を確認する。実漫画のvisual acceptanceは4件のunit test／a11y結果から推測しない。
 
 ---
 

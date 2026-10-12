@@ -11,6 +11,7 @@
 - RC structure READY、外部設定PENDING、manual E2E REQUIRED。依存変更なしのためinstall不要。Desktop初回全体testでは既存ComfyUI timeout test 1件失敗、その後ビルド完了後の全体再実行410件成功。fixtureのpaths／timestamp期待とrenderer重複座標による初期失敗も修正し、最終gateで解消した。
 - 初回fixtureで残ったTempの`mangai-c3c-k1iLcy`／`mangai-c3c-xGaYF9`は削除が環境policyで拒否されたため残存する（実データなし、commit対象外）。通常の成功testの一時fixtureは既存cleanupにより削除済み。
 - 次: PR最終HEADのCI確認後、実画面・日本語PNG/PDFの形状／回転／ルビ目視受入れを進める。未受入れの実画像品質やC4/C5を完了扱いにしない。
+- 実装commit `3a50ad39`をpushし、[Draft PR #672](https://github.com/team478a/manga/pull/672)を作成した。確認時点ではCore quality／Migration roundtrip／Windows buildはQUEUED、Vercel PENDING、Preview Comments成功。最終HEAD CIは未完了。再開: `git status --short`、`gh pr view 672 --json statusCheckRollup`。
 
 ---
 
