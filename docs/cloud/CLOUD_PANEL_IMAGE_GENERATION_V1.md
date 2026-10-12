@@ -46,6 +46,14 @@
 
 ## 安全境界
 
+### 更新・未保存保護・候補閲覧（C4c、2026-10-12）
+
+- generation履歴のreadは最後の要求だけ反映し、前の要求をabort、unmount／Page変更後の応答を破棄する。Editor stateはPage IDで分離する。通信エラーを新規生成の要求へ変換しない。
+- pollingは要求完了後3秒の逐次方式。生成中と完了画像の配置未確定／retryable配置失敗を追跡する。状態keyが変わらない配置待ちは最大20回で手動確認へ移る。quota読取は生成中だけ、creditを消費する操作は追加しない。
+- 自動reloadは初期履歴ではなく、このmount中に新たにauto_placedとなり現在のCanvasへ可視Assetがない候補だけ。saveState=saved、未保存refなし、編集lock取得済みを要求する。一度でも保護で停止したmountは保存後も自動reloadせず手動確認を維持する。fresh snapshotに反映されない画像をreloadし続けない。
+- displayedは候補画像のonLoad成功／currentSrc一致／natural dimensions>0、IntersectionObserverでviewport交差、document visibleが揃う場合だけ。completed metadataだけでは記録しない。成功済み／送信中を重複させず、失敗はmount中最大3回まで後続の閲覧通知で再試行する。
+- このログは候補カードの閲覧であり、Canvasのpixel描画・遮蔽物がないこと・人物品質・原稿完成を保証しない。旧ログの再書換えはしない。実ブラウザで画像load失敗／offscreen／tab非表示／未保存編集／通信遅延／reload回数を受入れるまでC4全体は未完了。
+
 ### 保存済み画像の配置だけ再試行（C4b、2026-10-12）
 
 - 候補履歴の`placement_failed`かつ`panel_adoption_retryable=true`の完了画像へ専用操作を表示する。APIは`POST /api/creator/generation-jobs/[jobId]/retry-placement`、bodyは`{pageId}`だけ。生成条件・Canvas・Asset IDを利用者入力で指定しない。

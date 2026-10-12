@@ -1,5 +1,16 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 漫画生成改善 C4c: 更新・編集保護・候補閲覧（2026-10-12）
+
+- PR #675 merge `b7b850ff`、最終HEAD全5チェック成功。Branch `codex/manga-placement-refresh-20261012`。
+- latest-reader／逐次pollingで古い応答を破棄し、配置待ちは最大20回。新しくauto_placedへ変わった候補だけclean/lock取得済みでreloadし、一度保護で停止したmountは保存後も手動確認を維持する。初期auto_placedをreloadしない。
+- 候補閲覧ログは画像load成功＋viewport交差＋visible tabを確認して送る。生成完了だけでは表示済みにしない。Canvas描画／完成判定とは別契約。
+- 集中39/39、Hub1424/1424、lint／Hub typecheck・build／Canvas27/27／AI50/50／deps／migration成功。最終gateとPRはCURRENT_TASK参照。
+- e2eスキルのrunner／Node要件を満たさず既存Node testへfallback。実ブラウザ受入れは未実施。Production、外部DB、有料生成、credit、実決済、model downloadは0件。次はCI／レビュー後にC4実画面確認。C5／D2/D3/D1／実作画品質も未完了。
+- 実装commit `684de04e`、Draft PR [#676](https://github.com/team478a/manga/pull/676)を作成／taskへattach。CI／PreviewはQUEUED／PENDING。最終HEADはCURRENT_TASKの再開コマンドで確認する。
+
+---
+
 ## 0.0 漫画生成改善 C4b: 配置だけ再試行（2026-10-12）
 
 - PR #674 merge `e10a1e65`、最終HEAD全5チェック成功。Branch `codex/manga-placement-retry-20261012`。
