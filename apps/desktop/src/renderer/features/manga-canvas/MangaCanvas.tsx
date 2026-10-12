@@ -24,6 +24,10 @@ import {
   MIN_CANVAS_OBJECT_SIZE,
   applyPageTemplate,
   balloonTailPoints,
+  dialogueInnerRegion,
+  dialogueRectInside,
+  dialogueInkFitsTextBox,
+  fitBalloonDialogueTextLayout,
   computeImagePlacement,
   constrainRectToPage,
   imageTransformFromNode,
@@ -631,11 +635,13 @@ function PanelLayerImage({
 
 function BalloonNode({
   balloon,
+  linkedLocked = false,
   onSelect,
   onMove,
   onSave,
 }: {
   balloon: Balloon;
+  linkedLocked?: boolean;
   onSelect: (node: any, additive: boolean) => void;
   onMove?: (rect: { x: number; y: number; width: number; height: number }) => {
     x: number;
@@ -655,7 +661,7 @@ function BalloonNode({
       width={balloon.width}
       height={balloon.height}
       rotation={balloon.rotation}
-      draggable={!balloon.locked}
+      draggable={!balloon.locked && !linkedLocked}
       onClick={(event) =>
         onSelect(event.currentTarget, Boolean(event.evt.shiftKey))
       }
@@ -1080,6 +1086,7 @@ function DebouncedTextArea({
 function CanvasProperties({
   item,
   balloons,
+  page,
   imageEditing,
   onBeginImageEdit,
   onFinishImageEdit,
@@ -1089,6 +1096,7 @@ function CanvasProperties({
 }: {
   item: LayerItem;
   balloons: Balloon[];
+  page: Pick<Page, "width" | "height">;
   imageEditing: boolean;
   onBeginImageEdit: (panel: Panel) => void;
   onFinishImageEdit: () => void;
@@ -1097,6 +1105,7 @@ function CanvasProperties({
   saveText: (item: TextObject) => void;
 }) {
   const { t } = useI18n();
+  const parentBalloon = item.objectType === "text" ? balloons.find(balloon => balloon.id === item.parentBalloonId) : undefined;
   const textOverflow =
     item.objectType === "text" &&
     (item.writingMode === "vertical"
@@ -1120,7 +1129,7 @@ function CanvasProperties({
             textAlign: item.textAlign,
             verticalAlign: item.verticalAlign,
           },
-        ).overflow);
+        ).overflow || !dialogueRectInside({ x: 0, y: 0, width: item.width, height: item.height }, item, { x: 0, y: 0, width: page.width, height: page.height, rotation: 0 }) || (parentBalloon != null && (!dialogueInkFitsTextBox(item) || !dialogueRectInside({ x: 0, y: 0, width: item.width, height: item.height }, item, dialogueInnerRegion(parentBalloon)))));
   const saveName = (name: string) => {
     if (!name.trim() || name === item.name) return;
     if (item.objectType === "panel") savePanel({ ...item, name });
@@ -1376,6 +1385,14 @@ function CanvasProperties({
         <>
           {textOverflow && (
             <p className="canvas-warning">{t("properties.textOverflow")}</p>
+          )}
+          {parentBalloon && !parentBalloon.locked && !item.locked && (
+            <button type="button" onClick={() => {
+              const fit = fitBalloonDialogueTextLayout(item.text, parentBalloon, item);
+              if (fit) saveText({ ...item, ...dialogueInnerRegion(parentBalloon), ...fit });
+            }}>
+              {t("properties.fitBalloonText")}
+            </button>
           )}
           <div className="canvas-field">
             <span>{t("properties.body")}</span>
@@ -1668,6 +1685,18 @@ export function MangaCanvas({
         };
     setGuides(result.guides);
     const source = layers.find((item) => item.id === id);
+    const movingBalloons = selectedKeys.length > 1 && source && isSelected(source.objectType, id)
+      ? selectedItems.filter(item => item.objectType === "balloon")
+      : source?.objectType === "balloon" ? [source] : [];
+    if (source && movingBalloons.some(balloon => balloon.locked || texts.some(text => text.parentBalloonId === balloon.id && text.locked)))
+      return { x: source.x, y: source.y };
+    // Preview only: persist once at drag end through the authoritative DB path.
+    if (source) {
+      const stage = stageRef.current;
+      for (const balloon of movingBalloons)
+        for (const text of texts.filter(item => item.parentBalloonId === balloon.id))
+          stage?.findOne(`#text-${text.id}`)?.position({ x: text.x + result.rect.x - source.x, y: text.y + result.rect.y - source.y });
+    }
     if (
       selectedKeys.length > 1 &&
       source &&
@@ -2103,6 +2132,9 @@ export function MangaCanvas({
       tailDirection: "bottom_left",
       tailOffset: 0.5,
     } as const;
+    const dialogueBalloon = { ...balloon, createdAt: "", updatedAt: "" };
+    const dialogueRegion = dialogueInnerRegion(dialogueBalloon);
+    const dialogueLayout = fitBalloonDialogueTextLayout(t("canvas.defaultText"), dialogueBalloon);
     onApply(
       window.mangai.canvas.saveBatch({
         pageId: page.id,
@@ -2115,11 +2147,6 @@ export function MangaCanvas({
             name: t("canvas.objectText", { count: texts.length + 1 }),
             text: t("canvas.defaultText"),
             writingMode: "vertical",
-            x: balloon.x + balloon.width * 0.2,
-            y: balloon.y + balloon.height * 0.15,
-            width: balloon.width * 0.6,
-            height: balloon.height * 0.7,
-            rotation: 0,
             zIndex: nextZ + 1,
             visible: true,
             locked: false,
@@ -2133,6 +2160,8 @@ export function MangaCanvas({
             letterSpacing: 0,
             padding: 16,
             opacity: 1,
+            ...dialogueRegion,
+            ...dialogueLayout,
           },
         ],
       }),
@@ -2723,6 +2752,7 @@ export function MangaCanvas({
                     <BalloonNode
                       key={`balloon-${balloon.id}`}
                       balloon={balloon}
+                      linkedLocked={texts.some(text => text.parentBalloonId === balloon.id && text.locked)}
                       onSelect={(node, additive) =>
                         select("balloon", balloon.id, node, additive)
                       }
@@ -3280,7 +3310,8 @@ export function MangaCanvas({
             selectedLayer ? (
               <section className="inspector-object-properties">
                 <h3>{t("canvas.selectedObject")}</h3>
-                <CanvasProperties
+          <CanvasProperties
+            page={page}
                   item={selectedLayer as LayerItem}
                   balloons={balloons}
                   imageEditing={editingPanelImageId === selectedLayer.id}

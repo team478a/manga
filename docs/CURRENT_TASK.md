@@ -1,5 +1,19 @@
 # MANGAI Current Task
 
+## 2026-10-12 漫画生成改善 C3c: Desktop関連文字の追従
+
+- PR #671はmerge `a88a42df`、最終HEADの全5チェック成功。Branch `codex/desktop-linked-dialogue-20261012`。
+- Cloudの内接領域／字面判定／文字fitをcanvas-coreへ共有化し、Desktopで位置・寸法・回転・形状変更を関連文字と同じSQLite transaction／履歴単位で保存する。関連文字lock時は幾何変更を拒否する。
+- SQLite相対座標の保存形式、IPC、旧原稿の読込、history形式は不変。旧原稿の一括修復や有料生成は行わない。収まらない文字は本文・可読サイズを保持し警告する。
+- Production、外部DB、有料生成、credit、実決済、モデルdownloadは0件を維持。実画面と日本語PNG/PDF目視、C4/C5、D2/D3/D1、4ページ16コマ実画像品質は未完了。
+- 実装済み。shared packageの既存APIは維持し、Cloud側に互換facadeを残した。Desktopのsingle/batch保存で回転差・寸法比・内包fit、main側lock拒否、文字保存失敗時の親rollbackを追加した。新規子文字もshared fitを使い、旧文字へ明示修復ボタンと本文／ルビ・親／ページ外の警告を用意した。
+- 検証: Desktop集中4/4、Desktop全体410/410、Hub 1385/1385、Canvas 26/26、AI 50/50、lint、Hub＋Desktop typecheck、Hub／Desktop build、dependency/module boundary（error 0、既知warning 2）、migration 101件、diff check成功。既存Vite chunk警告を維持。a11y実script（build済み）成功、blocking violation 0。color-contrastのincompleteは目視残件であり完全WCAG受入れではない。
+- RC structure READY、外部設定PENDING、manual E2E REQUIRED。依存変更なしのためinstall不要。Desktop初回全体testでは既存ComfyUI timeout test 1件失敗、その後ビルド完了後の全体再実行410件成功。fixtureのpaths／timestamp期待とrenderer重複座標による初期失敗も修正し、最終gateで解消した。
+- 初回fixtureで残ったTempの`mangai-c3c-k1iLcy`／`mangai-c3c-xGaYF9`は削除が環境policyで拒否されたため残存する（実データなし、commit対象外）。通常の成功testの一時fixtureは既存cleanupにより削除済み。
+- 次: PR最終HEADのCI確認後、実画面・日本語PNG/PDFの形状／回転／ルビ目視受入れを進める。未受入れの実画像品質やC4/C5を完了扱いにしない。
+
+---
+
 ## 2026-10-12 漫画生成改善 C3b: 新規下書きの文字領域
 
 - PR #670はmerge `1b450876`で統合済み、最終HEADの全5チェック成功。Branch `codex/manga-storyboard-safe-text-20261012`。

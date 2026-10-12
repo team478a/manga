@@ -18,11 +18,105 @@ import JSZip from "jszip";
 import { PDFDocument } from "pdf-lib";
 import { imageSize } from "image-size";
 import { parseSalesPackageManifest } from "@mangai/export-core";
+import { dialogueInnerRegion, dialogueRectInside, dialogueInkFitsTextBox, fitBalloonDialogueTextLayout } from "@mangai/canvas-core";
 import {
   ADULT_GENERATION_CONSENT_VALIDITY_DAYS,
   ADULT_GENERATION_TERMS_VERSION,
   evaluateAdultProviderCapability,
 } from "@mangai/ai-core";
+
+function createLinkedDialogueFixture() {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "mangai-c3c-"));
+  const paths = { root, database: path.join(root, "mangai.sqlite"), projects: path.join(root, "projects"), assets: path.join(root, "assets"), exports: path.join(root, "exports"), logs: path.join(root, "logs") };
+  const db = new MangaiDatabase(paths);
+  let bundle = db.createProject({ title: "C3c fixture", subtitle: "", description: "", genre: "", ageRating: "全年齢", readingDirection: "rtl", width: 1200, height: 1800, dpi: 300 });
+  bundle = db.addPage(bundle.episodes[0].id);
+  const balloon = { id: crypto.randomUUID(), pageId: bundle.pages[0].id, name: "fixture", type: "speech_ellipse", x: 300, y: 300, width: 400, height: 360, rotation: 0, zIndex: 1, visible: true, locked: false, fillColor: "#fff", strokeColor: "#111", strokeWidth: 3, opacity: 1, tailDirection: "none", tailOffset: 0.5, createdAt: "", updatedAt: "" };
+  db.saveBalloon(balloon);
+  const text = { id: crypto.randomUUID(), pageId: balloon.pageId, parentBalloonId: balloon.id, name: "fixture text", text: "「きゃー、｜鍵《かぎ》だ。」", writingMode: "vertical", ...dialogueInnerRegion(balloon), zIndex: 2, visible: true, locked: false, fontFamily: "sans-serif", fontSize: 24, fontWeight: 400, color: "#111", textAlign: "start", verticalAlign: "top", lineHeight: 1.2, letterSpacing: 0, padding: 0, opacity: 1, createdAt: "", updatedAt: "", ...fitBalloonDialogueTextLayout("「きゃー、｜鍵《かぎ》だ。」", balloon) };
+  bundle = db.saveTextObject(text);
+  return { root, paths, db, bundle, balloon, text };
+}
+
+function assertLinkedDialogueContained(bundle) {
+  const text = bundle.textObjects[0], balloon = bundle.balloons[0];
+  assert.equal(dialogueRectInside({ x: 0, y: 0, width: text.width, height: text.height }, text, dialogueInnerRegion(balloon)), true);
+  assert.equal(dialogueInkFitsTextBox(text), true);
+}
+
+const stableDialogueObject = value => ({ ...value, updatedAt: "", x: Number(value.x.toFixed(9)), y: Number(value.y.toFixed(9)), width: Number(value.width.toFixed(9)), height: Number(value.height.toFixed(9)) });
+
+test("C3c Desktop rotation/resize fits linked ruby and survives Undo/Redo/reopen", () => {
+  const value = createLinkedDialogueFixture();
+  let db = value.db;
+  try {
+    const original = value.bundle;
+    let result = db.captureHistory(original.project.id, "C3c rotate", () => db.saveBalloon({ ...original.balloons[0], rotation: 90, x: 600, width: 320 }));
+    assertLinkedDialogueContained(result);
+    assert.equal(result.textObjects[0].rotation, 90);
+    assert.equal(result.textObjects[0].text, value.text.text);
+    const undo = db.undo(original.project.id);
+    assert.deepEqual(stableDialogueObject(undo.balloons[0]), stableDialogueObject(original.balloons[0]));
+    assert.deepEqual(stableDialogueObject(undo.textObjects[0]), stableDialogueObject(original.textObjects[0]));
+    result = db.redo(original.project.id);
+    assertLinkedDialogueContained(result);
+    for (const type of ["speech_rounded", "narration_box", "speech_ellipse"]) {
+      result = db.saveBalloon({ ...result.balloons[0], type });
+      assertLinkedDialogueContained(result);
+    }
+    db.close(); db = new MangaiDatabase(value.paths);
+    assertLinkedDialogueContained(db.openProject(original.project.id));
+    result = db.saveTextObject({ ...result.textObjects[0], locked: true });
+    const locked = result;
+    assert.throws(() => db.saveBalloon({ ...locked.balloons[0], rotation: 180 }), /ロック/);
+    const rejected = db.openProject(original.project.id);
+    assert.deepEqual(rejected.balloons, locked.balloons);
+    assert.deepEqual(rejected.textObjects, locked.textObjects);
+    result = db.saveBalloon({ ...locked.balloons[0], fillColor: "#eee" });
+    assert.equal(result.textObjects[0].locked, true);
+    assert.equal(result.balloons[0].fillColor, "#eee");
+  } finally { db.close(); fs.rmSync(value.root, { recursive: true, force: true }); }
+});
+
+test("C3c Desktop batch moves implicit children once and rolls back child failures", () => {
+  const value = createLinkedDialogueFixture();
+  const { db, bundle } = value;
+  try {
+    const batch = (balloon, textObjects = []) => ({ pageId: balloon.pageId, panels: [], balloons: [balloon], textObjects, replacePanels: false, replaceBalloons: false, replaceTextObjects: false });
+    const next = { ...bundle.balloons[0], x: 400 };
+    let result = db.saveCanvasBatch(batch(next));
+    assert.ok(Math.abs(result.textObjects[0].x - bundle.textObjects[0].x - 100) < 0.01);
+    result = db.saveCanvasBatch(batch({ ...next, x: 500 }, [{ ...result.textObjects[0], x: result.textObjects[0].x + 100 }]));
+    assert.ok(Math.abs(result.textObjects[0].x - bundle.textObjects[0].x - 200) < 0.01);
+    const before = result;
+    db.db.exec("create temp trigger c3c_fail before update on text_objects begin select raise(abort,'fixture failure'); end;");
+    assert.throws(() => db.saveBalloon({ ...before.balloons[0], rotation: 30 }));
+    const rejected = db.openProject(bundle.project.id);
+    assert.deepEqual(rejected.balloons, before.balloons);
+    assert.deepEqual(rejected.textObjects, before.textObjects);
+    db.db.exec("drop trigger c3c_fail;");
+  } finally { db.close(); fs.rmSync(value.root, { recursive: true, force: true }); }
+});
+
+test("C3c Desktop keeps unfittable text and rejects locked batch atomically", () => {
+  const value = createLinkedDialogueFixture();
+  const { db, bundle } = value;
+  try {
+    const long = "鍵。".repeat(1000);
+    let result = db.saveTextObject({ ...bundle.textObjects[0], text: long });
+    const fontSize = result.textObjects[0].fontSize;
+    result = db.saveBalloon({ ...result.balloons[0], width: 80, height: 80 });
+    assert.equal(result.textObjects[0].text, long);
+    assert.equal(result.textObjects[0].fontSize, fontSize);
+    assert.equal(dialogueInkFitsTextBox(result.textObjects[0]), false);
+    result = db.saveTextObject({ ...result.textObjects[0], locked: true });
+    const before = result;
+    assert.throws(() => db.saveCanvasBatch({ pageId: result.pages[0].id, panels: [], balloons: [{ ...result.balloons[0], x: 500 }], textObjects: [{ ...result.textObjects[0], x: 600 }], replacePanels: false, replaceBalloons: false, replaceTextObjects: false }), /ロック/);
+    const rejected = db.openProject(bundle.project.id);
+    assert.deepEqual(rejected.balloons, before.balloons);
+    assert.deepEqual(rejected.textObjects, before.textObjects);
+  } finally { db.close(); fs.rmSync(value.root, { recursive: true, force: true }); }
+});
 
 test("asset file service confines reads to the project directory", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "mangai-asset-files-"));
@@ -2233,7 +2327,7 @@ test("canvas objects persist and participate in undo and redo", () => {
       width: bundle.textObjects[0].width,
       height: bundle.textObjects[0].height,
     },
-    { x: 260, y: 340, width: 560, height: 360 },
+    (({ x, y, width, height }) => ({ x, y, width, height }))(dialogueInnerRegion(bundle.balloons[0])),
   );
   assert.equal(db.undo(projectId).panels.length, 0);
   bundle = db.redo(projectId);

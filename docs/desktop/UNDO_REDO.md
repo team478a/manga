@@ -33,3 +33,7 @@ Episode、Page、Panel、Balloon、Text Objectの状態を編集スナップシ�
 ## SQLite
 
 `operation_history`テーブルへProject ID、操作名、変更前後のJSON、取消状態、作成日時を保存します。Projectを削除すると関連履歴も削除されます。
+
+## C3c 関連文字の保存（2026-10-12）
+
+吹き出しの幾何編集と関連文字は既存の`captureHistory`内で1回のSQLite transactionとして保存する。文字保存エラー時は吹き出しも戻し、不完全な履歴を追加しない。Undo/Redo・再起動で子文字の位置、寸法、rotation、本文、ルビ、fontが復元されることを実DB testで検証する。履歴のtimestamp更新動作・保存形式は変更しない。旧原稿の明示修復は通常のテキスト保存履歴として扱う。

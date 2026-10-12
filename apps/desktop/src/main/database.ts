@@ -1,4 +1,5 @@
 import Database from "better-sqlite3";
+import { planLinkedBalloonText } from "./modules/canvas/linked-balloon-text.js";
 import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
@@ -3231,8 +3232,15 @@ export class MangaiDatabase {
       .run(assetId, stamp, panelId);
   }
   saveBalloon(item: Balloon) {
-    this.upsertBalloonRow(item);
-    return this.bundle(this.projectIdForPage(item.pageId));
+    const projectId = this.projectIdForPage(item.pageId);
+    this.db.transaction(() => {
+      const before = this.bundle(projectId);
+      const previous = before.balloons.find(balloon => balloon.id === item.id);
+      const linked = previous ? planLinkedBalloonText(previous, item, before.textObjects) : [];
+      this.upsertBalloonRow(item);
+      for (const text of linked) this.upsertTextObjectRow(text);
+    })();
+    return this.bundle(projectId);
   }
   saveTextObject(item: TextObject) {
     this.upsertTextObjectRow(item);
@@ -3249,6 +3257,14 @@ export class MangaiDatabase {
   }) {
     const projectId = this.projectIdForPage(input.pageId);
     this.db.transaction(() => {
+      const before = this.bundle(projectId);
+      const linked: TextObject[] = [];
+      if (!input.replaceBalloons && !input.replaceTextObjects) {
+        for (const item of input.balloons) {
+          const previous = before.balloons.find(balloon => balloon.id === item.id);
+          if (previous) linked.push(...planLinkedBalloonText(previous, { ...item, createdAt: "", updatedAt: "" }, before.textObjects));
+        }
+      }
       if (input.replaceTextObjects)
         this.db
           .prepare("delete from text_objects where page_id=?")
@@ -3269,6 +3285,10 @@ export class MangaiDatabase {
         });
       for (const item of input.balloons)
         this.upsertBalloonRow({ ...item, createdAt: "", updatedAt: "" });
+      // Explicit child moves in group operations already include translation.
+      // Persist inferred children only when absent, avoiding double movement.
+      for (const text of linked)
+        if (!input.textObjects.some(item => item.id === text.id)) this.upsertTextObjectRow(text);
       for (const item of input.textObjects)
         this.upsertTextObjectRow({ ...item, createdAt: "", updatedAt: "" });
     })();
