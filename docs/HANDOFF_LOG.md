@@ -1,5 +1,19 @@
 # MANGAI AI Handoff Log
 
+## 2026-10-12 Codex: C4a 生成・採用・配置・完成の表示分離
+
+- Base PR #673 merge `34e9321e`、最終HEAD全5チェック成功。Branch `codex/manga-placement-state-20261012`。
+- `candidate-production-presentation.ts`を追加し、CloudCanvasEditorの生成結果・採用／品質・配置を独立表示にした。生成progressは「生成工程」、原稿完成は既存PageCompletionBannerの別判定であると明示した。
+- 旧コードでは生成100%／auto_placedを画面に反映済みと区別できず、Noticeは再読込で必ず原稿へ反映されると説明していた。未保存の手動配置成功messageも保存・完成と分離した。
+- 可視Panelと実Asset IDを照合し、非表示／透明／置換済み／別ページを現在の配置扱いにしない。欠落Noticeの対象は当該ページ・可視の画像欠落Panelへ限定し、再利用可能候補や進行中候補がある過去失敗は生成失敗件数から除外した。
+- Recoveryの成功表示は「生成結果を保存済み」とした。manual disposition以外で手動再試行を断定せず、noneは不可、未知は履歴確認とする。retry処理自体は変更していない。
+- 集中14/14、最終Hub 1393/1393、Canvas 27/27、AI 50/50、deps（新規2source fileのsize検査を含む）、migration 101件、最終lint／Hub typecheck／Hub build／diff check成功。詳細はCURRENT_TASK。依存／Desktop変更なし、外部ブラウザ受入れ未確認。
+- Production、外部DB、Provider、有料生成、credit、実決済、model downloadは0件。C4全体は未完了。配置のみ再試行／冪等性／polling／未保存編集の保護を次の単位で進める。displayed telemetryの実描画確認も今回の変更に含めない。
+- 次の担当者は`git status --short`とPR最終HEADのチェックから再開し、`docs/cloud/CLOUD_PANEL_IMAGE_GENERATION_V1.md`のC4aを読む。
+- 実装commit `562e84b5`、[Draft PR #674](https://github.com/team478a/manga/pull/674)を作成／taskへattachした。確認時点ではCore quality／Migration roundtrip／Windows build実行中、Vercel／Preview Comments成功。最終HEAD CIは`gh pr view 674 --json statusCheckRollup`で確認する。
+
+---
+
 ## 2026-10-12 Codex: C3d 固定fixtureの画面・PNG/PDF目視
 
 - Base PR #672 merge `182fa0a1`、最終HEAD全5チェック成功。Branch `codex/manga-visual-fixture-20261012`。
