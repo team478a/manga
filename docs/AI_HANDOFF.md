@@ -7,6 +7,7 @@
 - 候補閲覧ログは画像load成功＋viewport交差＋visible tabを確認して送る。生成完了だけでは表示済みにしない。Canvas描画／完成判定とは別契約。
 - 集中39/39、Hub1424/1424、lint／Hub typecheck・build／Canvas27/27／AI50/50／deps／migration成功。最終gateとPRはCURRENT_TASK参照。
 - e2eスキルのrunner／Node要件を満たさず既存Node testへfallback。実ブラウザ受入れは未実施。Production、外部DB、有料生成、credit、実決済、model downloadは0件。次はCI／レビュー後にC4実画面確認。C5／D2/D3/D1／実作画品質も未完了。
+- 実装commit `684de04e`、Draft PR [#676](https://github.com/team478a/manga/pull/676)を作成／taskへattach。CI／PreviewはQUEUED／PENDING。最終HEADはCURRENT_TASKの再開コマンドで確認する。
 
 ---
 

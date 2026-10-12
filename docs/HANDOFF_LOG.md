@@ -11,6 +11,7 @@
 - e2eスキルはrunner未導入／Node22.15.0要件未達で既存Node testへfallback。依存／AI認証を追加しない。実DOM描画、viewport通知、Cloud browser、外部DBの同時操作は未受入れ。
 - API response／DB migration／Storage／Worker／Provider／quota消費／既存保存形式／Desktop/shared実装は不変。Production、外部DB操作、有料生成、credit、実決済、model downloadは0件。
 - 次の担当者はgit status／PR最終HEAD CIと`CLOUD_PANEL_IMAGE_GENERATION_V1.md`のC4cから再開する。実Cloudブラウザの遅延・失敗・未保存保護・reload回数・候補viewportを受入れるまでC4は未完了。C5／D2/D3/D1／実作画品質も残件。
+- 実装commit `684de04e`をpushし、[Draft PR #676](https://github.com/team478a/manga/pull/676)を作成／taskへattachした。確認時点Core quality／Migration roundtrip／Windows build QUEUED、Vercel PENDING、Preview Comments成功。文書追記後の最終HEAD CIは`gh pr view 676 --json headRefOid,statusCheckRollup`で確認する。
 
 ---
 

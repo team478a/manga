@@ -11,6 +11,7 @@
 - e2eスキルを使用して環境確認した。runner未導入、Node22.15.0が最低22.22.3を満たさないため依存・AI認証を追加せず既存Node testへfallbackした。policy／通信はmock、DOM／IntersectionObserverの統合はsource検査であり、ブラウザ受入れは未実施。外部DB／同時品質イベントの受入れも未完了。RC structure READY、外部設定PENDING、manual E2E REQUIRED。
 - 依存変更なしでinstall不要。Desktop/shared package実装なしでDesktop build/test/a11yは対象外。DB migration／Storage／Worker／Provider／既存保存形式は不変。Production変更、外部DB操作、有料生成、credit、実決済、model downloadは0件。
 - C4全体は未完了。次はCI／レビュー後に実Cloudブラウザで遅延・通信失敗・未保存編集・reload一回／不採用・候補の読み込み失敗とviewport確認を受け入れる。C5／D2/D3/D1と実AI作画品質も未完了。
+- 実装commit `684de04e`をpushし、[Draft PR #676](https://github.com/team478a/manga/pull/676)を作成／taskへattachした。確認時点Core quality／Migration roundtrip／Windows build QUEUED、Vercel PENDING、Preview Comments成功。文書追記後の最終HEAD CIは未確認。再開: `git status --short`、`gh pr view 676 --json headRefOid,statusCheckRollup`。
 
 ---
 
