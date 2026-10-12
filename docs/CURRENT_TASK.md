@@ -9,7 +9,8 @@
 - Branch: `codex/manga-resolved-panel-contract-20261012`。C1のコード修正済み。旧merge commitの実Builderをメモリ上で実行し、2人指定→subject 1件、配置・視線・追加指定欠落、品質仕様shot未解決を再現した。
 - 検証: 集中50/50、Hub 1343/1343、Canvas 26/26、AI Core 50/50、Hub typecheck、lint、deps（error 0、既知warning 2）、migration 100件、Hub build、diff check成功。RC structure READY、外部設定PENDING、manual E2E REQUIRED。依存変更なしのためinstall不要。Desktopコード・IPC変更なしのためDesktop build/a11yは今回対象外。
 - 台詞浄化を維持し、必要な端末・小物の動作を削除する旧短縮処理は無記名面の要求併記へ改めた。画角固定58%を廃止し、明示画角・人物配置を保持する。これらの作画結果は有料生成未実行のため未受入れ。
-- 次: このbranchをDraft PRでレビューする。`gh pr view --head`ではなく`gh pr view codex/manga-resolved-panel-contract-20261012 --json statusCheckRollup`でCI確認。C2は`src/lib/cloud-panel-image-generation.ts`、BFL adapter、Queue登録・実送信経路とテストを確認して別単位で開始する。
+- 実装commit `f0ee7581`をpushし、[Draft PR #668](https://github.com/team478a/manga/pull/668)を作成した。CI/Previewは確認時点でPENDING（Preview Commentsのみ成功）。未完了CIを成功扱いにしない。
+- 次: `gh pr view 668 --json statusCheckRollup`でCI確認とPRレビュー。C2は`src/lib/cloud-panel-image-generation.ts`、BFL adapter、Queue登録・実送信経路とテストを確認して別単位で開始する。
 
 ---
 

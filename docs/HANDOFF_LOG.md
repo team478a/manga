@@ -8,7 +8,7 @@
 - 対象: `src/lib/cloud-panel-image-generation.ts`、実Builder回帰test、Cloud設計文書、3引継ぎ文書。DB、API、Storage、IPC、保存形式、Providerモデル、料金・明示承認契約は変更なし。
 - 検証: 集中50/50、Hub 1343/1343、Canvas 26/26、AI Core 50/50、Hub typecheck、lint、deps error 0（既知warning 2）、migration 100件、Hub build、diff check成功。RC structure READY、外部設定PENDING、manual E2E REQUIRED。依存変更なしのためinstall、Desktop変更なしのためDesktop build/a11yは対象外。
 - Production、Provider実生成、credit、実決済、DB/Storage操作、モデルdownloadは0件。作画品質、実ブラウザ、4ページ16コマ完成は未受入れで、C1コード保証と区別する。
-- 次: commit/push/Draft PRとCI確認。`git status --short`、`gh pr view codex/manga-resolved-panel-contract-20261012 --json statusCheckRollup`を最初に確認する。次の変更単位はC2参照画像最終順序・重複role・上限・実送信整合。以降C3、C4/C5、Desktop D2/D3/D1、4ページ16コマ受入れは未完了。
+- 実装commit `f0ee7581`をpushし、[Draft PR #668](https://github.com/team478a/manga/pull/668)を作成した。CI/Previewは確認時点PENDING（Preview Commentsのみ成功）。次は`git status --short`、`gh pr view 668 --json statusCheckRollup`で最終HEADのCI確認とPRレビュー。次の変更単位はC2参照画像最終順序・重複role・上限・実送信整合。以降C3、C4/C5、Desktop D2/D3/D1、4ページ16コマ受入れは未完了。
 
 ---
 
