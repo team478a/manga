@@ -4,8 +4,9 @@
 
 - PR #673 merge `34e9321e`、最終HEAD全5チェック成功。Branch `codex/manga-placement-state-20261012`。
 - 生成結果の保存／採用・品質／配置・保存／原稿完成の表示を分離した。可視Asset、未保存状態、保存先配置と画面反映待ちを区別し、再読込で必ず配置される説明を廃止した。API／DB／Worker／quotaは不変。
-- 集中14/14、Hub初回1392/1392、Canvas 27/27、AI 50/50成功。最終gate／PRはCURRENT_TASKとHANDOFF_LOG参照。C4aは表示だけであり、新規の配置retry APIや実ブラウザ受入れは含まない。
+- 集中14/14、最終Hub 1393/1393、Canvas 27/27、AI 50/50、lint／Hub typecheck／build／deps／migration成功。C4aは表示だけであり、新規の配置retry APIや実ブラウザ受入れは含まない。
 - 次はC4bの配置だけ再試行・冪等性、その後polling／未保存編集保護と実画面確認。C4全体／C5／D2/D3/D1／実AI作画品質は未完了。Production、有料生成、credit、実決済、model downloadは0件。
+- 実装commit `562e84b5`、Draft PR [#674](https://github.com/team478a/manga/pull/674)。確認時点CIは実行中、Vercel成功。最終HEADはCURRENT_TASKの再開コマンドで確認する。
 
 ---
 
