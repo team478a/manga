@@ -32,9 +32,10 @@ export function createFourPageCompletionFixture() {
     const textObjects = balloons.map((balloon, panelIndex) => ({
       id: uuid(sequence++), pageId, parentBalloonId: balloon.id,
       name: `${panelIndex + 1}コマ目のセリフ`, text: dialogues[panelIndex].text,
-      x: balloon.x + 20, y: balloon.y + 20, width: balloon.width - 40,
-      height: balloon.height - 40, rotation: 0, zIndex: balloon.zIndex + 1,
-      visible: true, locked: false, fontFamily: "sans-serif", fontSize: 28,
+      // Entire em-cell region lies inside the inset ellipse, not its corners.
+      x: balloon.x + 40, y: balloon.y + 34, width: 140,
+      height: 112, rotation: 0, zIndex: balloon.zIndex + 1,
+      visible: true, locked: false, fontFamily: "sans-serif", fontSize: 24,
       fontWeight: 500, color: "#111111", writingMode: "vertical",
       textAlign: "start", verticalAlign: "top", lineHeight: 1.2,
       letterSpacing: 0, padding: 0, opacity: 1, createdAt: "", updatedAt: "",

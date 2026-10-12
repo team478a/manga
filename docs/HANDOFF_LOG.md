@@ -1,5 +1,19 @@
 # MANGAI AI Handoff Log
 
+## 2026-10-12 Codex: C3a Cloudの形状・回転・文字内包
+
+- 基点: PR #669 merge `309e9c8f`、最終HEADの全5チェック成功。Branch `codex/manga-balloon-shape-containment-20261012`。
+- 四角い外接領域の角を楕円内包として認める旧判定をtestで再現し、`dialogue-region.ts`の内接領域／逆回転4隅判定へ置き換えた。本文とルビのem-cell・行領域を含め、読めない短文の複数列fallbackと18px未満の成功扱いを廃止した。
+- `dialogue-placement.ts`の自動配置・明示修復、`page-completion.ts`の全表示関連文字検査、CloudEditorの幾何編集とPointerのlock／ページ端制限を更新した。回転／移動／寸法は既存のCanvas履歴・保存契約で扱う。
+- 画面の生ルビ記法・CSS中央回転を、`cloud-canvas-svg.ts`のescaped文字layout・左上回転へ揃えた。文字のoverflow clippingを除去し、文字本文／font属性のXML escapeをtestした。PNG/PDF exportの保存形式は変更していない。
+- 4ページ完成fixtureは従来楕円角を跨いでいたため、実際に内接する領域へ修正した。既存原稿や既存Jobの一致本文を自動書換えしていない。
+- 検証: 集中64/64、Hub 1382/1382、Canvas 26/26、AI 50/50、Hub build、deps（error 0、既知warning 2）、migration 100件、diff check成功。RC structure READY、外部設定PENDING、manual E2E REQUIRED。依存変更なし、Desktop/shared package変更なしのためinstall/Desktop build/a11yは今回対象外。
+- 集中testは形状3種×rotation4種、句読点・長音・小書き・ルビ、最小font、失敗維持、実履歴undo/redo、JSON再読込、追加文字／ページ外の完成拒否、PNG/PDF fixtureを検証。実画面／日本語font outlineの目視は未受入れ。
+- 次: DB `build_cloud_storyboard_canvas`の新規下書きは旧矩形配置のまま。C3bとして追加migration・checksum・rollback・roundtripを検証し、既存原稿へは明示修復を使う。Desktop編集追従と実ブラウザ／PNG/PDF目視、C4/C5、D2/D3/D1、4ページ16コマ実画像品質は未完了。
+- 最終lint、Hub typecheck成功。Production、有料生成、credit、実決済、モデルdownloadは0件。commit・PRは後段へ追記する。
+
+---
+
 ## 2026-10-12 Codex: C2 参照画像の最終順序・送信整合
 
 - Branch `codex/manga-reference-send-contract-20261012`、Base PR #668 merge `3fa40a39f74411bfc24b9a4c884fbb1e32d5324e`。PR #668最終HEADのCore quality、Migration roundtrip、Windows build、Vercel、Preview Commentsはすべて成功。

@@ -11,7 +11,11 @@ import {
   placeStructuredPageDialogue,
   repairLinkedDialogueBounds,
   repairShortVerticalDialogueLayout,
+  transformBalloonWithLinkedDialogue,
+  isDialogueTextLayoutReadable,
 } from "../src/modules/manga/domain/dialogue-placement.ts";
+import { dialogueInnerRegion, dialogueInkFitsTextBox } from "../src/modules/manga/domain/dialogue-region.ts";
+import { createCanvasHistoryStore, recordCanvasSnapshot, takeCanvasUndo, takeCanvasRedo } from "../src/app/creator/[projectId]/pages/[pageId]/hooks/useCanvasHistory.ts";
 
 const read = (path) =>
   fs.readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
@@ -151,6 +155,78 @@ test("吹き出しを移動すると関連する文字も同じ距離だけ移�
     isDialogueTextContainedInBalloon(value.textObjects[0], value.balloons[0]),
     true,
   );
+});
+
+test("楕円の外接矩形の角に収まる文字も内包扱いにしない", () => {
+  const target = balloon();
+  const value = place(canvas({ balloons: [target] }), dialogue("鍵だ。")).canvas;
+  const old = { ...value.textObjects[0], x: target.x + 10, y: target.y + 10, width: target.width - 20, height: target.height - 20 };
+  assert.equal(isDialogueTextContainedInBalloon(old, target), false);
+  value.textObjects[0] = old;
+  assert.equal(repairLinkedDialogueBounds(value, "repair"), 1);
+  assert.equal(isDialogueTextContainedInBalloon(value.textObjects[0], target), true);
+  assert.equal(repairLinkedDialogueBounds(value, "again"), 0);
+});
+
+for (const type of ["speech_ellipse", "speech_rounded", "narration_box"]) {
+  for (const rotation of [0, 30, 90, -45]) {
+    test(`${type} ${rotation}度の吹き出しへ句読点・長音・小書き・ルビを配置`, () => {
+      const target = balloon({ type, rotation, width: 400, height: 360 });
+      const result = place(canvas({ balloons: [target] }), dialogue("「きゃー、｜鍵《かぎ》だ。」"));
+      assert.deepEqual(result.blockers, []);
+      const text = result.canvas.textObjects[0];
+      assert.equal(text.rotation, rotation);
+      assert.equal(isDialogueTextContainedInBalloon(text, target), true);
+      assert.equal(isDialogueTextLayoutReadable(text), true);
+      const reloaded = JSON.parse(JSON.stringify(result.canvas));
+      assert.equal(isDialogueTextContainedInBalloon(reloaded.textObjects[0], reloaded.balloons[0]), true);
+    });
+  }
+}
+
+test("回転差・ルビの字面全体・最小可読文字を検査する", () => {
+  const target = balloon();
+  const text = place(canvas({ balloons: [target] }), dialogue("鍵だ。")).canvas.textObjects[0];
+  assert.equal(isDialogueTextContainedInBalloon({ ...text, rotation: 45 }, target), false);
+  assert.equal(isDialogueTextLayoutReadable({ ...text, fontSize: 12 }), false);
+  assert.equal(dialogueInkFitsTextBox({ ...text, text: "｜鍵《かぎ》", padding: 0 }), false);
+  const tiny = balloon({ width: 15, height: 15 });
+  assert.ok(dialogueInnerRegion(tiny).width < 0);
+  assert.deepEqual(place(canvas({ balloons: [tiny] }), dialogue("鍵")).blockers, ["dialogue_does_not_fit"]);
+});
+
+test("回転した吹き出しと文字全体をページ端で同じ移動量へ制限", () => {
+  const target = balloon({ x: 500, y: 500, rotation: 90 });
+  const value = place(canvas({ balloons: [target] }), dialogue("鍵だ。")).canvas;
+  const before = structuredClone(value.textObjects[0]);
+  assert.equal(moveBalloonWithLinkedDialogue(value, target.id, { x: 0, y: -100 }), true);
+  assert.equal(value.balloons[0].x, target.height);
+  assert.equal(value.balloons[0].y, 0);
+  assert.ok(Math.abs((value.textObjects[0].x - before.x) - (value.balloons[0].x - target.x)) < 0.01);
+  assert.equal(isDialogueTextContainedInBalloon(value.textObjects[0], value.balloons[0]), true);
+});
+
+test("吹き出しの回転・寸法を同じsnapshotで追従し、lockは全体を拒否", () => {
+  const target = balloon();
+  const value = place(canvas({ balloons: [target] }), dialogue("鍵だ。")).canvas;
+  const before = structuredClone(value);
+  const next = { ...target, x: 400, y: 400, rotation: 90, width: 240 };
+  assert.equal(transformBalloonWithLinkedDialogue(value, target.id, next, "edited"), true);
+  assert.equal(value.textObjects[0].rotation, 90);
+  assert.equal(isDialogueTextContainedInBalloon(value.textObjects[0], value.balloons[0]), true);
+  const after = structuredClone(value);
+  const history = createCanvasHistoryStore();
+  recordCanvasSnapshot(history, before);
+  const undone = takeCanvasUndo(history, after);
+  assert.deepEqual(undone, before);
+  const redone = takeCanvasRedo(history, undone);
+  assert.deepEqual(redone, after);
+  assert.equal(isDialogueTextContainedInBalloon(redone.textObjects[0], redone.balloons[0]), true);
+  value.textObjects[0].locked = true;
+  const locked = structuredClone(value);
+  assert.equal(transformBalloonWithLinkedDialogue(value, target.id, { ...next, rotation: 180 }, "blocked"), false);
+  assert.equal(moveBalloonWithLinkedDialogue(value, target.id, { x: 0, y: 0 }), false);
+  assert.deepEqual(value, locked);
 });
 
 test("横長吹き出しの短いセリフは可読サイズの横書き中央へ配置する", () => {

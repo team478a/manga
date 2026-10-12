@@ -1,5 +1,15 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 漫画生成改善 C3a: Cloud文字内包（2026-10-12）
+
+- PR #669はmerge `309e9c8f`で統合済み。最終HEADのCore quality、Migration roundtrip、Windows build、Vercel、Preview Commentsはすべて成功。
+- Branch `codex/manga-balloon-shape-containment-20261012`。楕円／角丸／矩形の保守的内接矩形、左上回転基点、本文とルビのem-cell検査、18px下限をCloud配置・修復・完成判定で共有する。
+- Cloud文字previewはexportと同じescaped SVG layoutを使う。関連文字のrotation／位置追従とlock拒否、ページ端drag制限を実装し、既存の履歴／autosave snapshotを維持する。
+- DB新規下書き`build_cloud_storyboard_canvas`は旧配置のままであり、C3全体は未完了。次のPRで追加migrationとroundtripを検証する。旧migration・既存原稿を一括変更しない。Desktop追従と日本語PNG/PDF／ブラウザ目視も別の未受入れ条件。
+- 集中64/64、Hub 1382/1382、Canvas 26/26、AI 50/50、Hub build、deps、migration、diff check成功。Production、有料生成、credit、実決済、モデルdownloadは0件。C4/C5、D2/D3/D1、4ページ16コマ実画像品質は未完了。
+
+---
+
 ## 0.0 漫画生成改善 C2: 参照画像の送信契約（2026-10-12）
 
 - PR #668はmerge `3fa40a39`で統合済み。最終HEADのCore quality、Migration roundtrip、Windows build、Vercel、Preview Commentsはすべて成功した。

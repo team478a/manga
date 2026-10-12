@@ -255,6 +255,11 @@ function renderText(item: TextObject) {
   return `<g transform="${transform}">${lines}${ruby}</g>`;
 }
 
+// Same escaped text/ruby and em positions as PNG/PDF; no raw user HTML.
+export function createCloudCanvasTextSvg(item: TextObject) {
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 ${item.width} ${item.height}" style="overflow:visible">${renderText({ ...item, x: 0, y: 0, rotation: 0, opacity: 1 })}</svg>`;
+}
+
 export function createCloudCanvasSvg(
   canvas: PageCanvas,
   assets: ReadonlyMap<string, CloudCanvasSvgAsset>,

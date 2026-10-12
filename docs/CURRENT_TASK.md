@@ -1,5 +1,17 @@
 # MANGAI Current Task
 
+## 2026-10-12 漫画生成改善 C3a: Cloudの形状・回転・文字内包
+
+- PR #669はmerge `309e9c8f`で統合済み。最終HEADのCore quality、Migration roundtrip、Windows build、Vercel、Preview Commentsはすべて成功。
+- Branch `codex/manga-balloon-shape-containment-20261012`。楕円・角丸・矩形に保守的な内接領域を定義し、配置／明示修復／完成判定へ共通適用する。文字・ルビの領域全体を確認し、18px未満へ縮小しない。
+- Cloud表示とSVG exportの回転基点・日本語layoutを統一し、吹き出しの位置／寸法／回転変更を関連文字と同じ履歴単位で扱う。locked文字は変更しない。旧原稿は読込時に書換えず、明示修復する。
+- 今回はCloud修正をreview単位にする。Desktop編集追従、実ブラウザ原稿とPNG/PDFの目視受入れは別途確認が必要。C4/C5、D2/D3/D1、4ページ16コマと実画像品質は未完了。
+- Production、有料生成、credit、実決済、モデルdownloadは0件。集中64/64、Hub 1382/1382、Canvas 26/26、AI 50/50、Hub build、deps（error 0、既知warning 2）、migration 100件、diff check成功。RC structure READY、外部設定PENDING、manual E2E REQUIRED。
+- C3全体は未完了。DB `build_cloud_storyboard_canvas`の新規下書きは旧矩形配置が残るため、次のC3bで追加migration・checksum・rollback・roundtripを検証する。既存migration／原稿は変更しない。
+- 最終lint、Hub typecheck成功。依存・Desktop/shared package変更なしのためinstall/Desktop build/a11yは今回対象外。C3aのPR確認後、C3b→Desktop／実画面受入れ→C4/C5の順で未完了項目を扱う。
+
+---
+
 ## 2026-10-12 漫画生成改善 C2: 参照画像の送信契約
 
 - PR #668 merge `3fa40a39`を基点に、`codex/manga-reference-send-contract-20261012`でC2を実装する。

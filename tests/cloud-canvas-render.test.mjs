@@ -2,7 +2,19 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import sharp from "sharp";
 import { renderCloudCanvasPng } from "../src/lib/cloud-canvas-render.ts";
-import { createCloudCanvasSvg } from "../src/lib/cloud-canvas-svg.ts";
+import { createCloudCanvasSvg, createCloudCanvasTextSvg } from "../src/lib/cloud-canvas-svg.ts";
+
+test("画面内文字はexportと同じルビlayoutを使い生HTMLを実行しない", () => {
+  const text = { x: 100, y: 100, width: 200, height: 200, rotation: 30, text: "｜鍵《かぎ》<script>", writingMode: "vertical", fontFamily: 'sans-serif\" onload=\"x', fontSize: 24, fontWeight: 500, color: "#111", opacity: 1, padding: 24, lineHeight: 1.2, letterSpacing: 0, textAlign: "start", verticalAlign: "top" };
+  const preview = createCloudCanvasTextSvg(text);
+  const exported = createCloudCanvasSvg({ width: 500, height: 500, backgroundColor: "#fff", panels: [], panelLayers: [], balloons: [], textObjects: [{ ...text, visible: true, zIndex: 1 }] }, new Map());
+  assert.match(preview, />か<\/text>/);
+  assert.doesNotMatch(preview, /｜鍵《かぎ》|<script>|" onload="/);
+  assert.match(preview, /&quot; onload=&quot;/);
+  assert.match(exported, /translate\(100 100\) rotate\(30\)/);
+  const local = preview.match(/<g transform="translate\(0 0\) rotate\(0\)">([\s\S]*)<\/g>/)[1];
+  assert.ok(exported.includes(local));
+});
 
 test("Cloud CanvasをPNGへ描画できる", async () => {
   const canvas = {

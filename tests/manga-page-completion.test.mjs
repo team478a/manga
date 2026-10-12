@@ -130,10 +130,11 @@ test("存在するだけで読めない短文分割を完成扱いにしない",
   text.writingMode = "horizontal";
   text.textAlign = "center";
   text.verticalAlign = "middle";
-  text.x = canvas.balloons[0].x + 10;
-  text.y = canvas.balloons[0].y + 10;
-  text.width = canvas.balloons[0].width - 20;
-  text.height = canvas.balloons[0].height - 20;
+  text.x = canvas.balloons[0].x + 40;
+  text.y = canvas.balloons[0].y + 34;
+  text.width = 140;
+  text.height = 112;
+  text.fontSize = 24;
   result = evaluateMangaPageCompletion(input({ canvas, requiredDialogues }));
   assert.equal(codes(result).has("DIALOGUE_LAYOUT_UNREADABLE"), false);
 });
@@ -150,6 +151,17 @@ test("文字枠が吹き出し外にあるページを完成扱いにしない",
     ).message,
     /吹き出し内/,
   );
+});
+
+test("ネームにない追加文字と回転後ページ外の文字も完成不可", () => {
+  const canvas = clone(source.canvas);
+  const extra = { ...canvas.textObjects[0], id: "extra", text: "追加", x: canvas.balloons[0].x, y: canvas.balloons[0].y };
+  canvas.textObjects.push(extra);
+  assert.ok(codes(evaluateMangaPageCompletion(input({ canvas }))).has("DIALOGUE_LAYOUT_UNREADABLE"));
+  canvas.textObjects.pop();
+  canvas.balloons[0].x = 900;
+  canvas.textObjects[0].x += 400;
+  assert.ok(codes(evaluateMangaPageCompletion(input({ canvas }))).has("DIALOGUE_LAYOUT_UNREADABLE"));
 });
 
 test("未保存、revision競合、Asset不足、PNG失敗、寸法不正を同時に返す", () => {

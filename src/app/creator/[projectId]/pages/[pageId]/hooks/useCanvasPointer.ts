@@ -56,7 +56,7 @@ export function useCanvasPointer({
   ) {
     event.stopPropagation();
     setSelection(nextSelection);
-    if (item.locked) return;
+    if (item.locked || (nextSelection.type === "balloon" && canvas.textObjects.some(text => text.parentBalloonId === item.id && text.locked))) return;
     event.currentTarget.setPointerCapture(event.pointerId);
     drag.current = {
       selection: nextSelection,
