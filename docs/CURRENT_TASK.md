@@ -7,7 +7,8 @@
 - 修正: 吹き出し移動時に関連文字を同じ差分で移動する。数値編集で吹き出し位置・寸法を変えた場合も文字を追従・再fitする。完成判定は親吹き出し内の10px insetへ文字枠全体が収まり、既存の可読性判定も通る場合だけセリフ完成とする。既存原稿の明示修復は同じ内包判定を使用する。
 - 画像導線: 画像なしページは従来どおり`PANEL_IMAGE_MISSING`で完成不可を維持する。原稿上部の導線を「画像生成の見積り・開始へ」に変更し、移動だけでは生成・credit消費されず、費用と対象確認後の明示操作が必要と表示する。自動生成、Provider呼出し、credit消費は追加しない。
 - 費用ゼロ検証: 集中39/39、Hub 1325/1325、Hub typecheck、lint、dependency/module boundary（既知warning 2）、Hub Production build、diff check成功。固定画像fixtureから4ページPNG/PDFを生成し、画像表示とページ順・寸法を検査した。
-- Production、外部Provider、credit、Stripe、決済、DB、Storage、環境変数は変更・実行していない。次はDraft PRでレビューし、merge後にPreviewまたはStagingで実ブラウザの吹き出し移動・保存・再読込を確認する。本番Provider生成は別の明示承認まで行わない。
+- Commit `3bf6e380`をpushし、Draft PR [#667](https://github.com/team478a/manga/pull/667)を作成した。Core quality、Migration roundtrip、Windows build、Vercel Preview、Preview Commentsはすべて成功した。
+- Production、外部Provider、credit、Stripe、決済、DB、Storage、環境変数は変更・実行していない。次はPRレビュー・merge判断。merge後にPreviewまたはStagingで実ブラウザの吹き出し移動・保存・再読込を確認する。本番Provider生成は別の明示承認まで行わない。
 
 ---
 

@@ -7,7 +7,8 @@
 - 完成判定へ親吹き出し内包を追加し、吹き出し外の文字を`DIALOGUE_LAYOUT_UNREADABLE`で拒否する。既存修復も同じ内包判定へ統一した。
 - 画像なしページの完成拒否は維持し、生成導線に見積り・明示開始・遷移だけでは費用が発生しないことを表示した。
 - 検証: 集中39/39、Hub 1325/1325、Hub typecheck、lint、dependency/module boundary（既知warning 2）、Hub Production build、diff check成功。固定fixtureの画像からPNGと4ページPDFを生成済み。
-- Production、外部Provider、credit、Stripe、実決済、DB、Storage、環境変数操作0件。次はcommit／push／Draft PRとCI確認。その後、PreviewまたはStagingで実ブラウザの吹き出し移動・保存・再読込を確認する。
+- Commit `3bf6e380`をpushし、Draft PR [#667](https://github.com/team478a/manga/pull/667)を作成した。Core quality、Migration roundtrip、Windows build、Vercel Preview、Preview Commentsはすべて成功した。
+- Production、外部Provider、credit、Stripe、実決済、DB、Storage、環境変数操作0件。次はPRレビュー・merge判断。その後、PreviewまたはStagingで実ブラウザの吹き出し移動・保存・再読込を確認する。
 
 ---
 

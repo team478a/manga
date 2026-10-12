@@ -7,6 +7,7 @@
 - ページ完成判定へ、文字枠全体が親吹き出しの10px inset内に収まることを追加した。外側にある文字は、文字自身がoverflowしていなくても`DIALOGUE_LAYOUT_UNREADABLE`で完成不可となる。
 - 画像なしは既存`PANEL_IMAGE_MISSING`で完成不可を維持した。生成導線を見積り・開始と明記し、遷移だけでは生成・credit消費されず明示確認が必要と表示した。
 - 集中39/39、Hub 1325/1325、Hub typecheck、lint、dependency/module boundary、Hub Production build、diff check成功。固定画像fixtureのPNG/PDF検証を含む。Production、Provider、credit、Stripe、DB、Storageは変更していない。
+- Commit `3bf6e380`をpushし、Draft PR [#667](https://github.com/team478a/manga/pull/667)を作成した。Core quality、Migration roundtrip、Windows build、Vercel Preview、Preview Commentsはすべて成功した。
 
 ---
 
