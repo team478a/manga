@@ -1,5 +1,17 @@
 # MANGAI AI Handoff Log
 
+## 2026-10-12 Codex: 漫画生成改善 C1 人物・構図の確定契約
+
+- Branch: `codex/manga-resolved-panel-contract-20261012`。Base: PR #667 merge `7d7f4625919aabdb6101a6fd74ea12cecd2b5fca`。
+- 利用者提供の実装指示書のC1を実装。旧merge commitの実Builderをメモリ上で実行して、2人指定→subject 1件、配置・視線・追加指定欠落、品質仕様shot未解決を再現した。再現出力は人数・boolean等のfixture metadataだけで、利用者Promptや画像をログへ出していない。
+- 通常／短縮で同じ確定人数・画角・カメラ・人物配置・視線・追加指定と、人物別のID/version・外見・不変特徴を保持する。明示overrideを優先し、台詞浄化を維持する。必須設定を黙って切り捨てず、全体予算超過は入力エラーにする。
+- 対象: `src/lib/cloud-panel-image-generation.ts`、実Builder回帰test、Cloud設計文書、3引継ぎ文書。DB、API、Storage、IPC、保存形式、Providerモデル、料金・明示承認契約は変更なし。
+- 検証: 集中50/50、Hub 1343/1343、Canvas 26/26、AI Core 50/50、Hub typecheck、lint、deps error 0（既知warning 2）、migration 100件、Hub build、diff check成功。RC structure READY、外部設定PENDING、manual E2E REQUIRED。依存変更なしのためinstall、Desktop変更なしのためDesktop build/a11yは対象外。
+- Production、Provider実生成、credit、実決済、DB/Storage操作、モデルdownloadは0件。作画品質、実ブラウザ、4ページ16コマ完成は未受入れで、C1コード保証と区別する。
+- 次: commit/push/Draft PRとCI確認。`git status --short`、`gh pr view codex/manga-resolved-panel-contract-20261012 --json statusCheckRollup`を最初に確認する。次の変更単位はC2参照画像最終順序・重複role・上限・実送信整合。以降C3、C4/C5、Desktop D2/D3/D1、4ページ16コマ受入れは未完了。
+
+---
+
 ## 2026-10-12 Codex: 漫画成立条件（吹き出し内文字・画像生成導線）
 
 - Branch: `codex/manga-renderability-gate-20261012`。基点は`feature/manga-canvas-mvp`のPR #666 merge `903afecd`。

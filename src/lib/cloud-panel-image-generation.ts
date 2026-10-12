@@ -195,20 +195,8 @@ const providerReferenceRoleDirections: Record<
   prop: "prop shape, materials, scale, and identifying details only",
 };
 
-const providerCloseUpScene =
-  "one general-audience manga character in a roomy environmental portrait from one upright camera view, with the complete silhouette comfortably inside the canvas";
-const providerCloseUpPosition =
-  "centered with visible pictorial environment around the silhouette; top of hairstyle near 18% from the top edge, lower edge of visible clothing near 82% from the top edge, and broad environment along both side margins";
-const providerCloseUpComposition =
-  "roomy environmental portrait; subject occupies about 58% of canvas height; complete silhouette remains comfortably inside the canvas with generous headroom and environmental space on both sides";
 const providerCloseUpOutput =
   "one continuous edge-to-edge monochrome manga illustration across the entire portrait canvas";
-const providerCloseUpFraming = {
-  subject_height_percent: 58,
-  top_hair_y_percent: 18,
-  lower_clothing_y_percent: 82,
-  side_environment_percent: 18,
-} as const;
 
 function buildProviderReferenceRoleContract(
   references: readonly PanelReferenceAsset[],
@@ -251,7 +239,6 @@ function compactProviderSceneField(input: {
   value: string;
   dialogue: readonly { text: string }[];
   fallback: string;
-  maxLength?: number;
 }) {
   const withoutQuotedSpeech = input.value
     .replace(/「[^」]*」|『[^』]*』|“[^”]*”|"[^"]*"|'[^']*'/g, "")
@@ -264,31 +251,9 @@ function compactProviderSceneField(input: {
     )
   )
     return input.fallback;
-  return withoutQuotedSpeech.slice(0, input.maxLength ?? 300);
-}
-
-const providerDeviceLayoutSignal =
-  /(?:スマートフォン|スマホ|携帯(?:電話)?|端末|デバイス|表示面|ディスプレイ|handheld device|smartphone|mobile phone|phone|device|screen|display|\bUI\b)/i;
-
-function compactProviderSpatialLayout(input: {
-  value: string;
-  dialogue: readonly { text: string }[];
-  fallback: string;
-}) {
-  const layout = compactProviderSceneField(input);
-  if (!providerDeviceLayoutSignal.test(layout)) return layout;
-  return "storyboard-relative placement; relaxed clothing; natural hands";
-}
-
-function compactProviderDeviceSafeAction(input: {
-  value: string;
-  dialogue: readonly { text: string }[];
-  fallback: string;
-}) {
-  const action = compactProviderSceneField(input);
-  return providerDeviceLayoutSignal.test(action)
-    ? "natural attentive pose; off-frame gaze"
-    : action;
+  // Remove lettering risks, but never silently truncate required scene details.
+  // The complete serialized prompt is checked against the budget below.
+  return withoutQuotedSpeech;
 }
 
 function imageSize(width: number, height: number) {
@@ -482,6 +447,11 @@ export function buildStoryboardPanelGeneration(input: {
         .map((reference) => reference.assetId),
     }),
   );
+  const placement = input.compositionControl?.subjectPlacement ?? "storyboard";
+  const gaze = input.compositionControl?.gazeDirection ?? "storyboard";
+  const hasCharacters = usesCharacters && storyboardPanel.characters.length > 0;
+  const resolvedLayout = hasCharacters && placement !== "storyboard"
+    ? subjectPlacementDirections[placement] : storyboardPanel.composition;
   const panelSpecification = attachCharacterIdentities(
     panelSpecificationSchema.parse({
       version: 1,
@@ -492,7 +462,8 @@ export function buildStoryboardPanelGeneration(input: {
         : 0,
       expression: usesCharacters ? storyboardPanel.emotion : "",
       composition: [
-        storyboardPanel.composition,
+        resolvedLayout,
+        hasCharacters && gaze !== "storyboard" ? gazeDirectionDirections[gaze] : "",
         input.compositionControl?.instruction,
       ]
         .filter(Boolean)
@@ -502,9 +473,11 @@ export function buildStoryboardPanelGeneration(input: {
         .filter((profile) => profile.kind === "prop")
         .map((profile) => profile.name),
       action: usesCharacters ? storyboardPanel.action : "",
-      shot: input.compositionControl?.shot ?? storyboardPanel.shot,
+      shot: input.compositionControl?.shot && input.compositionControl.shot !== "storyboard"
+        ? input.compositionControl.shot : storyboardPanel.shot,
       cameraAngle:
-        input.compositionControl?.cameraAngle ?? storyboardPanel.cameraAngle,
+        input.compositionControl?.cameraAngle && input.compositionControl.cameraAngle !== "storyboard"
+          ? input.compositionControl.cameraAngle : storyboardPanel.cameraAngle,
       generationTarget,
     }),
     characterIdentities,
@@ -537,7 +510,7 @@ export function buildStoryboardPanelGeneration(input: {
       : input.compositionControl.shot;
   const faceFramingContract = resolveFaceFramingContract({
     shot: resolvedShot,
-    usesCharacters,
+    usesCharacters: hasCharacters,
   });
   const contractedCamera =
     !input.compositionControl ||
@@ -590,6 +563,48 @@ export function buildStoryboardPanelGeneration(input: {
         dialogue: storyboardPanel.dialogue,
       }),
     );
+  const resolvedScene = {
+    subject_count: panelSpecification.expectedCharacterCount,
+    shot: panelSpecification.shot,
+    camera_angle: panelSpecification.cameraAngle,
+    composition: contractedShot,
+    layout: hasCharacters && placement !== "storyboard"
+      ? subjectPlacementDirections[placement] : providerSceneFields.composition,
+    subject_placement: hasCharacters ? placement : "none",
+    gaze_direction: hasCharacters ? gaze : "none",
+    gaze_instruction: hasCharacters ? gazeDirectionDirections[gaze] : "",
+    additional_instruction: compactProviderSceneField({
+      value: input.compositionControl?.instruction ?? "",
+      dialogue: storyboardPanel.dialogue,
+      fallback: "",
+    }),
+    action: hasCharacters ? providerSceneFields.action : "",
+    expression: hasCharacters ? providerSceneFields.emotion : "",
+    background: usesWorld ? providerSceneFields.background : "",
+    visual_direction: generationTarget === "composite" || generationTarget === "effect"
+      ? providerSceneFields.visualDirection : "",
+    subjects: panelSpecification.characterNames.map((name) => {
+      const profile = selectedVisualProfiles.find(
+        (item) => item.name.toLocaleLowerCase() === name.toLocaleLowerCase(),
+      );
+      const storyProfile = input.characterProfiles?.find(
+        (item) => item.name.toLocaleLowerCase() === name.toLocaleLowerCase(),
+      );
+      return {
+        name,
+        character_id: profile?.id,
+        profile_version: profile?.current_version,
+        appearance_age: profile?.appearance_age ?? "",
+        body_build: profile?.body_build ?? "",
+        hair: profile?.hair ?? "",
+        costume: profile?.costume ?? "",
+        color_palette: profile?.color_palette ?? "",
+        immutable_traits: profile?.immutable_traits ?? [],
+        instruction: profile?.prompt ?? "",
+        story_profile: storyProfile,
+      };
+    }),
+  };
   const variationDirections = {
     composite: [
       "ネームの構図と人物配置を最優先し、読みやすい基準案にする。",
@@ -617,59 +632,18 @@ export function buildStoryboardPanelGeneration(input: {
     ],
   } as const;
   const providerControlContract = JSON.stringify({
+    ...resolvedScene,
     output_type: "single frameless monochrome manga panel illustration",
     scene: "one moment from one camera view",
-    subject_count: panelSpecification.expectedCharacterCount,
-    composition:
-      resolvedShot === "close_up"
-        ? providerCloseUpComposition
-        : contractedShot,
-    camera_angle: contractedCamera,
+    camera_instruction: contractedCamera,
     image_surface: "clean monochrome pictorial line art and natural material shading",
     lettering_stage: "blank artwork ready for dialogue and balloons to be overlaid later",
   });
   const compactCloseUpContract = JSON.stringify({
-    composition: providerCloseUpComposition,
-    framing: providerCloseUpFraming,
-    scene: providerCloseUpScene,
-    layout: compactProviderSpatialLayout({
-      value: storyboardPanel.composition,
-      dialogue: storyboardPanel.dialogue,
-      fallback: "人物と背景の関係が読み取れる明瞭な配置",
-    }),
+    ...resolvedScene,
+    framing: resolveFaceFramingContract({ shot: resolvedShot, usesCharacters: hasCharacters }),
+    scene: `${resolvedScene.subject_count} general-audience manga characters from one camera view`,
     output_type: providerCloseUpOutput,
-    subjects: [
-      {
-        description: [
-          characters,
-          ...selectedVisualProfiles.map((profile) =>
-            [
-              profile.appearance_age,
-              profile.body_build,
-              profile.hair,
-              profile.costume,
-            ]
-              .filter(Boolean)
-              .join(", "),
-          ),
-        ]
-          .filter(Boolean)
-          .join("; ")
-          .slice(0, 600),
-        action: compactProviderDeviceSafeAction({
-          value: storyboardPanel.action,
-          dialogue: storyboardPanel.dialogue,
-          fallback:
-            "a natural attentive pose that communicates the story through posture and gaze",
-        }),
-        expression: compactProviderSceneField({
-          value: storyboardPanel.emotion,
-          dialogue: storyboardPanel.dialogue,
-          fallback: "a natural restrained expression",
-        }),
-        position: providerCloseUpPosition,
-      },
-    ],
     style: compactProviderSceneField({
       value:
         [
@@ -681,20 +655,13 @@ export function buildStoryboardPanelGeneration(input: {
           .join(", ") || "clean monochrome manga ink linework and natural shading",
       dialogue: storyboardPanel.dialogue,
       fallback: "clean monochrome manga ink linework and natural shading",
-      maxLength: 400,
-    }),
-    background: compactProviderSceneField({
-      value: storyboardPanel.background,
-      dialogue: storyboardPanel.dialogue,
-      fallback: "a simple story-appropriate environment",
     }),
     camera: {
       angle: contractedCamera,
-      distance:
-        "roomy environmental portrait distance with the camera clearly pulled back",
+      distance: contractedShot,
       "lens-mm": 50,
       focus:
-        "sharp identity and expression within the complete silhouette while preserving broad surrounding environment",
+        "sharp identity and expression for each character within the specified framing",
     },
     canvas:
       "one uninterrupted pictorial scene fills every edge of the portrait canvas",
@@ -705,6 +672,14 @@ export function buildStoryboardPanelGeneration(input: {
     surface_finish:
       "clean monochrome pictorial line art and natural material shading across every surface",
     overlay_stage: "overlays added later",
+    props: panelSpecification.props,
+    prop_surface: "Required handheld devices keep a plain featureless back or thin side edge toward the camera, each required prop appears exactly once; all surfaces are pictorial only.",
+    target: generationTarget,
+    target_surface: generationTarget === "character"
+      ? "character material on a plain pure white background, clear pose and silhouette"
+      : "background, characters, and effects integrated naturally into one scene",
+    world_settings: usesWorld ? worldDetails : [],
+    style_settings: styleDetails,
     quality_gate:
       "upright; natural face/hands/joints; single props; clean fabric; pictorial only",
     variation:
@@ -731,7 +706,7 @@ export function buildStoryboardPanelGeneration(input: {
       ? `必要な小物: ${panelSpecification.props.join("、")}。`
       : "",
     panelSpecification.composition
-      ? `人物と背景の配置: ${providerSceneFields.composition}。`
+      ? `人物と背景の配置: ${resolvedScene.layout}。`
       : "",
     `画角: ${contractedShot}。カメラ: ${contractedCamera}。`,
     ...faceFramingContract,
@@ -796,9 +771,9 @@ export function buildStoryboardPanelGeneration(input: {
     "手持ち端末が必要な場面では、無地の背面または細い側面だけをカメラへ向け、表示面は人物の体側または画面外へ向ける。ネームで必要な小物は、指定した位置にそれぞれ一つだけ置く。",
     "When a handheld device is required, its plain featureless back or thin side edge faces the camera, while the display surface faces the character or away from the camera. Each required prop appears exactly once at its storyboard position.",
     `生成対象: ${targetDirections[generationTarget]}`,
-    `画角: ${shotLabels[storyboardPanel.shot]}。`,
-    `カメラ: ${angleLabels[storyboardPanel.cameraAngle]}。`,
-    `構図: ${providerSceneFields.composition}。`,
+    `画角: ${contractedShot}。`,
+    `カメラ: ${contractedCamera}。`,
+    `構図: ${resolvedScene.layout}。`,
     input.compositionControl
       ? [
           "構図調整:",
@@ -810,8 +785,8 @@ export function buildStoryboardPanelGeneration(input: {
           usesCharacters
             ? `${gazeDirectionDirections[input.compositionControl.gazeDirection]}。`
             : "",
-          input.compositionControl.instruction
-            ? `追加指定:${input.compositionControl.instruction}。`
+          resolvedScene.additional_instruction
+            ? `追加指定:${resolvedScene.additional_instruction}。`
             : "",
         ].join("")
       : "",

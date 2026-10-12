@@ -88,6 +88,118 @@ const canvas = {
   textObjects: [],
 };
 
+for (const count of [0, 1, 2, 3]) {
+  for (const shot of ["close_up", "medium", "wide"]) {
+    test(`確定契約: ${count}人/${shot}でも個別設定・配置・視線・追加指示を保持する`, () => {
+      const scene = structuredClone(storyboard);
+      const names = ["葵", "蓮", "楓"].slice(0, count);
+      scene.pages[0].panels[0].characters = names;
+      scene.pages[0].panels[0].shot = "close_up";
+      const profiles = names.map((name, index) => ({
+        id: `71000000-0000-4000-8000-00000000000${index + 1}`,
+        name, current_version: index + 1, appearance_age: "25歳",
+        body_build: "標準", hair: `hair-${name}`, costume: `costume-${name}`,
+        color_palette: `color-${name}`, immutable_traits: [`trait-${name}`],
+        prompt: `instruction-${name}`, negative_prompt: "",
+      }));
+      const result = buildStoryboardPanelGeneration({
+        storyboard: scene, pageNumber: 1, canvas, panelId,
+        visualCharacterProfiles: profiles,
+        compositionControl: {
+          shot, cameraAngle: "low", subjectPlacement: count === 2 ? "two_shot" : "left",
+          gazeDirection: "right", instruction: "鍵を右手で持つ",
+        },
+      });
+      const contract = JSON.parse(result.generation.prompt.split("\n")[1]);
+      assert.equal(contract.subject_count, count);
+      assert.equal(contract.subjects.length, count);
+      assert.equal(contract.shot, shot);
+      assert.equal(contract.camera_angle, "low");
+      assert.equal(result.panelSpecification.shot, shot);
+      assert.equal(contract.subject_placement, count === 0 ? "none" : count === 2 ? "two_shot" : "left");
+      assert.equal(contract.gaze_direction, count === 0 ? "none" : "right");
+      assert.equal(contract.additional_instruction, "鍵を右手で持つ");
+      assert.equal(contract.background, "朝の駅前");
+      names.forEach((name, index) => {
+        assert.deepEqual(contract.subjects[index], {
+          name, character_id: profiles[index].id, profile_version: index + 1,
+          appearance_age: "25歳", body_build: "標準", hair: `hair-${name}`,
+          costume: `costume-${name}`, color_palette: `color-${name}`,
+          immutable_traits: [`trait-${name}`], instruction: `instruction-${name}`,
+        });
+      });
+      if (shot === "wide") {
+        assert.doesNotMatch(result.generation.prompt, /頭部全体・首・肩まで|subject occupies/);
+      }
+    });
+  }
+}
+
+test("短縮契約でも長い必須設定を切らず、予算超過なら入力エラーにする", () => {
+  const scene = structuredClone(storyboard);
+  scene.pages[0].panels[0].shot = "close_up";
+  const profile = {
+    id: "71000000-0000-4000-8000-000000000001", name: "明日香",
+    current_version: 1, appearance_age: "25歳", body_build: "標準",
+    hair: "黒髪", costume: "白シャツ", color_palette: "白黒",
+    immutable_traits: ["左こめかみの四角い髪留め"],
+    prompt: "固定設定".repeat(200) + "末尾の必要特徴", negative_prompt: "",
+  };
+  const build = () => buildStoryboardPanelGeneration({
+    storyboard: scene, pageNumber: 1, canvas, panelId, visualCharacterProfiles: [profile],
+  });
+  assert.match(build().generation.prompt, /末尾の必要特徴/);
+  profile.prompt = "必須".repeat(11000);
+  assert.throws(build, /生成条件が長すぎます/);
+});
+
+test("storyboard選択値は実画角・カメラへ解決し通常・短縮で同じ場面契約を使う", () => {
+  const scene = structuredClone(storyboard);
+  scene.pages[0].panels[0].shot = "close_up";
+  scene.pages[0].panels[0].cameraAngle = "high";
+  const input = {
+    storyboard: scene, pageNumber: 1, canvas, panelId,
+    compositionControl: {
+      shot: "storyboard", cameraAngle: "storyboard", subjectPlacement: "right",
+      gazeDirection: "partner", instruction: "葵を右に配置し蓮を見る",
+    },
+  };
+  const compact = buildStoryboardPanelGeneration(input);
+  const detailed = buildStoryboardPanelGeneration({
+    ...input, revision: { sourceAssetId: pageId, preset: "polish" },
+  });
+  const contracts = [compact, detailed].map((result) => JSON.parse(result.generation.prompt.split("\n")[1]));
+  for (const field of ["subjects", "subject_count", "shot", "camera_angle", "layout", "subject_placement", "gaze_direction", "additional_instruction", "action", "expression", "background"]) {
+    assert.deepEqual(contracts[0][field], contracts[1][field], field);
+  }
+  assert.equal(compact.panelSpecification.shot, "close_up");
+  assert.equal(compact.panelSpecification.cameraAngle, "high");
+  assert.match(compact.panelSpecification.composition, /主役を画面右側/);
+  assert.match(compact.panelSpecification.composition, /会話相手/);
+  assert.doesNotMatch(compact.generation.prompt, /主人公を右手前、駅を左奥/);
+});
+
+for (const [placement, gaze, direction] of [
+  ["center", "camera", "カメラ"], ["left", "left", "画面左"],
+  ["right", "right", "画面右"], ["foreground_background", "off_frame", "画面外"],
+]) {
+  test(`短縮契約の人物配置${placement}・視線${gaze}を明示設定どおり保持する`, () => {
+    const result = buildStoryboardPanelGeneration({
+      storyboard, pageNumber: 1, canvas, panelId,
+      compositionControl: {
+        shot: "close_up", cameraAngle: "eye_level", subjectPlacement: placement,
+        gazeDirection: gaze, instruction: "四角い髪留めを維持する",
+      },
+    });
+    const contract = JSON.parse(result.generation.prompt.split("\n")[1]);
+    assert.equal(contract.subject_placement, placement);
+    assert.equal(contract.gaze_direction, gaze);
+    assert.match(contract.gaze_instruction, new RegExp(direction));
+    assert.equal(contract.additional_instruction, "四角い髪留めを維持する");
+    assert.doesNotMatch(contract.layout, /主人公を右手前、駅を左奥/);
+  });
+}
+
 test("Release 6 Feature Flagは未設定時fail closedする", () => {
   const previous = process.env.CLOUD_PANEL_IMAGE_GENERATION_ENABLED;
   delete process.env.CLOUD_PANEL_IMAGE_GENERATION_ENABLED;
@@ -385,7 +497,7 @@ test("完成コマ生成はBFL向けの正の単一場面指示を日英で固�
   assert.match(result.generation.negativePrompt, /speech balloons/);
 });
 
-test("クローズアップは短い構造化Promptで安定した中距離撮影へ固定する", () => {
+test("クローズアップは構造化Promptで指定画角と安全な顔フレーミングを保持する", () => {
   const closeUpStoryboard = structuredClone(storyboard);
   closeUpStoryboard.pages[0].panels[0].shot = "close_up";
   closeUpStoryboard.pages[0].panels[0].action =
@@ -404,30 +516,22 @@ test("クローズアップは短い構造化Promptで安定した中距離撮�
   const providerContract = JSON.parse(result.generation.prompt.split("\n")[1]);
   assert.equal(
     providerContract.composition,
-    "roomy environmental portrait; subject occupies about 58% of canvas height; complete silhouette remains comfortably inside the canvas with generous headroom and environmental space on both sides",
+    "頭部全体・首・肩まで入るミディアムクローズアップ",
   );
-  assert.deepEqual(Object.keys(providerContract).slice(0, 3), [
-    "composition",
-    "framing",
-    "scene",
-  ]);
-  assert.match(providerContract.scene, /roomy environmental portrait/);
+  assert.equal(providerContract.shot, "close_up");
+  assert.equal(providerContract.subject_count, 1);
+  assert.match(providerContract.scene, /1 general-audience manga characters/);
   assert.equal(
     providerContract.layout,
     "主人公を右手前、駅を左奥に置く",
   );
   assert.match(providerContract.output_type, /continuous edge-to-edge/);
   assert.match(providerContract.canvas, /one uninterrupted pictorial scene/);
-  assert.match(providerContract.subjects[0].position, /top of hairstyle near 18%/);
-  assert.deepEqual(providerContract.framing, {
-    subject_height_percent: 58,
-    top_hair_y_percent: 18,
-    lower_clothing_y_percent: 82,
-    side_environment_percent: 18,
-  });
+  assert.equal(providerContract.subjects[0].name, "明日香");
+  assert.match(providerContract.framing.join(" "), /complete face in frame/);
   assert.equal(
     providerContract.camera.distance,
-    "roomy environmental portrait distance with the camera clearly pulled back",
+    "頭部全体・首・肩まで入るミディアムクローズアップ",
   );
   assert.equal(providerContract.camera["lens-mm"], 50);
   assert.equal("lens" in providerContract.camera, false);
@@ -442,15 +546,15 @@ test("クローズアップは短い構造化Promptで安定した中距離撮�
   assert.match(providerContract.quality_gate, /clean fabric/);
   assert.match(providerContract.overlay_stage, /overlays added later/);
   assert.equal(
-    providerContract.subjects[0].action,
-    "a natural attentive pose that communicates the story through posture and gaze",
+    providerContract.action,
+    "人物の姿勢と視線で物語上の意図を伝える自然な動作",
   );
   assert.doesNotMatch(
     result.generation.prompt,
-    /証拠を|dialogue|balloons|speaking|lettering|unmarked|both eyes, nose, mouth, chin/,
+    /証拠を|dialogue|balloons|speaking|lettering|unmarked/,
   );
   assert.ok(
-    result.generation.prompt.length < 2_000,
+    result.generation.prompt.length < 4_000,
     `prompt length: ${result.generation.prompt.length}`,
   );
   assert.equal(
@@ -461,7 +565,7 @@ test("クローズアップは短い構造化Promptで安定した中距離撮�
   );
 });
 
-test("クローズアップの端末構図は端末位置も含めて穏やかな人物配置へ置換する", () => {
+test("クローズアップの必要な端末と動作は保持し無記名の面を要求する", () => {
   const closeUpStoryboard = structuredClone(storyboard);
   closeUpStoryboard.pages[0].panels[0].shot = "close_up";
   closeUpStoryboard.pages[0].panels[0].composition =
@@ -476,23 +580,19 @@ test("クローズアップの端末構図は端末位置も含めて穏やか�
   });
   const providerContract = JSON.parse(result.generation.prompt.split("\n")[1]);
 
-  assert.match(providerContract.layout, /storyboard-relative placement/);
-  assert.match(providerContract.layout, /relaxed clothing/);
-  assert.match(providerContract.layout, /natural hands/);
-  assert.match(providerContract.subjects[0].action, /off-frame gaze/);
+  assert.match(providerContract.layout, /胸ポケット/);
+  assert.equal(providerContract.action, "スマートフォンの着信表示を確認する");
+  assert.match(providerContract.prop_surface, /plain featureless back or thin side edge/);
+  assert.match(providerContract.prop_surface, /each required prop appears exactly once/);
   assert.match(providerContract.overlay_stage, /overlays added later/);
   assert.match(providerContract.quality_gate, /pictorial only/);
-  assert.doesNotMatch(
-    JSON.stringify(providerContract),
-    /スマートフォン|スマホ|携帯|端末|デバイス|表示面|ディスプレイ|胸ポケット|smartphone|mobile phone|phone|device|screen|display|pocket|conceal|hidden prop|\bUI\b/i,
-  );
   assert.ok(
-    result.generation.prompt.length < 2_000,
+    result.generation.prompt.length < 4_000,
     `prompt length: ${result.generation.prompt.length}`,
   );
 });
 
-test("台詞が場面欄へ混入した極端な寄りは無記名の安全フレームへ昇格する", () => {
+test("台詞が場面欄へ混入した極端な寄りは台詞を除き指定画角を保持する", () => {
   const closeUpStoryboard = structuredClone(storyboard);
   closeUpStoryboard.pages[0].panels[0].shot = "extreme_close_up";
   closeUpStoryboard.pages[0].panels[0].action =
@@ -509,10 +609,11 @@ test("台詞が場面欄へ混入した極端な寄りは無記名の安全フ�
 
   assert.equal(result.generation.prompt.startsWith("PROVIDER CONTROL CONTRACT:\n{"), true);
   const providerContract = JSON.parse(result.generation.prompt.split("\n")[1]);
-  assert.equal(providerContract.framing.subject_height_percent, 58);
+  assert.equal(providerContract.shot, "extreme_close_up");
+  assert.match(providerContract.composition, /極端なクローズアップ/);
   assert.equal(
-    providerContract.subjects[0].action,
-    "a natural attentive pose that communicates the story through posture and gaze",
+    providerContract.action,
+    "人物の姿勢と視線で物語上の意図を伝える自然な動作",
   );
   assert.doesNotMatch(result.generation.prompt, /証拠を|speaking|dialogue|balloons/);
   assert.equal(result.panelSpecification.shot, "extreme_close_up");
@@ -585,7 +686,7 @@ test("短縮クローズアップPromptでも複数候補の制作差分を維�
   assert.match(contracts[1].variation, /candidate 2 of 2/);
   assert.notEqual(contracts[0].variation, contracts[1].variation);
   assert.ok(
-    prompts.every((prompt) => prompt.length < 2_000),
+    prompts.every((prompt) => prompt.length < 4_000),
     `prompt lengths: ${prompts.map((prompt) => prompt.length).join(", ")}`,
   );
 });
@@ -606,7 +707,8 @@ test("画角上書き後の実効画角だけで顔フレーミングを決定�
   const closeUpContract = JSON.parse(
     closeUpOverride.generation.prompt.split("\n")[1],
   );
-  assert.match(closeUpContract.composition, /subject occupies about 58%/);
+  assert.equal(closeUpContract.shot, "close_up");
+  assert.match(closeUpContract.framing.join(" "), /complete face in frame/);
 
   const wideOverrideStoryboard = structuredClone(storyboard);
   wideOverrideStoryboard.pages[0].panels[0].shot = "close_up";
@@ -623,6 +725,8 @@ test("画角上書き後の実効画角だけで顔フレーミングを決定�
     },
   });
   assert.doesNotMatch(wideOverride.generation.prompt, /subject occupies about 58%/);
+  assert.doesNotMatch(wideOverride.generation.prompt, /ミディアムクローズアップ/);
+  assert.equal(JSON.parse(wideOverride.generation.prompt.split("\n")[1]).shot, "wide");
 });
 
 test("人物と参照素材は肌・口元を無記名の自然な面へ固定する", () => {
