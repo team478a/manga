@@ -10,6 +10,7 @@
 - 同時要求はRepository契約の模擬テスト＋既存SQLのlock／重複検査確認であり、実DBでの同時実行受入れではない。不採用は読み取り時点の記録で拒否する。別画面の品質イベントと保存の同時操作を新たに直列化するDB契約は追加していない。実Cloudブラウザ／実DB受入れは未実施。
 - 依存変更なしでinstall不要。Desktop/shared packageの実装変更なしでDesktop build/test/a11yは対象外。RC structure READY、外部設定PENDING、manual E2E REQUIRED。
 - Production変更、外部DB操作、Provider呼出し、有料生成、credit、実決済、model downloadは0件。C4全体は未完了。次はCI／レビュー後にpolling／未保存編集保護・実表示telemetry・実画面確認。C5／D2/D3/D1と実AI作画品質も未完了。
+- 実装commit `40b47c84`をpushし、[Draft PR #675](https://github.com/team478a/manga/pull/675)を作成／taskへattachした。確認時点のCore qualityはQUEUED、Migration roundtrip／Windows buildは実行中、Vercel PENDING、Preview Comments成功。文書追記後の最終HEAD CIは未確認。再開: `git status --short`、`gh pr view 675 --json headRefOid,statusCheckRollup`。CI／レビュー後にC4の後続単位を別branchで進める。
 
 ---
 

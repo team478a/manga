@@ -9,6 +9,7 @@
 - 集中35/35、最終Hub1414/1414、lint／最終Hub typecheck・build／Canvas27/27／AI50/50／deps（既知warning 2、新規5source file size検査を含む）／migration101件／diff成功。初回同時要求fixtureの冪等保存未実装を修正して再実行成功。PR状態はCURRENT_TASKに記録する。
 - APIは追加のみ。DB migration／Storage／Worker／既存保存形式／依存／Desktopは不変。Production、外部DB操作、Provider、有料生成、credit、実決済、model downloadは0件。
 - 次の担当者はgit status／PR最終HEAD CIを確認する。C4のpolling／未保存編集保護／実表示telemetry／実画面確認と、C5／D2/D3/D1／実AI作画品質は未完了。
+- 実装commit `40b47c84`をpushし、[Draft PR #675](https://github.com/team478a/manga/pull/675)を作成／taskへattachした。確認時点Core quality QUEUED、Migration roundtrip／Windows build実行中、Vercel PENDING、Preview Comments成功。文書追記後の最終HEADは`gh pr view 675 --json headRefOid,statusCheckRollup`で確認する。
 
 ---
 

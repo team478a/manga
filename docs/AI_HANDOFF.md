@@ -6,6 +6,7 @@
 - 完了画像の配置失敗だけを再試行するAPI／候補履歴ボタンを追加。本人Project／Job／Page、不採用・retryableを確認し、既存の冪等保存／revision保護を使う。新規生成／Provider／quota消費なし、未保存編集中は操作不可。
 - 集中35/35、最終Hub1414/1414、lint／最終Hub typecheck・build／Canvas27/27／AI50/50／deps／migration／diff成功。PR状態はCURRENT_TASKを参照。実DB同時要求と実ブラウザの受入れではない。
 - Production、外部DB、有料生成、credit、実決済、model downloadは0件。C4全体は未完了。次はCI／レビュー後にpolling／未保存編集保護／実表示telemetry／実画面確認。C5／D2/D3/D1と実作画品質も未完了。
+- 実装commit `40b47c84`、Draft PR [#675](https://github.com/team478a/manga/pull/675)を作成／taskへattachした。CI／Previewは実行中／PENDING。最終HEAD CIはCURRENT_TASKの再開コマンドで確認する。
 
 ---
 
