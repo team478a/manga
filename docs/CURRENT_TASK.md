@@ -1,5 +1,16 @@
 # MANGAI Current Task
 
+## 2026-10-12 漫画成立条件: 吹き出し内文字と画像生成導線
+
+- 利用者報告: 操作動画を見ても完成までの関係が分からず、文字が吹き出し外へ残り、画像が表示されないため漫画として成立しない。
+- 原因: Cloud Canvasで吹き出しをドラッグしても`parentBalloonId`で関連付いた文字位置を更新していなかった。また完成判定は文字自身のoverflowだけを検査し、文字枠が親吹き出し内に収まることを要求していなかった。動画は匿名化した操作説明であり、実漫画完成のE2E証跡ではない。
+- 修正: 吹き出し移動時に関連文字を同じ差分で移動する。数値編集で吹き出し位置・寸法を変えた場合も文字を追従・再fitする。完成判定は親吹き出し内の10px insetへ文字枠全体が収まり、既存の可読性判定も通る場合だけセリフ完成とする。既存原稿の明示修復は同じ内包判定を使用する。
+- 画像導線: 画像なしページは従来どおり`PANEL_IMAGE_MISSING`で完成不可を維持する。原稿上部の導線を「画像生成の見積り・開始へ」に変更し、移動だけでは生成・credit消費されず、費用と対象確認後の明示操作が必要と表示する。自動生成、Provider呼出し、credit消費は追加しない。
+- 費用ゼロ検証: 集中39/39、Hub 1325/1325、Hub typecheck、lint、dependency/module boundary（既知warning 2）、Hub Production build、diff check成功。固定画像fixtureから4ページPNG/PDFを生成し、画像表示とページ順・寸法を検査した。
+- Production、外部Provider、credit、Stripe、決済、DB、Storage、環境変数は変更・実行していない。次はDraft PRでレビューし、merge後にPreviewまたはStagingで実ブラウザの吹き出し移動・保存・再読込を確認する。本番Provider生成は別の明示承認まで行わない。
+
+---
+
 ## 2026-10-11 外部作品応募ClamAV 稼働前0円運用 merge後確認
 
 - 状態: `PR_665_MERGED / POST_MERGE_CHECKS_PASSED / DRAFT_PR_OPEN / ZERO_MONTHLY_CAP / NO_HOSTING_CREATED / PRODUCTION_UNCHANGED / WORKER_NOT_RUN`

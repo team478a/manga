@@ -1,5 +1,15 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 漫画成立条件: 吹き出し内文字と画像生成導線（2026-10-12）
+
+- 利用者から、操作動画では完成までが分からず、文字が吹き出し外へ残り、画像が表示されないため漫画として成立しないとの報告があった。動画は匿名化した操作説明で、実完成E2E証跡ではなかった。
+- Cloud Canvasの吹き出しdrag／数値位置編集で、`parentBalloonId`付き文字を追従させる。吹き出し寸法変更時は既存の安全なfitを適用する。
+- ページ完成判定へ、文字枠全体が親吹き出しの10px inset内に収まることを追加した。外側にある文字は、文字自身がoverflowしていなくても`DIALOGUE_LAYOUT_UNREADABLE`で完成不可となる。
+- 画像なしは既存`PANEL_IMAGE_MISSING`で完成不可を維持した。生成導線を見積り・開始と明記し、遷移だけでは生成・credit消費されず明示確認が必要と表示した。
+- 集中39/39、Hub 1325/1325、Hub typecheck、lint、dependency/module boundary、Hub Production build、diff check成功。固定画像fixtureのPNG/PDF検証を含む。Production、Provider、credit、Stripe、DB、Storageは変更していない。
+
+---
+
 ## 0.0 外部作品応募ClamAV 稼働前0円運用 merge後確認（2026-10-11）
 
 - PR [#665](https://github.com/team478a/manga/pull/665)はmerge commit `97fc9ff1fcdc3375688eacbfc64d5cd27f018440`で基準ブランチへ統合済み。

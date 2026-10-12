@@ -1,5 +1,16 @@
 # MANGAI AI Handoff Log
 
+## 2026-10-12 Codex: 漫画成立条件（吹き出し内文字・画像生成導線）
+
+- Branch: `codex/manga-renderability-gate-20261012`。基点は`feature/manga-canvas-mvp`のPR #666 merge `903afecd`。
+- 吹き出しdragと数値位置編集で関連文字を同じ差分だけ追従させ、寸法変更後は安全に再fitするよう修正した。
+- 完成判定へ親吹き出し内包を追加し、吹き出し外の文字を`DIALOGUE_LAYOUT_UNREADABLE`で拒否する。既存修復も同じ内包判定へ統一した。
+- 画像なしページの完成拒否は維持し、生成導線に見積り・明示開始・遷移だけでは費用が発生しないことを表示した。
+- 検証: 集中39/39、Hub 1325/1325、Hub typecheck、lint、dependency/module boundary（既知warning 2）、Hub Production build、diff check成功。固定fixtureの画像からPNGと4ページPDFを生成済み。
+- Production、外部Provider、credit、Stripe、実決済、DB、Storage、環境変数操作0件。次はcommit／push／Draft PRとCI確認。その後、PreviewまたはStagingで実ブラウザの吹き出し移動・保存・再読込を確認する。
+
+---
+
 ## 2026-10-11 Codex: 外部作品応募ClamAV 稼働前0円運用 merge後確認
 
 - PR #665はmerge commit `97fc9ff1`で基準ブランチへ統合済み。merge後のRequired Quality `38105022931`、Desktop Windows `38105022936`、Vercel deployment `6989869770`は成功した。deployment metadataは`production_environment=false`。
