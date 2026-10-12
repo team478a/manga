@@ -148,6 +148,14 @@ Canvasスナップショットv2はPage設定、Panel、Balloon、Text、z-index
 
 ## 手動受け入れ記録
 
+### C3d 固定fixture（2026-10-12）
+
+- 再現手順: `npm run desktop:build` → `node --experimental-strip-types scripts/create-manga-visual-fixture.mjs` → `node apps/desktop/scripts/run-manga-visual-acceptance.mjs`。Popplerで`output/pdf/mangai-c3d-{cloud,desktop}-fixture.pdf`をPNGへ戻して目視する。
+- fixtureは4ページ／16個の異なる番号付き合成画像であり、AI作画や同一人物品質の証拠ではない。楕円・角丸・矩形、0/15/90度、縦横書き、句読点・長音・小書き文字・ルビを含む。
+- Desktopは隔離Documents/UserData、明示test flag、HTTP/HTTPS遮断下で実UIの文字修復→保存→renderer再読込を行う。元原稿や通常DBには触れない。生成物はgitignore対象の`work/manga-visual-c3d`／`output/pdf`へ保存する。
+- 目視で検出した縦書きルビと右隣本文の接近を、ルビ付き文字だけ最低1.5emの列送りを確保して修正した。本文・保存形式は不変。非ルビ文字は従来の列送りを維持する。
+- Cloudの実renderer、Desktopの実renderer／PDF exporterを使い、PNGは圧縮byte列ではなく復号RGBA画素を比較する。Cloudブラウザの認証・操作、任意fontの保証、実AI漫画品質は別の未受入れ条件。
+
 2026-07-13〜14のパッケージ版確認:
 
 - 新規Project、Episode、Page: 成功

@@ -1,5 +1,19 @@
 # MANGAI AI Handoff Log
 
+## 2026-10-12 Codex: C3d 固定fixtureの画面・PNG/PDF目視
+
+- Base PR #672 merge `182fa0a1`、最終HEAD全5チェック成功。Branch `codex/manga-visual-fixture-20261012`。
+- 4ページ／16番号付き合成画像fixture、Cloud生成script、隔離Desktop実UI修復／再読込・実export scriptを追加した。明示test flagと専用path／runtime markerを要求し、HTTP/HTTPSを遮断する。通常起動ではfixtureを実行しない。
+- PDF目視で縦書きルビと隣列本文の接近を発見し、ルビありの場合の共有列送りを最低1.5emへ修正した。非ルビの列送りと保存データは不変。Canvas回帰test／Desktop fixture契約testを追加した。
+- 修正後の画面2枚とCloud/Desktop各4ページのPDF再描画を目視済み。16画像・楕円／角丸／矩形・0/15/90度・縦横書き・日本語／ルビの欠落と吹き出し外はみ出しなし。全4PNGの復号RGBA一致、実UI修復／保存／再読込と4ページPDFをassertした。
+- 初期のfixture PDF入力mimeType不足で1ページになった問題、PNG圧縮bytesの比較でDesktop確認が失敗した問題は検証scriptを修正し再実行成功。実製品のPDFページ欠落と混同しない。
+- Desktop 411/411、Hub 1385/1385、Canvas 27/27、AI 50/50、Hub/Desktop build、deps、migration 101件、最終lint／全typecheck／diff check成功。a11y成功／blocking violation 0、color-contrast incompleteは完全WCAG受入れではない。RC structure READY、外部設定PENDING、manual E2E REQUIRED。Vite既知chunk警告あり。
+- e2eスキルのrunner未導入／Node要件未達により既存Electron test機構へfallback。PDFスキルのrender-and-inspectを実施。新しい外部AIや認証依存は追加していない。
+- Production、外部DB、Provider、有料生成、credit、実決済、model downloadは0件。合成図形は実AI漫画の証拠ではない。Cloudブラウザ操作、任意font、実画像同一人物／物語品質は未受入れ。C4/C5、D2/D3/D1は未完了。
+- 隔離runtime／PNG／PDFはgitignore対象として保持。再現手順はMANGA_EDITORのC3d節。次は最終CI／レビュー後にC4を別branchで進める。
+
+---
+
 ## 2026-10-12 Codex: C3c Desktop関連文字の回転・内包
 
 - Base PR #671 merge `a88a42df`、最終HEADの全5チェック成功。Branch `codex/desktop-linked-dialogue-20261012`。

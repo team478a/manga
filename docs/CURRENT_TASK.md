@@ -1,5 +1,19 @@
 # MANGAI Current Task
 
+## 2026-10-12 C3d: 固定fixtureの画面・日本語PNG/PDF目視
+
+- PR #672はmerge `182fa0a1`で統合済み。最終HEADの全5チェック成功。Branch `codex/manga-visual-fixture-20261012`。
+- 隔離Desktop fixtureで形状3種、回転、縦横書き、ルビ、明示修復、保存／再読込と画面／PNG／PDFを検証する。固定の合成画像を使い、有料生成・Production・外部DB・実決済・model downloadは行わない。
+- e2eスキルを参照したがランナー未導入／Node要件未達のため既存Electron test機構へfallbackする。PDFスキルに従い実export結果をPopplerで再描画し目視する。新しい外部AIや認証依存は追加しない。
+- 4ページ16コマfixtureの検証と、指示書の実AI作画／同一人物品質受入れは別の判定。C4/C5、D2/D3/D1と実画像品質は未完了。
+- 実装／固定fixture受入れ完了。縦書きルビの右隣本文との接近を実PDFで検出し、ルビがある場合だけ最低1.5emの列送りを共有layoutへ追加した。非ルビの描画、本文・保存形式は不変。回帰testを追加した。
+- 最新のDesktop修復後／再読込画面と、Popplerで再描画したCloud/Desktop各4ページを目視済み。16画像欠落なし、文字・ルビの吹き出し外へのはみ出し／欠けなし。90度ケースは文字全体も回転する意図的fixture。実Cloudブラウザ操作や任意fontの保証、実作画品質の承認ではない。
+- 製品のrenderer／PDF exporterを使用し、各PDF 4ページ、Cloud/Desktop全4PNGの復号RGBA画素一致、実UI修復→保存→再読込成功。初回fixtureのPDF入力mimeType欠落と、PNG圧縮byte比較の誤りはtest側を修正して再実行成功。画素一致で圧縮方式差を誤検知しない。
+- 検証: Desktop 411/411、Hub 1385/1385、Canvas 27/27、AI 50/50、Hub/Desktop build、deps（error 0、既知warning 2）、migration 101件、最終lint／全typecheck／diff check成功。a11y成功／blocking violation 0、color-contrast incompleteは完全WCAG受入れではない。RC structure READY、外部設定PENDING、manual E2E REQUIRED。依存変更なしでinstall不要。
+- 再現手順と範囲は`docs/desktop/MANGA_EDITOR.md`のC3d節。隔離runtimeと証拠画像はgitignore対象としてローカルに保持する。次は最終CI／レビュー後、C4（生成・採用・配置／完成の分離と配置だけの再試行）。有料生成／外部DB操作の承認は含まない。
+
+---
+
 ## 2026-10-12 漫画生成改善 C3c: Desktop関連文字の追従
 
 - PR #671はmerge `a88a42df`、最終HEADの全5チェック成功。Branch `codex/desktop-linked-dialogue-20261012`。
