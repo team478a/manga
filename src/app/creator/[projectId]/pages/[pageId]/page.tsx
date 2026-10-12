@@ -69,6 +69,7 @@ export default async function CloudCanvasPage({
   );
   return (
     <CloudCanvasEditor
+      key={page.id}
       project={workspace.project}
       pages={workspace.pages}
       page={page}

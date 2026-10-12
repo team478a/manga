@@ -31,11 +31,12 @@ export function saveCanvasSnapshot(
   });
 }
 
-export async function listGenerationJobs(projectId: string, pageId: string) {
+export async function listGenerationJobs(projectId: string, pageId: string, signal?: AbortSignal) {
   const query = new URLSearchParams({ projectId, pageId });
   return responseJson<CloudGenerationJob[]>(
     await fetch(`/api/creator/generation-jobs?${query}`, {
       cache: "no-store",
+      signal,
     }),
     "生成履歴を取得できませんでした。",
   );

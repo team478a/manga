@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import test from "node:test";
+import { newAutoPlacementIds } from "../src/modules/manga/domain/generation-refresh-policy.ts";
 
 const editor = fs.readFileSync(
   "src/app/creator/[projectId]/pages/[pageId]/CloudCanvasEditor.tsx",
@@ -45,7 +46,8 @@ test("Canvasは選択コマからAIおまかせ生成と対象コマ配置を提
   assert.match(editor, /3案（おすすめ）/);
   assert.match(editor, /この候補を採用してコマへ配置/);
   assert.match(editor, /このコマだけ再実行/);
-  assert.match(editor, /生成されたコマ候補/);
+  assert.match(editor, /GeneratedCandidateImage/);
+  assert.match(fs.readFileSync("src/app/creator/[projectId]/pages/[pageId]/GeneratedCandidateImage.tsx", "utf8"), /alt="生成されたコマ候補"/);
   assert.match(editor, /target_panel_id/);
   assert.match(editor, /画像生成を受付中…/);
   assert.match(editor, /requestingPanelGeneration/);
@@ -160,14 +162,17 @@ test("既存原稿は追加生成なしで不採用画像・短い縦書き・�
 });
 
 test("Canvasから外した不採用画像を自動配置済みとして再読込し続けない", () => {
-  const reloadStart = editor.indexOf("const placedJob = generationJobs.find(");
-  const reloadEnd = editor.indexOf(");", reloadStart);
+  const reloadStart = editor.indexOf("const decision = autoPlacementRefreshDecision(");
+  const reloadEnd = editor.indexOf("if (decision ===", reloadStart);
   const reloadGuard = editor.slice(reloadStart, reloadEnd);
 
   assert.ok(reloadStart >= 0);
   assert.match(reloadGuard, /job\.panel_adoption_status === "auto_placed"/);
   assert.match(reloadGuard, /job\.quality_review_status !== "rejected"/);
-  assert.match(reloadGuard, /!canvas\.panelLayers\.some/);
+  assert.match(reloadGuard, /candidateIsVisibleInCanvas\(job, canvas\)/);
+  const placed = { id: "job-1", page_id: "page-1", kind: "image", status: "completed", output_asset_id: "asset-1", panel_adoption_status: "auto_placed", quality_review_status: "rejected" };
+  assert.deepEqual(newAutoPlacementIds([], [placed], "page-1"), []);
+  assert.deepEqual(newAutoPlacementIds([placed], [placed], "page-1"), []);
 });
 
 test("部分修正UIは白く塗った範囲を同寸法PNGマスクとして送る", () => {

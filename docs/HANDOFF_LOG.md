@@ -1,5 +1,19 @@
 # MANGAI AI Handoff Log
 
+## 2026-10-12 Codex: C4c 更新順序・未保存編集保護・候補閲覧ログ
+
+- Base PR #675 merge `b7b850ff`、最終HEAD全5チェック成功。Branch `codex/manga-placement-refresh-20261012`。
+- `generation-refresh-policy.ts`と`latest-generation-reader.ts`を追加。後続readでabort／古い応答破棄、dispose後の応答破棄、Strict effect再mountで旧応答復活なしを検証した。EditorをPage IDでkey分離しGETのoptional signalを使う。
+- pollingは逐次setTimeoutで安定した状態keyを使い、配置待ちのみ最大20回に制限。retryable配置失敗も追跡し、生成中だけquotaを読み直す。新規生成／採用／credit消費は追加しない。
+- 自動reloadはmount後に観測した新しいauto_placedだけ。可視Asset照合、saveStateと未保存ref、lockを検査し、初期履歴や不採用からのreloadを防ぐ。保護で一度停止したmountは保存後も手動確認にする。
+- 候補画像componentへonLoad＋currentSrc／natural dimensions＋IntersectionObserver＋visible tab判定を追加。Job completedだけでdisplayedを記録しない。送信中・成功済み重複を抑止し失敗後再試行は最大3回。候補閲覧であってCanvas描画のpixel証跡ではない。
+- 集中39/39、Hub1424/1424、lint／Hub typecheck・build／Canvas27/27／AI50/50／deps（既知warning 2）／migration101件成功。初回Hubの2件は旧component構造に依存するsource assertionで、検査先と不採用動作保証を更新して再実行成功。最終gate／PR状態はCURRENT_TASK。
+- e2eスキルはrunner未導入／Node22.15.0要件未達で既存Node testへfallback。依存／AI認証を追加しない。実DOM描画、viewport通知、Cloud browser、外部DBの同時操作は未受入れ。
+- API response／DB migration／Storage／Worker／Provider／quota消費／既存保存形式／Desktop/shared実装は不変。Production、外部DB操作、有料生成、credit、実決済、model downloadは0件。
+- 次の担当者はgit status／PR最終HEAD CIと`CLOUD_PANEL_IMAGE_GENERATION_V1.md`のC4cから再開する。実Cloudブラウザの遅延・失敗・未保存保護・reload回数・候補viewportを受入れるまでC4は未完了。C5／D2/D3/D1／実作画品質も残件。
+
+---
+
 ## 2026-10-12 Codex: C4b 保存済み画像の配置だけ再試行
 
 - Base PR #674 merge `e10a1e65`、最終HEAD全5チェック成功。Branch `codex/manga-placement-retry-20261012`。

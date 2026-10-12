@@ -1,5 +1,19 @@
 # MANGAI Current Task
 
+## 2026-10-12 漫画生成改善 C4c: 更新順序・編集保護・候補閲覧ログ
+
+- PR #675はmerge `b7b850ff`で統合済み。最終HEADのCore quality／Migration roundtrip／Windows build／Vercel／Preview Comments全5チェック成功。Branch `codex/manga-placement-refresh-20261012`。
+- generation履歴の更新をlatest-readerへ分離し、後続要求で前の通信をabort、古い応答／古い失敗／unmount後の応答は反映しない。Page IDをEditorのkeyにし、別ページの編集状態と通信を持ち越さない。GETへoptional AbortSignalを追加するがAPI responseは不変。
+- 固定intervalではなく要求完了後のsetTimeoutでpollingする。queued/runningと画像完了後の配置未確定／retryable失敗を追跡し、配置待ちだけのpollingは安定した状態keyごとに最大20回で停止する。停止は手動確認の案内であり、新規生成／quota消費はしない。quota読取は生成中だけ。
+- 自動reloadは「このmount中に新たにauto_placedへ変わった候補」「現在のCanvasに可視Assetがない」「保存済み＋未保存refなし＋編集lock取得済み」の場合だけ。初期履歴のauto_placedからreloadしない。一度でも編集保護／lock不足で止めたmountでは、後で保存されても自動reloadへ戻さず手動確認を維持する。非表示／置換／不採用／過去履歴からのreloadループを抑止する。
+- displayedはJob completedだけでは記録しない。候補画像のonLoad／currentSrc・natural dimensions、viewport交差、document visibleを確認する。送信中と成功済みJobは重複送信せず、通信失敗はmount中最大3回まで後続の閲覧通知で再試行する。候補閲覧の記録であり、Canvas実描画・品質承認・原稿完成の記録ではない。過去ログは変更しない。
+- 集中39/39、Hub全体1424/1424、lint／最終Hub typecheck／最終Hub build、Canvas27/27、AI50/50、deps（既知warning 2、新規4source file size検査を含む）／migration101件／diff成功。初回Hubは旧DOM直書き／旧placedJob文字列に依存する2件失敗、検査先を分離component＋新しいreload条件／不採用動作へ更新して再実行成功。
+- e2eスキルを使用して環境確認した。runner未導入、Node22.15.0が最低22.22.3を満たさないため依存・AI認証を追加せず既存Node testへfallbackした。policy／通信はmock、DOM／IntersectionObserverの統合はsource検査であり、ブラウザ受入れは未実施。外部DB／同時品質イベントの受入れも未完了。RC structure READY、外部設定PENDING、manual E2E REQUIRED。
+- 依存変更なしでinstall不要。Desktop/shared package実装なしでDesktop build/test/a11yは対象外。DB migration／Storage／Worker／Provider／既存保存形式は不変。Production変更、外部DB操作、有料生成、credit、実決済、model downloadは0件。
+- C4全体は未完了。次はCI／レビュー後に実Cloudブラウザで遅延・通信失敗・未保存編集・reload一回／不採用・候補の読み込み失敗とviewport確認を受け入れる。C5／D2/D3/D1と実AI作画品質も未完了。
+
+---
+
 ## 2026-10-12 漫画生成改善 C4b: 保存済み画像の配置だけ再試行
 
 - PR #674はmerge `e10a1e65`で統合済み。最終HEADのCore quality／Migration roundtrip／Windows build／Vercel／Preview Comments全5チェック成功。Branch `codex/manga-placement-retry-20261012`。

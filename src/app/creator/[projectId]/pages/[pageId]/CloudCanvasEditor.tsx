@@ -43,7 +43,10 @@ import type { CloudInspectionFindingRecord } from "@/modules/cloud-creator/proje
 import { buildGenerationRecoveryPresentation } from "@/modules/cloud-ai/domain/generation-recovery-presentation";
 import { PageCompletionBanner } from "./PageCompletionBanner";
 import { CanvasImageGenerationNotice } from "./CanvasImageGenerationNotice";
-import { buildCandidateProductionPresentation } from "@/modules/manga/domain/candidate-production-presentation";
+import { buildCandidateProductionPresentation, candidateIsVisibleInCanvas } from "@/modules/manga/domain/candidate-production-presentation";
+import { autoPlacementRefreshDecision, generationRefreshKey, newAutoPlacementIds } from "@/modules/manga/domain/generation-refresh-policy";
+import { createLatestGenerationReader } from "@/modules/manga/application/latest-generation-reader";
+import { GeneratedCandidateImage } from "./GeneratedCandidateImage";
 import { buildPanelRevisionRequest } from "@/modules/manga/application/build-panel-revision";
 import {
   applyPanelCandidateAdoption,
@@ -327,6 +330,11 @@ export function CloudCanvasEditor({
     filterGenerationJobsForPage(initialGenerationJobs, page.id),
   );
   const recordedDisplayedJobIds = useRef(new Set<string>());
+  const recordingDisplayedJobIds = useRef(new Set<string>());
+  const displayedRecordingAttempts = useRef(new Map<string, number>());
+  const previousGenerationJobs = useRef(generationJobs);
+  const pendingAutoPlacementIds = useRef(new Set<string>());
+  const blockedAutoPlacementIds = useRef(new Set<string>());
   const reloadingAutoPlacement = useRef(false);
   const [generationTargets, setGenerationTargets] = useState<
     Record<string, string>
@@ -491,73 +499,84 @@ export function CloudCanvasEditor({
     [items],
   );
 
+  const generationReader = useMemo(() => createLatestGenerationReader(
+    signal => listGenerationJobs(project.id, page.id, signal),
+  ), [page.id, project.id]);
+  useEffect(() => {
+    generationReader.activate();
+    return () => generationReader.dispose();
+  }, [generationReader]);
   const refreshGenerationJobs = useCallback(async () => {
-    setGenerationJobs(
-      filterGenerationJobsForPage(
-        await listGenerationJobs(project.id, page.id),
-        page.id,
-      ),
-    );
-  }, [page.id, project.id]);
+    const jobs = await generationReader.read();
+    if (jobs) setGenerationJobs(filterGenerationJobsForPage(jobs, page.id));
+  }, [generationReader, page.id]);
 
   const refreshQuota = useCallback(async () => {
     setQuota(await getAiQuota());
   }, []);
 
+  const generationPollingKey = generationRefreshKey(generationJobs, page.id);
+  const generationInProgress = generationJobs.some(job => job.status === "queued" || job.status === "running");
   useEffect(() => {
-    if (
-      !generationJobs.some(
-        (job) =>
-          job.status === "queued" ||
-          job.status === "running" ||
-          (job.status === "completed" &&
-            job.kind === "image" &&
-            job.panel_adoption_eligible &&
-            !job.panel_adoption_status),
-      )
-    )
-      return;
-    const timer = window.setInterval(() => {
-      void refreshGenerationJobs();
-      void refreshQuota();
-    }, 3000);
-    return () => window.clearInterval(timer);
-  }, [generationJobs, refreshGenerationJobs, refreshQuota]);
+    if (!generationPollingKey) return;
+    let active = true;
+    let timer: number;
+    let placementPolls = 0;
+    const poll = async () => {
+      try {
+        await refreshGenerationJobs();
+        if (active && generationInProgress)
+          await refreshQuota();
+      } catch {
+        if (active) setMessage("生成履歴の更新を確認できませんでした。再生成はせず、接続回復後に更新を再試行します。");
+      } finally {
+        if (active && (generationInProgress || ++placementPolls < 20))
+          timer = window.setTimeout(() => void poll(), 3000);
+        else if (active)
+          setMessage("配置の更新待ちを停止しました。生成済み候補は保持しています。配置状態を手動で確認してください（追加生成なし）。");
+      }
+    };
+    timer = window.setTimeout(() => void poll(), 3000);
+    return () => { active = false; window.clearTimeout(timer); };
+  }, [generationPollingKey, generationInProgress, refreshGenerationJobs, refreshQuota]);
 
   useEffect(() => {
-    const placedJob = generationJobs.find(
-      (job) =>
-        job.panel_adoption_status === "auto_placed" &&
-        job.quality_review_status !== "rejected" &&
-        !canvas.panelLayers.some((layer) => layer.sourceJobId === job.id),
-    );
-    if (!placedJob || reloadingAutoPlacement.current) return;
-    if (saveState !== "saved" || hasUnsavedChanges()) {
-      setMessage(
-        "生成画像はCanvasへ保存済みです。編集中の内容を確認してから最新状態を読み込んでください。",
-      );
-      return;
-    }
-    reloadingAutoPlacement.current = true;
-    setMessage("生成画像を反映するため最新のCanvasを読み込んでいます…");
-    window.location.reload();
-  }, [canvas.panelLayers, generationJobs, hasUnsavedChanges, saveState]);
-
-  useEffect(() => {
+    for (const id of newAutoPlacementIds(previousGenerationJobs.current, generationJobs, page.id))
+      pendingAutoPlacementIds.current.add(id);
+    previousGenerationJobs.current = generationJobs;
+    if (reloadingAutoPlacement.current) return;
     for (const job of generationJobs) {
-      if (
-        job.status !== "completed" ||
-        !job.output_asset_id ||
-        recordedDisplayedJobIds.current.has(job.id)
-      )
-        continue;
-      recordedDisplayedJobIds.current.add(job.id);
-      void recordMangaQualityEvent({
-        event: "displayed",
-        generationJobId: job.id,
-      }).catch(() => undefined);
+      const decision = autoPlacementRefreshDecision({
+        newPlacement: pendingAutoPlacementIds.current.has(job.id) && job.panel_adoption_status === "auto_placed" && job.quality_review_status !== "rejected",
+        visibleInCanvas: candidateIsVisibleInCanvas(job, canvas),
+        saveState, unsaved: hasUnsavedChanges(), editLockAcquired: pageLockState === "acquired",
+        previouslyBlocked: blockedAutoPlacementIds.current.size > 0,
+      });
+      if (decision === "manual") {
+        blockedAutoPlacementIds.current.add(job.id);
+        setMessage("生成画像は保存先へ配置済みです。編集中の内容を保護しました。内容を確認してから手動で最新状態を読み込んでください。");
+        return;
+      }
+      if (decision === "reload") {
+        reloadingAutoPlacement.current = true;
+        setMessage("保存先の生成画像を反映するため最新のCanvasを読み込んでいます…");
+        window.location.reload();
+        return;
+      }
     }
-  }, [generationJobs]);
+  }, [canvas, generationJobs, hasUnsavedChanges, page.id, pageLockState, saveState]);
+
+  const recordDisplayedCandidate = useCallback((jobId: string) => {
+    if (recordedDisplayedJobIds.current.has(jobId) || recordingDisplayedJobIds.current.has(jobId)) return;
+    const attempts = displayedRecordingAttempts.current.get(jobId) ?? 0;
+    if (attempts >= 3) return;
+    displayedRecordingAttempts.current.set(jobId, attempts + 1);
+    recordingDisplayedJobIds.current.add(jobId);
+    void recordMangaQualityEvent({ event: "displayed", generationJobId: jobId })
+      .then(() => recordedDisplayedJobIds.current.add(jobId))
+      .catch(() => undefined)
+      .finally(() => recordingDisplayedJobIds.current.delete(jobId));
+  }, []);
 
   useEffect(() => {
     const hasUnloadedGeneratedAsset = generationJobs.some(
@@ -2468,11 +2487,10 @@ export function CloudCanvasEditor({
                     </dl>
                   </details>
                   {job.output_asset_id && assetMap.get(job.output_asset_id) ? (
-                    <img
-                      alt="生成されたコマ候補"
-                      className="mt-2 aspect-video w-full rounded border border-stone-200 object-cover"
-                      src={assetMap.get(job.output_asset_id)!.url}
-                    />
+                    <GeneratedCandidateImage key={`${job.id}:${job.output_asset_id}`}
+                      url={assetMap.get(job.output_asset_id)!.url}
+                      jobId={job.id} recordDisplay={job.kind === "image" && job.status === "completed"}
+                      onDisplayed={recordDisplayedCandidate} />
                   ) : null}
                   {job.status === "completed" &&
                   job.kind === "image" &&
