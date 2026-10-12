@@ -24,7 +24,8 @@ import { consumeCloudGeneralMonitorAiRequest } from "@/lib/cloud-general-monitor
 import type { CloudCharacterProfile } from "@/lib/cloud-character-profile.ts";
 import type { CloudStyleBible, CloudWorldProfile } from "@/lib/cloud-world-bible.ts";
 import { savePanelSpecification } from "@/modules/manga-quality/infrastructure/panel-quality-repository";
-import { resolveVersionedCharacterReferences } from "../domain/panel-reference-policy";
+import { resolveVersionedCharacterReferences, retainSentCharacterReferences } from "../domain/panel-reference-policy";
+import { cloudImageReferenceCapacity } from "@/lib/cloud-image-reference-capacity";
 import { cloudGenerationInputSchema } from "@mangai/ai-core";
 import {
   cloudPanelDesignGenerationEnabled,
@@ -400,6 +401,14 @@ async function runStoryboardPanelImage(
     if(panelDesign.data)panelDesignSnapshot=panelDesign.data;
   }
   const applyPanelDesign=(generation:unknown)=>panelDesignSnapshot?compileCloudPanelDesignInput(generation,panelDesignSnapshot):cloudGenerationInputSchema.parse(generation);
+  // Resolve the provider capacity before numbering references. Preparation only
+  // validates/moderates/selects; it does not reserve quota or enqueue a Job.
+  const probe = buildStoryboardPanelGeneration({
+    storyboard, pageNumber: page.page_number, canvas, panelId: request.panelId,
+    revision, compositionControl, generationTarget: request.generationTarget,
+  });
+  const { capability: referenceCapability } = await prepareCloudGenerationJob(probe.generation);
+  const maxReferenceAssets = cloudImageReferenceCapacity(referenceCapability.modelId);
   const jobs: Array<{ id: string; candidateNumber: number }> = [];
   const prepared: Array<{
     generation: Awaited<ReturnType<typeof prepareCloudGenerationJob>>;
@@ -426,23 +435,29 @@ async function runStoryboardPanelImage(
         explicitCharacterProfileIds,
         explicitWorldProfileIds,
         referenceAssets,
+        maxReferenceAssets,
         revision,
         compositionControl,
         generationTarget: request.generationTarget,
       });
+      const usesFill = Boolean(revision?.maskAssetId || revision?.outpaintingDirection);
+      const sentResolution = referenceResolution
+        ? retainSentCharacterReferences(referenceResolution, usesFill ? [] : resolved.generation.referenceAssetIds) : null;
+      if (sentResolution?.blocked && !usesFill)
+        throw new ValidationError("モデルの参照枚数上限内に主要人物の正面・顔参照画像を保持できません。参照画像を確認してください。");
       if (mode === "prepare") {
         prepared.push({
           generation: await prepareCloudGenerationJob(applyPanelDesign({
             ...resolved.generation,
             ...(panelContinuityStates.length?{prompt:`${resolved.generation.prompt}\n連続状態（変更禁止）: ${continuityPrompt}`,panelContinuityStates}:{}),
-            ...(referenceResolution ? {
-              referenceBundleVersion: referenceResolution.bundleVersion,
-              referenceResolverVersion: referenceResolution.resolverVersion,
-              resolvedCharacterReferences: referenceResolution.references.map((item) => ({
+            ...(sentResolution ? {
+              referenceBundleVersion: sentResolution.bundleVersion,
+              referenceResolverVersion: sentResolution.resolverVersion,
+              resolvedCharacterReferences: sentResolution.references.map((item) => ({
                 profileId: item.subjectId, profileVersion: item.profileVersion,
                 assetId: item.assetId, role: item.role,
               })),
-              referenceReadiness: { policy: referenceResolution.policy, warnings: referenceResolution.warnings },
+              referenceReadiness: { policy: sentResolution.policy, warnings: sentResolution.warnings },
             } : {}),
             sourcePageRevision: page.revision,
             workflowVersion: "storyboard-panel-v1",
@@ -464,14 +479,14 @@ async function runStoryboardPanelImage(
           generation: applyPanelDesign({
             ...resolved.generation,
             ...(panelContinuityStates.length?{prompt:`${resolved.generation.prompt}\n連続状態（変更禁止）: ${continuityPrompt}`,panelContinuityStates}:{}),
-            ...(referenceResolution ? {
-              referenceBundleVersion: referenceResolution.bundleVersion,
-              referenceResolverVersion: referenceResolution.resolverVersion,
-              resolvedCharacterReferences: referenceResolution.references.map((item) => ({
+            ...(sentResolution ? {
+              referenceBundleVersion: sentResolution.bundleVersion,
+              referenceResolverVersion: sentResolution.resolverVersion,
+              resolvedCharacterReferences: sentResolution.references.map((item) => ({
                 profileId: item.subjectId, profileVersion: item.profileVersion,
                 assetId: item.assetId, role: item.role,
               })),
-              referenceReadiness: { policy: referenceResolution.policy, warnings: referenceResolution.warnings },
+              referenceReadiness: { policy: sentResolution.policy, warnings: sentResolution.warnings },
             } : {}),
             sourcePageRevision: page.revision,
             workflowVersion: "storyboard-panel-v1",

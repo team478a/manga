@@ -21,9 +21,9 @@ import { panelSpecificationSchema } from "../modules/manga-quality/domain/panel-
 import { registerCharacterIdentity } from "../modules/manga-quality/application/manage-character-identity.ts";
 import { attachCharacterIdentities } from "../modules/manga-quality/application/attach-character-identities.ts";
 import {
-  selectPanelReferenceAssets,
   type PanelReferenceAsset,
 } from "../modules/manga/domain/panel-reference-policy.ts";
+import { resolvePanelReferenceBundle } from "../modules/manga/domain/panel-reference-bundle.ts";
 
 export const cloudPanelImageGenerationFeatureEnabled = () =>
   featureFlagEnabled("CLOUD_PANEL_IMAGE_GENERATION_ENABLED");
@@ -198,15 +198,6 @@ const providerReferenceRoleDirections: Record<
 const providerCloseUpOutput =
   "one continuous edge-to-edge monochrome manga illustration across the entire portrait canvas";
 
-function buildProviderReferenceRoleContract(
-  references: readonly PanelReferenceAsset[],
-) {
-  return references.map(
-    (reference, index) =>
-      `Input image ${index + 1} role: ${providerReferenceRoleDirections[reference.subjectKind]}. Camera framing, crop, subject placement, and canvas layout follow the provider control contract; every output surface is rebuilt as clean pictorial line art and natural shading.`,
-  );
-}
-
 function providerDialogueTokens(dialogue: readonly { text: string }[]) {
   return dialogue.flatMap((line) => {
     const value = line.text.trim();
@@ -282,6 +273,7 @@ export function buildStoryboardPanelGeneration(input: {
   explicitCharacterProfileIds?: string[];
   explicitWorldProfileIds?: string[];
   referenceAssets?: PanelReferenceAsset[];
+  maxReferenceAssets?: number;
   revision?: {
     sourceAssetId: string;
     maskAssetId?: string;
@@ -410,8 +402,11 @@ export function buildStoryboardPanelGeneration(input: {
     generationTarget === "composite" || generationTarget === "background";
   const selectedVisualProfiles = usesCharacters ? visualProfiles : [];
   const selectedWorldProfiles = usesWorld ? worldProfiles : [];
-  const selectedReferenceAssets = selectPanelReferenceAssets({
+  const referenceBundle = resolvePanelReferenceBundle({
     references: input.referenceAssets ?? [],
+    sourceAssetId: input.revision?.sourceAssetId,
+    maxAssets: input.maxReferenceAssets ?? 8,
+    fillOnly: Boolean(input.revision?.maskAssetId || input.revision?.outpaintingDirection),
     orderedSubjects: [
       ...selectedVisualProfiles.map((profile) => ({
         kind: "character" as const,
@@ -426,9 +421,8 @@ export function buildStoryboardPanelGeneration(input: {
       })),
     ],
   });
-  const referenceAssetIds = selectedReferenceAssets.map(
-    (reference) => reference.assetId,
-  );
+  const selectedReferenceAssets = referenceBundle.flatMap((item) => item.roles);
+  const referenceAssetIds = referenceBundle.map((item) => item.assetId);
   const characterIdentities = selectedVisualProfiles.map((profile) =>
     registerCharacterIdentity({
       id: profile.id,
@@ -438,7 +432,7 @@ export function buildStoryboardPanelGeneration(input: {
       hair: profile.hair,
       costume: profile.costume,
       immutableTraits: profile.immutable_traits,
-      referenceAssetIds: (input.referenceAssets ?? [])
+      referenceAssetIds: selectedReferenceAssets
         .filter(
           (reference) =>
             reference.subjectKind === "character" &&
@@ -482,13 +476,12 @@ export function buildStoryboardPanelGeneration(input: {
     }),
     characterIdentities,
   );
-  const referenceCounts = selectedReferenceAssets.reduce(
-    (counts, reference) => ({
-      ...counts,
-      [reference.subjectKind]: counts[reference.subjectKind] + 1,
-    }),
-    { character: 0, style: 0, location: 0, prop: 0 },
-  );
+  const referenceCount = (kind: PanelReferenceAsset["subjectKind"]) =>
+    new Set(selectedReferenceAssets.filter((item) => item.subjectKind === kind).map((item) => item.assetId)).size;
+  const referenceCounts = {
+    character: referenceCount("character"), style: referenceCount("style"),
+    location: referenceCount("location"), prop: referenceCount("prop"),
+  };
   const referenceGuidance = selectedReferenceAssets.length
     ? [
         `参照素材: 人物${referenceCounts.character}点・画風${referenceCounts.style}点・場所${referenceCounts.location}点・小物${referenceCounts.prop}点。参照素材は人物同一性、衣装、画風、場所、小物の形だけに用い、場面と構図は次の生成契約を優先する。`,
@@ -497,9 +490,14 @@ export function buildStoryboardPanelGeneration(input: {
         "Reconstruct only identity, silhouette, hairstyle, clothing, and linework from references. Finish skin, mouth areas, clothing, and backgrounds as clean unlettered pictorial surfaces made only from anatomy, contours, and natural material shading.",
       ]
     : [];
-  const providerReferenceRoles = buildProviderReferenceRoleContract(
-    selectedReferenceAssets,
+  const providerReferenceRoles = referenceBundle.map((item) =>
+    `${item.inputName}: ${[
+      item.editSource ? "edit source: preserve original scene except the requested revision" : "",
+      ...item.roles.map((role) => `${role.subjectKind} ${role.subjectId}: ${providerReferenceRoleDirections[role.subjectKind]}`),
+    ].filter(Boolean).join("; ")}. Camera framing, crop, subject placement, and canvas layout follow the provider control contract; every output surface is rebuilt as clean pictorial line art and natural shading.`,
   );
+  if (input.revision?.maskAssetId || input.revision?.outpaintingDirection)
+    providerReferenceRoles.push("Fill editing uses only the original image and mask. Separate character, style, location, and prop reference images are unsupported and are not supplied.");
   const contractedShot =
     !input.compositionControl || input.compositionControl.shot === "storyboard"
       ? shotLabels[storyboardPanel.shot]
@@ -686,10 +684,7 @@ export function buildStoryboardPanelGeneration(input: {
       candidateCount > 1
         ? `candidate ${candidateIndex + 1} of ${candidateCount}: ${variationDirections[generationTarget][candidateIndex]}`
         : variationDirections[generationTarget][0],
-    input_image_roles: selectedReferenceAssets.map(
-      (reference, index) =>
-        `input_image_${index + 1}: ${providerReferenceRoleDirections[reference.subjectKind]}`,
-    ),
+    input_image_roles: providerReferenceRoles,
   });
   const sceneContract = [
     "【生成契約：一枚の場面画像】",
@@ -871,12 +866,7 @@ export function buildStoryboardPanelGeneration(input: {
         version: profile.current_version,
         kind: profile.kind,
       })),
-      referenceAssetIds: Array.from(
-        new Set([
-          ...(input.revision ? [input.revision.sourceAssetId] : []),
-          ...referenceAssetIds,
-        ]),
-      ).slice(0, 8),
+      referenceAssetIds,
       operation: input.revision?.maskAssetId
         ? ("inpainting" as const)
         : input.revision?.outpaintingDirection

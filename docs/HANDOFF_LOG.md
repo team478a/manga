@@ -1,5 +1,18 @@
 # MANGAI AI Handoff Log
 
+## 2026-10-12 Codex: C2 参照画像の最終順序・送信整合
+
+- Branch `codex/manga-reference-send-contract-20261012`、Base PR #668 merge `3fa40a39f74411bfc24b9a4c884fbb1e32d5324e`。PR #668最終HEADのCore quality、Migration roundtrip、Windows build、Vercel、Preview Commentsはすべて成功。
+- 旧実Builderをメモリ上で実行し、保存ID先頭は修正元、Prompt先頭roleは人物、修正元role未宣言というズレを再現した。出力はfixture metadataのbooleanだけで利用者Prompt・画像・秘密値は記録していない。
+- Providerの上限を番号付け前に確定し、修正元→人物→画風→場所→小物のbundleを作る。同一Assetの複数roleを保持し、Prompt番号、保存ID、人物参照追跡、実送信URLを一致させた。Pro/Max8、Klein4の既存契約はBFL公式モデル一覧で照合済み。
+- Fillは元画像＋maskだけを送信し、独立人物参照は非対応と明示する。上限超過、修正元順序不整合、ID/URL数不整合、参照欠損・空path・署名失敗は送信前拒否。上限で落ちた主要人物参照はblock/warn方針どおり不足を記録する。
+- 既存Jobは書換えない。Provider Job IDのpolling再開は既存の追加submitなし契約を維持する。API、DB schema/migration、Storage path、IPC、保存形式、料金・明示承認契約は変更なし。
+- 検証: 集中91/91、Hub1364/1364、Canvas26/26、AI Core50/50、Hub typecheck、lint、deps error0（既知warning2）、migration100件、Hub build、diff check成功。RC structure READY、外部設定PENDING、manual E2E REQUIRED。依存・Desktop変更なしのためinstall/Desktop build/a11yは今回対象外。
+- Production、Provider実生成、credit、実決済、DB/Storage操作、モデルdownloadは0件。mock HTTPの送信契約検証と実作画品質・4ページ漫画完成を区別する。
+- 次: commit/push/Draft PRとCI確認。最初に`git status --short`、`gh pr view codex/manga-reference-send-contract-20261012 --json statusCheckRollup`。次はC3形状・回転を考慮した文字内包、その後C4/C5、Desktop D2/D3/D1、4ページ16コマ受入れ。参照上限超過の旧Jobは無断で新規Jobへ作り直さない。
+
+---
+
 ## 2026-10-12 Codex: 漫画生成改善 C1 人物・構図の確定契約
 
 - Branch: `codex/manga-resolved-panel-contract-20261012`。Base: PR #667 merge `7d7f4625919aabdb6101a6fd74ea12cecd2b5fca`。

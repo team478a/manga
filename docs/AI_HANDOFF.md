@@ -1,5 +1,15 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 漫画生成改善 C2: 参照画像の送信契約（2026-10-12）
+
+- PR #668はmerge `3fa40a39`で統合済み。最終HEADのCore quality、Migration roundtrip、Windows build、Vercel、Preview Commentsはすべて成功した。
+- Branch `codex/manga-reference-send-contract-20261012`。C2は修正元→人物→画風→場所→小物の最終bundleと番号付け、重複Assetの複数role保持、モデル上限、人物参照追跡、署名URL順序、adapter送信前拒否を修正する。
+- 旧mergeの実Builderで「保存ID先頭は修正元、Prompt先頭roleは人物、修正元role未宣言」をメモリ上で再現した。修正版は実Builder→署名準備→実adapterのmock HTTPで整合を検証する。
+- 既存Jobの入力は書換えず、Provider Job IDからのpolling再開も追加submitしない。Fillは元画像＋maskのみで独立人物参照非対応を明示する。
+- Production、有料生成、credit、実決済、モデルdownloadは0件。検証詳細はCURRENT_TASK/HANDOFF_LOGへ記録する。次はC3吹き出し形状を考慮した文字内包。C4/C5、Desktop D2/D3/D1、4ページ16コマと実作画品質は未完了。
+
+---
+
 ## 0.0 漫画生成改善 C1: 人物・構図の確定契約（2026-10-12）
 
 - PR #667はmerge `7d7f4625`で統合済み。添付実装指示書のレビュー後、利用者が実装継続を指示した。

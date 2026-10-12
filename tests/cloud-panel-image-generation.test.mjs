@@ -9,6 +9,8 @@ import {
   cloudPanelImageGenerationRequestSchema,
 } from "../src/lib/cloud-panel-image-generation.ts";
 import { MockCloudImageProvider } from "../src/lib/cloud-ai-mock-provider.ts";
+import { BlackForestLabsFluxImageProvider } from "../src/lib/cloud-flux-image-provider.ts";
+import { resolveReferenceImageUrls } from "../src/modules/cloud-ai/infrastructure/reference-image-urls.ts";
 import { moderateGeneralCloudPrompt } from "@mangai/ai-core";
 import { selectPanelReferenceAssets } from "../src/modules/manga/domain/panel-reference-policy.ts";
 
@@ -87,6 +89,53 @@ const canvas = {
   balloons: [],
   textObjects: [],
 };
+
+test("実Builder→署名準備→実adapterは修正元→人物→画風の最終順序を一致させる",async()=>{
+  const profileId="71000000-0000-4000-8000-000000000091";
+  const styleId="71000000-0000-4000-8000-000000000092";
+  const source="74000000-0000-4000-8000-000000000091";
+  const character="74000000-0000-4000-8000-000000000092";
+  const style="74000000-0000-4000-8000-000000000093";
+  const input={storyboard,pageNumber:1,canvas,panelId,
+    visualCharacterProfiles:[{id:profileId,name:"明日香",current_version:2,appearance_age:"25歳",body_build:"標準",hair:"黒髪",costume:"白シャツ",color_palette:"白黒",immutable_traits:["髪留め"],prompt:"",negative_prompt:""}],
+    styleBible:{id:styleId,current_version:1,art_style:"インク",linework:"細線",shading:"網点",background_detail:"",composition_rules:"",negative_prompt:""},
+    revision:{sourceAssetId:source,preset:"polish"},
+    referenceAssets:[{subjectKind:"style",subjectId:styleId,assetId:style},{subjectKind:"character",subjectId:profileId,assetId:character}],maxReferenceAssets:4,
+  };
+  const result=buildStoryboardPanelGeneration(input);
+  assert.deepEqual(result.generation.referenceAssetIds,[source,character,style]);
+  assert.match(result.generation.prompt,/input_image: edit source/);
+  assert.match(result.generation.prompt,new RegExp(`input_image_2: character ${profileId}`));
+  assert.match(result.generation.prompt,new RegExp(`input_image_3: style ${styleId}`));
+  assert.doesNotMatch(result.generation.prompt,/input_image_1:/);
+  assert.deepEqual(result.panelSpecification.characterIdentities[0].identityReferenceImages,[character]);
+  const fill=buildStoryboardPanelGeneration({...input,revision:{...input.revision,maskAssetId:style},maxReferenceAssets:1});
+  assert.deepEqual(fill.generation.referenceAssetIds,[source]);
+  assert.match(fill.generation.prompt,/reference images are unsupported and are not supplied/);
+  assert.deepEqual(fill.panelSpecification.characterIdentities[0].identityReferenceImages,[]);
+  const frozen=JSON.parse(JSON.stringify(result.generation));
+  input.visualCharacterProfiles[0].current_version=3;
+  input.referenceAssets.reverse();
+  assert.deepEqual(frozen.referenceAssetIds,[source,character,style]);
+  assert.equal(frozen.characterProfileVersions[0].version,2);
+  const urls=await resolveReferenceImageUrls(frozen.referenceAssetIds,
+    frozen.referenceAssetIds.map(id=>({id,storage_path:id})).reverse(),async id=>`https://example.test/${id}.png`);
+  let body, calls=0;
+  const provider=new BlackForestLabsFluxImageProvider({
+    apiKey:"bfl-test-key-with-at-least-twenty-characters",model:"flux-2-pro",pollIntervalMs:1,
+    capability:{providerId:"black-forest-labs",modelId:"flux-2-pro",kind:"image",jobTypes:["background"],enabled:true,policyVersion:"general-v1",pricingVersion:"fixture"},
+    fetcher:async(_url,init)=>{
+      calls++;
+      if(calls===1){body=JSON.parse(init.body);return new Response(JSON.stringify({id:"fixture",polling_url:"https://api.bfl.ai/v1/get_result?id=fixture"}));}
+      if(calls===2)return new Response(JSON.stringify({status:"Ready",result:{sample:"https://delivery.bfl.ai/fixture.png"}}));
+      return new Response(new Uint8Array([137,80,78,71]));
+    },
+  });
+  await provider.generate(frozen,{jobId:pageId,projectId:pageId,idempotencyKey:pageId,referenceImageUrls:urls});
+  assert.equal(body.prompt,frozen.prompt);
+  assert.deepEqual([body.input_image,body.input_image_2,body.input_image_3],urls);
+  assert.equal("input_image_4" in body,false);
+});
 
 for (const count of [0, 1, 2, 3]) {
   for (const shot of ["close_up", "medium", "wide"]) {
@@ -760,7 +809,7 @@ test("人物と参照素材は肌・口元を無記名の自然な面へ固定�
   assert.match(result.generation.prompt, /clean unlettered pictorial surfaces/);
   assert.match(
     result.generation.prompt,
-    /Input image 1 role: linework, ink texture, shading, and tonal style only/,
+    /input_image: style .*: linework, ink texture, shading, and tonal style only/,
   );
   assert.match(result.generation.prompt, /Camera framing, crop, subject placement/);
   assert.match(result.generation.prompt, /顔の解剖学的な輪郭と自然な陰影だけ/);
@@ -949,7 +998,7 @@ test("明示割当と参照画像IDを生成Jobへ固定する", () => {
   assert.match(result.generation.prompt, /scene contract below overrides/);
   assert.match(
     result.generation.prompt,
-    /Input image 1 role: character identity, face, hairstyle, body build, and clothing only/,
+    /input_image: character .*: character identity, face, hairstyle, body build, and clothing only/,
   );
   assert.deepEqual(result.panelSpecification.characterIdentities, [
     {

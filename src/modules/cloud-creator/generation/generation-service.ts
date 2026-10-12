@@ -7,6 +7,7 @@ import {
   moderateGeneralCloudPrompt,
 } from "@mangai/ai-core";
 import { selectCloudProvider } from "@/lib/cloud-ai-registry";
+import { cloudImageReferenceCapacity } from "@/lib/cloud-image-reference-capacity";
 import { cloudCreatorContext } from "../auth-context";
 import type {
   CloudAiQuota,
@@ -72,6 +73,9 @@ export async function prepareCloudGenerationJob(input: unknown) {
   }
 
   const capability = await selectCloudProvider(generation);
+  if (generation.kind === "image" && capability.providerId === "black-forest-labs" &&
+      (generation.referenceAssetIds?.length ?? 0) > cloudImageReferenceCapacity(capability.modelId))
+    throw new ValidationError("参照画像がモデルの対応枚数を超えています。生成条件を確認してください。");
   const promptSha256 = crypto
     .createHash("sha256")
     .update(generation.prompt, "utf8")
