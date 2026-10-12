@@ -2,16 +2,7 @@ import Link from "next/link";
 import type { PageCanvas } from "@mangai/canvas-core";
 import type { CloudGenerationJob } from "@/lib/cloud-creator-server";
 
-function panelHasImage(canvas: PageCanvas, panelId: string) {
-  const panel = canvas.panels.find((candidate) => candidate.id === panelId);
-  return Boolean(
-    panel?.imageAssetId ||
-      canvas.panelLayers.some(
-        (layer) =>
-          layer.panelId === panelId && layer.visible && Boolean(layer.assetId),
-      ),
-  );
-}
+import { missingPanelGenerationCounts } from "@/modules/manga/domain/candidate-production-presentation";
 
 export function CanvasImageGenerationNotice({
   canvas,
@@ -24,23 +15,8 @@ export function CanvasImageGenerationNotice({
   projectId: string;
   storyboardPanelGenerationEnabled: boolean;
 }) {
-  const missingPanelCount = canvas.panels.filter(
-    (panel) => panel.visible && !panelHasImage(canvas, panel.id),
-  ).length;
+  const { missingPanelCount, activeCount, failedCount, completedCount } = missingPanelGenerationCounts(canvas, generationJobs);
   if (!missingPanelCount) return null;
-
-  const panelImageJobs = generationJobs.filter(
-    (job) => job.kind === "image" && Boolean(job.target_panel_id),
-  );
-  const activeCount = panelImageJobs.filter(
-    (job) => job.status === "queued" || job.status === "running",
-  ).length;
-  const failedCount = panelImageJobs.filter(
-    (job) => job.status === "failed",
-  ).length;
-  const completedCount = panelImageJobs.filter(
-    (job) => job.status === "completed" && Boolean(job.output_asset_id),
-  ).length;
 
   const title = activeCount
     ? "原稿画像を生成しています"
@@ -50,11 +26,11 @@ export function CanvasImageGenerationNotice({
         ? "生成済み画像の配置確認が必要です"
         : "このページはまだ画像生成前です";
   const description = activeCount
-    ? `画像のない${missingPanelCount}コマのうち、${activeCount}件を処理中です。完了後に再読み込みすると原稿へ反映されます。`
+    ? `画像のない${missingPanelCount}コマを対象に、${activeCount}件の生成処理が進行中です。画像生成後も採用・配置・保存の確認が必要です。`
     : failedCount
       ? `画像のないコマが${missingPanelCount}件、生成失敗が${failedCount}件あります。AI制作アシストの生成履歴から失敗したコマだけ再実行できます。`
       : completedCount
-        ? `画像のないコマが${missingPanelCount}件あります。生成履歴の「手動確認待ち」から採用画像を選んでください。`
+        ? `画像のないコマが${missingPanelCount}件あります。生成履歴で採用・配置状態を確認してください。保存済み画像の配置は追加生成ではありません。再読み込みだけで必ず配置されるわけではありません。`
         : "現在表示されているのはネーム（コマ枠・吹き出し・文字）で、完成原稿画像ではありません。見積りを確認し、対象ページを選んで画像生成を開始してください。";
 
   return (

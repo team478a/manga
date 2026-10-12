@@ -43,6 +43,7 @@ import type { CloudInspectionFindingRecord } from "@/modules/cloud-creator/proje
 import { buildGenerationRecoveryPresentation } from "@/modules/cloud-ai/domain/generation-recovery-presentation";
 import { PageCompletionBanner } from "./PageCompletionBanner";
 import { CanvasImageGenerationNotice } from "./CanvasImageGenerationNotice";
+import { buildCandidateProductionPresentation } from "@/modules/manga/domain/candidate-production-presentation";
 import { buildPanelRevisionRequest } from "@/modules/manga/application/build-panel-revision";
 import {
   applyPanelCandidateAdoption,
@@ -225,25 +226,6 @@ function formatReservedCost(micros: number | null, currency: string) {
     style: "currency",
     currency,
   }).format(micros / 1_000_000);
-}
-
-function generationStatusLabel(job: CloudGenerationJob) {
-  if (job.status === "queued" || job.status === "running") return "生成中";
-  if (job.status === "failed") return "生成失敗・再実行可能";
-  if (job.status === "canceled") return "中止";
-  if (job.kind === "text") return "文章生成完了";
-  if (job.panel_adoption_status === "auto_placed")
-    return "Canvasへ自動配置済み";
-  if (
-    job.panel_adoption_status === "review_required" ||
-    job.panel_adoption_status === "rejected"
-  )
-    return "手動確認待ち";
-  if (job.panel_adoption_status === "placement_failed")
-    return job.panel_adoption_retryable
-      ? "配置失敗・再実行可能"
-      : "配置失敗";
-  return "画像生成完了";
 }
 
 function GenerationRecoveryStatus({ job }: { job: CloudGenerationJob }) {
@@ -1153,10 +1135,10 @@ export function CloudCanvasEditor({
               : item,
           ),
         );
-        setMessage("生成Assetを対象のコマへ配置し、品質確認を記録しました。");
+        setMessage("生成Assetを編集中のCanvasへ配置し、採用・品質確認を記録しました。原稿の保存と完成条件は別に確認してください。");
         router.refresh();
       } catch {
-        setMessage("画像は配置しました。販売準備の前に画像の品質確認を完了してください。");
+        setMessage("画像は編集中のCanvasへ配置しました。保存状態と画像の品質確認を確認してください。");
       }
     } else setMessage("生成Assetをコマへ配置できませんでした。");
   }
@@ -2413,7 +2395,7 @@ export function CloudCanvasEditor({
                     <span>
                       {job.revision_preset
                         ? `${job.generation_operation === "inpainting" ? "部分修正" : job.generation_operation === "outpainting" ? "画角拡張" : "修正候補"}・${revisionPresetLabels[job.revision_preset]}`
-                        : job.job_type} / {generationStatusLabel(job)} / {job.progress}%
+                        : job.job_type} / {buildCandidateProductionPresentation(job, canvas, saveState === "saved" && !hasUnsavedChanges()).generationLabel} / 生成工程 {job.progress}%
                     </span>
                     {job.status === "queued" || job.status === "running" ? (
                       <button
@@ -2425,6 +2407,13 @@ export function CloudCanvasEditor({
                       </button>
                     ) : null}
                   </div>
+                  {job.kind === "image" && job.status === "completed" ? (
+                    <div className="mt-2 rounded bg-stone-50 p-2" data-testid="candidate-production-stages">
+                      <p>採用: {buildCandidateProductionPresentation(job, canvas, saveState === "saved" && !hasUnsavedChanges()).adoptionLabel}</p>
+                      <p>配置: {buildCandidateProductionPresentation(job, canvas, saveState === "saved" && !hasUnsavedChanges()).placementLabel}</p>
+                      <p>原稿完成は別判定です。保存後にページの完成条件を確認してください。</p>
+                    </div>
+                  ) : null}
                   <details className="mt-2 rounded bg-stone-50 p-2">
                     <summary className="cursor-pointer font-bold">生成の追跡情報</summary>
                     <dl className="mt-1 grid grid-cols-[auto_1fr] gap-x-2">

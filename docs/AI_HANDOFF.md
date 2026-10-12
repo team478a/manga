@@ -1,5 +1,14 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 漫画生成改善 C4a: 状態表示（2026-10-12）
+
+- PR #673 merge `34e9321e`、最終HEAD全5チェック成功。Branch `codex/manga-placement-state-20261012`。
+- 生成結果の保存／採用・品質／配置・保存／原稿完成の表示を分離した。可視Asset、未保存状態、保存先配置と画面反映待ちを区別し、再読込で必ず配置される説明を廃止した。API／DB／Worker／quotaは不変。
+- 集中14/14、Hub初回1392/1392、Canvas 27/27、AI 50/50成功。最終gate／PRはCURRENT_TASKとHANDOFF_LOG参照。C4aは表示だけであり、新規の配置retry APIや実ブラウザ受入れは含まない。
+- 次はC4bの配置だけ再試行・冪等性、その後polling／未保存編集保護と実画面確認。C4全体／C5／D2/D3/D1／実AI作画品質は未完了。Production、有料生成、credit、実決済、model downloadは0件。
+
+---
+
 ## 0.0 漫画生成改善 C3d: 固定fixture目視（2026-10-12）
 
 - PR #672 merge `182fa0a1`、最終HEAD全5チェック成功。Branch `codex/manga-visual-fixture-20261012`。

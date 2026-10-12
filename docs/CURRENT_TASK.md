@@ -1,5 +1,17 @@
 # MANGAI Current Task
 
+## 2026-10-12 漫画生成改善 C4a: 生成・採用・配置・完成の表示分離
+
+- PR #673はmerge `34e9321e`で統合済み。最終HEADのCore quality／Migration roundtrip／Windows build／Vercel／Preview Comments全5チェック成功。Branch `codex/manga-placement-state-20261012`。
+- C4をレビュー単位に分け、今回は表示契約だけを修正する。画像生成結果の保存、採用・品質確認、編集中の配置／保存済み／画面反映未確認、原稿完成を別表示にする。生成100%を原稿完成率として扱わない。
+- コマの可視画像と候補Assetを照合し、非表示／透明／置換済み／別ページ／削除済みコマを現在の表示配置とみなさない。画像欠落Noticeは当該ページの画像欠落コマだけ集計し、利用可能な後続候補がある過去の生成失敗を再生成の案内に使わない。
+- 「生成後に再読込すれば必ず配置される」という説明を廃止した。配置失敗は追加生成なしの配置確認として明示するが、今回新しいretry APIは追加しない。再試行不可／不明の状態を再実行可能と案内しない。
+- コード修正と集中14/14成功。Hub初回全体1392/1392、Canvas 27/27、AI 50/50、deps（error 0、既知warning 2）、migration 101件成功。最終全体・lint／typecheck／buildは確認中。RC structure READY、外部設定PENDING、manual E2E REQUIRED。
+- API／DB／Storage／Worker／quota／採用・保存処理は不変。依存変更なしでinstall不要、Desktop/shared packageのコード変更なしでDesktop build/test/a11yは対象外。実Cloudブラウザは未受入れ。
+- Production、外部DB、Provider、有料生成、credit、実決済、model downloadは0件。C4全体は未完了。次はC4b（保存済み画像の配置だけ再試行・冪等性・再生成なしの検証）、その後polling／未保存編集の保護・実画面確認。C5／D2/D3/D1と実AI作画品質も未完了。
+
+---
+
 ## 2026-10-12 C3d: 固定fixtureの画面・日本語PNG/PDF目視
 
 - PR #672はmerge `182fa0a1`で統合済み。最終HEADの全5チェック成功。Branch `codex/manga-visual-fixture-20261012`。
