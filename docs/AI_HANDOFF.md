@@ -7,6 +7,7 @@
 - SQLは字数による初期推定であり、日本語の禁則・書記素・ルビ／font outlineの完成承認ではない。C3a checkerと目視を正本とし、長文は切捨てず完成不可を維持する。
 - 関連63/63、Hub 1385/1385、SQL/TS 43文字fixture＋空ページ／ACL、隔離postgres:16の101件forward→全rollback→forward、最新再適用、canonical二度適用とschema/data assertions、直前Builderのdigest復元、checksum成功。gate／PR詳細はCURRENT_TASK/HANDOFF_LOG。
 - Production、有料生成、credit、実決済、モデルdownloadは0件。次はDesktop編集追従と実ブラウザ／日本語PNG/PDF目視。C4/C5、D2/D3/D1、4ページ16コマ実画像品質は未完了。mergeと外部DBへの適用承認を混同しない。
+- 実装commit `e59b422c`、Draft PR [#671](https://github.com/team478a/manga/pull/671)。CI/Previewは実行中／PENDING、Preview Comments成功。最終HEADはCURRENT_TASKの再開手順で確認する。
 
 ---
 

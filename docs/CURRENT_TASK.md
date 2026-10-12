@@ -12,6 +12,7 @@
 - Canvas 26/26、AI 50/50、lint、deps（error 0、既知warning 2）、Hub build、diff check成功。RC structure READY、外部設定PENDING、manual E2E REQUIRED。依存変更なし、Desktop/shared package変更なしのためinstall/Desktop build/a11yは対象外。
 - 検証用container `mangai-c3b-postgres-20261012`と専用anonymous volumeはlabel確認後に削除した。実データなし、fixturesから再作成可能。
 - Hub typecheck成功。次の担当者は`git status --short`からPR/CI状態を確認し、`docs/cloud/CLOUD_STORYBOARD_CANVAS_MATERIALIZATION_V1.md`のC3b制限事項を読んで再開する。
+- 実装commit `e59b422c`をpushし、[Draft PR #671](https://github.com/team478a/manga/pull/671)を作成した。確認時点のCore quality／Migration roundtrip／Windows buildは実行中、Vercel PENDING、Preview Comments成功。最終HEADのCI確認は未完了。再開コマンド: `gh pr view 671 --json statusCheckRollup`。
 
 ---
 

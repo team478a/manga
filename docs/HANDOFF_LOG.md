@@ -12,7 +12,7 @@
 - Production、外部Supabase、Provider、有料生成、credit、実決済、モデルdownloadは0件。次はCI／PRレビュー後、Desktop追従と実ブラウザ／PNG/PDF目視。C4/C5、D2/D3/D1、4ページ16コマは未完了。外部DBへの適用は別承認単位。
 - Canvas 26/26、AI 50/50、lint、deps（error 0、既知warning 2）、Hub build、diff check成功。RC structure READY、外部設定PENDING、manual E2E REQUIRED。依存・Desktop/shared package変更なしのためinstall/Desktop build/a11yは対象外。
 - label確認後、専用containerとanonymous volumeを削除した（実データなし、fixture再作成可）。再現時は既存postgres:16から、portなし／`mangai.task=c3b-20261012` label／supabaseディレクトリreadonly mountのcontainerを作成し、DB `manga_c3b_roundtrip`へbootstrap_supabase→bootstrap_migration_base→全forwardを適用して専用checkerを実行する。常設DBや外部PGHOSTを使わない。
-- Hub typecheck成功。commit／PRと最終HEAD CIは後段へ追記する。再開時は`git status --short`とPR checksから確認する。
+- Hub typecheck成功。実装commit `e59b422c`をpushし、[Draft PR #671](https://github.com/team478a/manga/pull/671)を作成した。確認時点のCore quality／Migration roundtrip／Windows buildは実行中、Vercel PENDING、Preview Comments成功。最終HEADのCI確認は未完了。再開時は`git status --short`、`gh pr view 671 --json statusCheckRollup`から確認する。
 
 ---
 
