@@ -1,5 +1,20 @@
 # MANGAI Current Task
 
+## 2026-10-12 漫画生成改善 C3b: 新規下書きの文字領域
+
+- PR #670はmerge `1b450876`で統合済み、最終HEADの全5チェック成功。Branch `codex/manga-storyboard-safe-text-20261012`。
+- `build_cloud_storyboard_canvas`を追加migrationで更新し、新規Canvasの文字枠をC3aの形状別内接領域に揃える。18px未満・本文切捨てで収まった扱いにしない。既存原稿・既存migration・変換の冪等性・所有者境界は変更しない。
+- rollbackは直前のBuilderを復元する。checksum、隔離DBの再適用／rollback／再適用、SQL出力とTypeScript判定の整合を検証する。
+- Production、有料生成、credit、実決済、モデルdownloadは行わない。Desktop追従／実ブラウザ・日本語PNG/PDF目視／C4/C5／D2/D3/D1／4ページ16コマ実画像品質は未完了。
+- 実装修正済み。追加migration＋canonical schemaで内接領域と18〜32pxの初期推定を適用し、旧Builderを直接呼出不可の内部helperへ保持した。旧migration・snapshot・RPC responseは不変。禁則／書記素／fontの最終判定はC3a checkerと目視へ委ねる。
+- 検証: 関連63/63、Hub 1385/1385、SQL/TypeScriptの43文字fixture＋空ページ／ACL、隔離postgres:16の101件forward→全rollback→forward、最新migration二度適用、canonical二度適用＋schema/data idempotency、旧Builder本文digest復元、checksum検証成功。外部Supabaseは操作していない。
+- 次: C3bのCI／レビュー後、Desktop編集追従と実画面の日本語PNG/PDF受入れを別単位で進める。DBコードがmerge済みでもProductionへの適用承認を得た扱いにしない。
+- Canvas 26/26、AI 50/50、lint、deps（error 0、既知warning 2）、Hub build、diff check成功。RC structure READY、外部設定PENDING、manual E2E REQUIRED。依存変更なし、Desktop/shared package変更なしのためinstall/Desktop build/a11yは対象外。
+- 検証用container `mangai-c3b-postgres-20261012`と専用anonymous volumeはlabel確認後に削除した。実データなし、fixturesから再作成可能。
+- Hub typecheck成功。次の担当者は`git status --short`からPR/CI状態を確認し、`docs/cloud/CLOUD_STORYBOARD_CANVAS_MATERIALIZATION_V1.md`のC3b制限事項を読んで再開する。
+
+---
+
 ## 2026-10-12 漫画生成改善 C3a: Cloudの形状・回転・文字内包
 
 - PR #669はmerge `309e9c8f`で統合済み。最終HEADのCore quality、Migration roundtrip、Windows build、Vercel、Preview Commentsはすべて成功。

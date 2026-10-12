@@ -48,4 +48,15 @@
 - 吹き出しの位置・寸法・回転・形状変更は関連文字と同じCanvas履歴／autosave snapshotへ記録する。回転差を追従し、内包が崩れた対象吹き出しだけをfitする。関連文字lock時は幾何変更を拒否し、lock解除や外観編集は妨げない。
 - dragは吹き出し本体と関連文字の回転後4隅をページ内へ制限する。数値変更でページ外へ出た文字やネームにない追加の関連文字も完成不可になる。
 - 保存形式schema v1、API、DB、IPCは変更しない。既存原稿の読込時や既存Jobでの一致本文を自動書換えしない。利用者が明示修復を選ぶ。
-- **残件**: DB `build_cloud_storyboard_canvas`の新規下書き作成は旧矩形配置のまま。新規下書きへの内接領域適用は追加migrationとroundtrip検証を別PRで扱う（既存migration／原稿は変更しない）。Desktop編集追従、実ブラウザと日本語PNG/PDF目視、4ページ16コマ実画像品質も未受入れ。
+- **残件**: Desktop編集追従、実ブラウザと日本語PNG/PDF目視、4ページ16コマ実画像品質は未受入れ。DB新規下書きの内接領域は以下のC3bで対応する。
+
+## C3b 新規下書きの文字領域（2026-10-12）
+
+- 追加migration `202610120001_cloud_storyboard_text_inner_region`とcanonical schemaで`build_cloud_storyboard_canvas`を更新する。既存のコマ・吹き出し・UUID・本文を不変の内部helperに保持し、新規文字の領域だけを型別内接矩形へ変更する。helperの直接executeはanon／authenticated／service_roleに許可しない。
+- 初期文字は32〜18px、lineHeight 1.2。6文字以下の改行なし短文は単一列を優先し、横長のプレーン短文は24px以上の横書き中央を優先する。ルビがある場合は文字サイズ分のpaddingを確保する。本文を切り捨てない。
+- SQLの字数・行数計算は**初期推定**であり、日本語の禁則・書記素・ルビ／font実outlineを完全に測定するものではない。最終的な可読・内包判定はC3aのTypeScript checkerと目視受入れが正本。最小fontでも収まらない長文は全内容を維持し、完成不可のまま利用者の領域拡張／編集を必要とする。DBが完成承認や品質点数を返す変更ではない。
+- 原稿snapshotや既存Projectを更新するDMLは追加しない。既存変換の冪等性、所有者・一般向け・最新採用版の検査、schema v1とRPC responseは不変。既存原稿は明示修復を使う。
+- rollbackは直前のBuilder本文・権限を復元して内部helperだけを削除する。既に作成した新規原稿の内容はrollbackでも変更しない。旧migrationのchecksumは不変。
+- 隔離postgres:16（既存image、公開portなし）で101件forward→reverse rollback→forward、最新migration再適用、canonical schema二度適用、既存SQL assertionsを検証する。`assert_storyboard_text_region.sql`はCIの両schemaへ組み込む。
+- SQL出力とC3a checkerの実行確認: `node --experimental-strip-types scripts/check-storyboard-text-region.mjs --container mangai-c3b-postgres-20261012`。自作の専用label付き／port非公開container以外は拒否し、環境のPGHOSTやSupabase credentialを使わない。43文字fixture、空ページ、ACLを確認する。
+- このPRは適用用コードの準備であり、Productionや外部Supabaseへのmigration適用を許可するものではない。実ブラウザ／日本語PNG/PDF目視や実画像品質は未受入れ。

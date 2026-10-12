@@ -1,5 +1,21 @@
 # MANGAI AI Handoff Log
 
+## 2026-10-12 Codex: C3b 新規下書きの文字領域
+
+- 基点: PR #670 merge `1b450876`、最終HEADのCore quality、Migration roundtrip、Windows build、Vercel、Preview Commentsはすべて成功。Branch `codex/manga-storyboard-safe-text-20261012`。
+- `supabase/migrations/202610120001_cloud_storyboard_text_inner_region.sql`、対応rollback、manifest、canonical schemaを追加／同期した。旧migrationは不変。コマ・吹き出し・UUID・本文の旧生成を内部helperへ凍結し、新規文字だけを型別内接領域＋18〜32pxの初期推定へ変更した。
+- `assert_storyboard_text_region.sql`をforward/reapplyとcanonicalのCI assertionsへ追加し、型3種・1/2/4/6コマ・領域・本文保持・ACLを実SQLで検証する。`tests/cloud-storyboard-text-region.test.mjs`は旧Builder保持／rollback復元／canonical一致／非DML／CI結線を検証する。
+- `scripts/check-storyboard-text-region.mjs`はport非公開・専用label付きのローカルDocker containerのみを受け付ける。既存postgres:16 imageを使い、PGHOST・Supabase credentialを参照しない。旧Builderの楕円外接領域問題を再現し、SQL出力を実C3a checkerで検査した。
+- 関連63/63、Hub 1385/1385、SQL/TS 43文字fixture＋空ページ／ACL成功。全101件forward→reverse rollback→forwardと既存SQL assertions成功。最新migration再適用、canonical schema二度適用、current schema／data idempotency assertions成功。rollbackの直前Builder本文md5一致、manifest checksum成功。
+- 実SQL検証中のPL/pgSQL CASE構文エラーは条件の括弧とゼロ除算防御を修正して解消した。修正版で全roundtrip／assertionsを再実行した。失敗を成功扱いにはしていない。
+- SQLの字数推定はfont outline／禁則・書記素を完全判定するものではない。最小fontでも入らない長文は本文を保持し、C3a checkerで完成不可。実画像品質、日本語font目視、実ブラウザ受入れは未完了。
+- Production、外部Supabase、Provider、有料生成、credit、実決済、モデルdownloadは0件。次はCI／PRレビュー後、Desktop追従と実ブラウザ／PNG/PDF目視。C4/C5、D2/D3/D1、4ページ16コマは未完了。外部DBへの適用は別承認単位。
+- Canvas 26/26、AI 50/50、lint、deps（error 0、既知warning 2）、Hub build、diff check成功。RC structure READY、外部設定PENDING、manual E2E REQUIRED。依存・Desktop/shared package変更なしのためinstall/Desktop build/a11yは対象外。
+- label確認後、専用containerとanonymous volumeを削除した（実データなし、fixture再作成可）。再現時は既存postgres:16から、portなし／`mangai.task=c3b-20261012` label／supabaseディレクトリreadonly mountのcontainerを作成し、DB `manga_c3b_roundtrip`へbootstrap_supabase→bootstrap_migration_base→全forwardを適用して専用checkerを実行する。常設DBや外部PGHOSTを使わない。
+- Hub typecheck成功。commit／PRと最終HEAD CIは後段へ追記する。再開時は`git status --short`とPR checksから確認する。
+
+---
+
 ## 2026-10-12 Codex: C3a Cloudの形状・回転・文字内包
 
 - 基点: PR #669 merge `309e9c8f`、最終HEADの全5チェック成功。Branch `codex/manga-balloon-shape-containment-20261012`。

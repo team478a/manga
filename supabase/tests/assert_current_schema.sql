@@ -1,4 +1,5 @@
 \set ON_ERROR_STOP on
+\ir assert_storyboard_text_region.sql
 
 do $$
 begin
