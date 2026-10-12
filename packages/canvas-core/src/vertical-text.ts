@@ -130,16 +130,17 @@ export function layoutVerticalText(
   box: Rect,
   options: { fontSize: number; lineHeight?: number; letterSpacing?: number },
 ) {
+  const parsed = parseRubyText(text);
   const lineHeight = options.lineHeight ?? 1.2,
     letterSpacing = options.letterSpacing ?? 0,
     rowAdvance = options.fontSize * lineHeight + letterSpacing,
-    columnAdvance = options.fontSize * lineHeight,
+    // Reserve the right-side ruby lane between columns, not only at box edges.
+    columnAdvance = options.fontSize * Math.max(lineHeight, parsed.annotations.length ? 1.5 : lineHeight),
     rowsPerColumn = Math.max(1, Math.floor(box.height / rowAdvance)),
     glyphs: VerticalGlyph[] = [],
     rubyGlyphs: VerticalRubyGlyph[] = [];
   let column = 0,
     row = 0;
-  const parsed = parseRubyText(text);
   const tokens = tokenizeVerticalText(parsed.plainText);
   for (let index = 0; index < tokens.length; index += 1) {
     const token = tokens[index];

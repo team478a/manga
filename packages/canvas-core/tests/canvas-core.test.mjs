@@ -370,6 +370,17 @@ test("explicit ruby notation is parsed and laid out beside vertical text", () =>
   );
   assert.ok(result.rubyGlyphs.every((glyph) => glyph.x > result.glyphs[0].x));
 });
+test("vertical ruby does not collide with the adjacent column's em cell", () => {
+  const result = layoutVerticalText("「きゃー、｜鍵《かぎ》だ。」", { x: 0, y: 0, width: 200, height: 240 }, { fontSize: 32 });
+  assert.ok(result.columns > 1);
+  assert.ok(result.rubyGlyphs.length > 0);
+  for (const ruby of result.rubyGlyphs) {
+    for (const glyph of result.glyphs.filter(item => item.column === ruby.column - 1)) {
+      assert.ok(ruby.x + 32 * 0.21 < glyph.x - 32 / 2);
+    }
+  }
+});
+
 test("horizontal ruby stays with its base and uses shared line layout", () => {
   const result = layoutHorizontalText(
     "第12話 ｜漫画《まんが》です",

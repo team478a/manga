@@ -12,6 +12,7 @@ import { MigrationRunner } from "../dist-main/main/infrastructure/sqlite/migrati
 import { AssetFileService } from "../dist-main/main/modules/assets/asset-file-service.js";
 import { RestoreService } from "../dist-main/main/modules/backup/restore-service.js";
 import { renderPagePng } from "../dist-main/main/page-renderer.js";
+import { createMangaVisualFixture, fixedPanelSvg } from "../dist-main/main/testing/manga-visual-fixture.js";
 import Database from "better-sqlite3";
 import sharp from "sharp";
 import JSZip from "jszip";
@@ -24,6 +25,22 @@ import {
   ADULT_GENERATION_TERMS_VERSION,
   evaluateAdultProviderCapability,
 } from "@mangai/ai-core";
+
+test("C3d fixed fixture has four pages and sixteen distinct safe image panels", () => {
+  const pages = createMangaVisualFixture();
+  assert.equal(pages.length, 4);
+  assert.equal(new Set(pages.flatMap(page => page.panels.map(panel => panel.imageAssetId))).size, 16);
+  assert.equal(new Set(Array.from({ length: 16 }, (_, index) => fixedPanelSvg(index + 1))).size, 16);
+  for (const page of pages) {
+    assert.equal(page.panels.length, 4);
+    for (const text of page.textObjects) {
+      const parent = page.balloons.find(item => item.id === text.parentBalloonId);
+      assert.ok(dialogueRectInside({ x: 0, y: 0, width: text.width, height: text.height }, text, dialogueInnerRegion(parent)));
+      assert.ok(dialogueInkFitsTextBox(text));
+      assert.ok(text.fontSize >= 18);
+    }
+  }
+});
 
 function createLinkedDialogueFixture() {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "mangai-c3c-"));

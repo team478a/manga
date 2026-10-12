@@ -4,6 +4,7 @@ import {
   dialog,
   ipcMain,
   shell,
+  session,
   type IpcMainInvokeEvent,
 } from "electron";
 import path from "node:path";
@@ -12,6 +13,7 @@ import os from "node:os";
 import { fileURLToPath } from "node:url";
 import { z } from "zod";
 import { MangaiDatabase } from "./database.js";
+import { seedMangaVisualFixture, inspectMangaVisualFixture } from "./testing/manga-visual-acceptance.js";
 import {
   openDatabaseWithRecovery,
   type DatabaseRecoveryReport,
@@ -112,7 +114,8 @@ import {
 const here = path.dirname(fileURLToPath(import.meta.url));
 const smokeTest = process.argv.includes("--mangai-smoke-test");
 const accessibilityTest = process.argv.includes("--mangai-accessibility-test");
-const automatedRendererTest = smokeTest || accessibilityTest;
+const mangaVisualTest = process.argv.includes("--mangai-manga-visual-test");
+const automatedRendererTest = smokeTest || accessibilityTest || mangaVisualTest;
 if (automatedRendererTest) {
   const smokeDocuments = process.env.MANGAI_SMOKE_DOCUMENTS;
   if (!smokeDocuments || !path.isAbsolute(smokeDocuments))
@@ -120,6 +123,12 @@ if (automatedRendererTest) {
   const testUserData = process.env.MANGAI_TEST_USER_DATA;
   if (!testUserData || !path.isAbsolute(testUserData))
     throw new Error("Automated renderer test user data path is required.");
+  if (mangaVisualTest) {
+    const runtime = path.dirname(testUserData);
+    const output = path.resolve(here, "../../../../work/manga-visual-c3d");
+    if (path.dirname(runtime) !== output || !path.basename(runtime).startsWith("runtime-") || path.dirname(smokeDocuments) !== runtime || !fs.existsSync(path.join(runtime, "fixture-runtime.json")))
+      throw new Error("Visual fixture requires a dedicated isolated runtime");
+  }
   fs.mkdirSync(smokeDocuments, { recursive: true });
   fs.mkdirSync(testUserData, { recursive: true });
   app.setPath("documents", smokeDocuments);
@@ -1176,6 +1185,7 @@ function register() {
 }
 async function createWindow() {
   const win = new BrowserWindow({
+    show: !mangaVisualTest,
     width: 1500,
     height: 920,
     minWidth: 1100,
@@ -1319,6 +1329,13 @@ app
     updater = new DesktopUpdater(desktopPaths().root);
     register();
     aiService.resumeQueuedImages();
+    const visualOutput = process.env.MANGAI_MANGA_VISUAL_OUTPUT;
+    const visualPdf = process.env.MANGAI_MANGA_VISUAL_PDF;
+    if (mangaVisualTest) {
+      if (visualOutput !== path.resolve(here, "../../../../work/manga-visual-c3d") || visualPdf !== path.resolve(here, "../../../../output/pdf/mangai-c3d-desktop-fixture.pdf")) throw new Error("Dedicated visual fixture output paths required");
+      session.defaultSession.webRequest.onBeforeRequest({ urls: ["http://*/*", "https://*/*"] }, (_request, callback) => callback({ cancel: true }));
+    }
+    const visualFixture = mangaVisualTest ? seedMangaVisualFixture(store, visualOutput!) : null;
     const win = await createWindow();
     if (automatedRendererTest) {
       const rendererReady = await win.webContents.executeJavaScript(`
@@ -1334,6 +1351,10 @@ app
       })
     `);
       if (!rendererReady) throw new Error("Automated renderer test timed out.");
+    }
+    if (mangaVisualTest && visualFixture) {
+      await inspectMangaVisualFixture(win, store, visualOutput!, visualPdf!, visualFixture.projectId, visualFixture.textId);
+      app.quit(); return;
     }
     if (accessibilityTest) {
       const axePath = process.env.MANGAI_AXE_PATH,
@@ -2495,6 +2516,7 @@ app
   })
   .catch((cause) => {
     if (automatedRendererTest) {
+      if (mangaVisualTest) console.error(cause instanceof Error ? cause.message.slice(0, 160) : "Visual fixture failed");
       diagnostics?.captureCrash(
         accessibilityTest ? "accessibility_test.failed" : "smoke_test.failed",
         cause,

@@ -1,5 +1,15 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 漫画生成改善 C3d: 固定fixture目視（2026-10-12）
+
+- PR #672 merge `182fa0a1`、最終HEAD全5チェック成功。Branch `codex/manga-visual-fixture-20261012`。
+- 固定合成画像4ページ16コマでDesktop実UI修復／保存／再読込、Cloud/DesktopのPNG／4ページPDFを検証した。復号RGBA一致とPDF全8ページの目視済み。縦書きルビの隣列への接近を共有layoutの最低1.5em列送りで修正した（ルビありのみ）。
+- Desktop 411/411、Hub 1385/1385、Canvas 27/27、AI 50/50、build／deps／migration成功。最終gate／PR情報はCURRENT_TASKとHANDOFF_LOG参照。
+- 合成画像はAI作画の品質承認ではない。実Cloudブラウザ／任意font／実画像品質、C4/C5、D2/D3/D1は未完了。Production、有料生成、credit、実決済、model downloadは0件。次はCI／レビュー後にC4。
+- 実装commit `0fd5128b`、Draft PR [#673](https://github.com/team478a/manga/pull/673)。確認時点のCI／Previewは実行中／PENDING。最終HEADはCURRENT_TASKの再開コマンドで確認する。
+
+---
+
 ## 0.0 漫画生成改善 C3c: Desktop関連文字（2026-10-12）
 
 - PR #671はmerge `a88a42df`、最終HEADの全5チェック成功。Branch `codex/desktop-linked-dialogue-20261012`。
