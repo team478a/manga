@@ -10,7 +10,9 @@
 - 検証: 集中64/64、Hub 1382/1382、Canvas 26/26、AI 50/50、Hub build、deps（error 0、既知warning 2）、migration 100件、diff check成功。RC structure READY、外部設定PENDING、manual E2E REQUIRED。依存変更なし、Desktop/shared package変更なしのためinstall/Desktop build/a11yは今回対象外。
 - 集中testは形状3種×rotation4種、句読点・長音・小書き・ルビ、最小font、失敗維持、実履歴undo/redo、JSON再読込、追加文字／ページ外の完成拒否、PNG/PDF fixtureを検証。実画面／日本語font outlineの目視は未受入れ。
 - 次: DB `build_cloud_storyboard_canvas`の新規下書きは旧矩形配置のまま。C3bとして追加migration・checksum・rollback・roundtripを検証し、既存原稿へは明示修復を使う。Desktop編集追従と実ブラウザ／PNG/PDF目視、C4/C5、D2/D3/D1、4ページ16コマ実画像品質は未完了。
-- 最終lint、Hub typecheck成功。Production、有料生成、credit、実決済、モデルdownloadは0件。commit・PRは後段へ追記する。
+- 最終lint、Hub typecheck成功。Production、有料生成、credit、実決済、モデルdownloadは0件。
+- 実装commit `9bc3cc35`をpushし、[Draft PR #670](https://github.com/team478a/manga/pull/670)を作成した。確認時点のCore quality／Migration roundtrip／Windows buildは実行中、Vercel PENDING、Preview Comments成功。最終HEADのCI確認は未完了。
+- 次の担当者は`git status --short`、`gh pr view 670 --json statusCheckRollup`から再開し、`docs/cloud/CLOUD_STORYBOARD_CANVAS_MATERIALIZATION_V1.md`と`supabase/migrations/202607300005_cloud_storyboard_canvas_materialization.sql`の現行契約を確認してC3bを扱う。
 
 ---
 

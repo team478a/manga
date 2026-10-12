@@ -7,6 +7,7 @@
 - Cloud文字previewはexportと同じescaped SVG layoutを使う。関連文字のrotation／位置追従とlock拒否、ページ端drag制限を実装し、既存の履歴／autosave snapshotを維持する。
 - DB新規下書き`build_cloud_storyboard_canvas`は旧配置のままであり、C3全体は未完了。次のPRで追加migrationとroundtripを検証する。旧migration・既存原稿を一括変更しない。Desktop追従と日本語PNG/PDF／ブラウザ目視も別の未受入れ条件。
 - 集中64/64、Hub 1382/1382、Canvas 26/26、AI 50/50、Hub build、deps、migration、diff check成功。Production、有料生成、credit、実決済、モデルdownloadは0件。C4/C5、D2/D3/D1、4ページ16コマ実画像品質は未完了。
+- 実装commit `9bc3cc35`、Draft PR [#670](https://github.com/team478a/manga/pull/670)。CI/Previewは実行中／PENDING、Preview Comments成功。最終HEAD確認はCURRENT_TASKから再開する。
 
 ---
 

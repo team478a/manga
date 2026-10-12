@@ -9,6 +9,8 @@
 - Production、有料生成、credit、実決済、モデルdownloadは0件。集中64/64、Hub 1382/1382、Canvas 26/26、AI 50/50、Hub build、deps（error 0、既知warning 2）、migration 100件、diff check成功。RC structure READY、外部設定PENDING、manual E2E REQUIRED。
 - C3全体は未完了。DB `build_cloud_storyboard_canvas`の新規下書きは旧矩形配置が残るため、次のC3bで追加migration・checksum・rollback・roundtripを検証する。既存migration／原稿は変更しない。
 - 最終lint、Hub typecheck成功。依存・Desktop/shared package変更なしのためinstall/Desktop build/a11yは今回対象外。C3aのPR確認後、C3b→Desktop／実画面受入れ→C4/C5の順で未完了項目を扱う。
+- 実装commit `9bc3cc35`をpushし、[Draft PR #670](https://github.com/team478a/manga/pull/670)を作成した。確認時点ではCore quality／Migration roundtrip／Windows build実行中、Vercel PENDING、Preview Comments成功。未完了CIを成功扱いにしない。
+- 再開: `git status --short`、`gh pr view 670 --json statusCheckRollup`で最終HEADを確認し、C3bの新規下書き作成を別branchで扱う。
 
 ---
 
