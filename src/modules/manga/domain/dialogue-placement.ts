@@ -8,6 +8,7 @@ import {
   type Panel,
   type TextObject,
 } from "@mangai/canvas-core";
+import { dialogueInnerRegion, dialogueRectInside, dialogueInkFitsTextBox, rotateDialoguePoint } from "./dialogue-region.ts";
 
 export type StructuredPanelDialogue = {
   type: "speech" | "thought" | "narration" | "sound_effect";
@@ -42,20 +43,14 @@ const MAX_FONT_SIZE = 32;
 const MIN_FONT_SIZE = 18;
 const PREFERRED_MIN_FONT_SIZE = 24;
 const TEXT_PADDING = 10;
-const BOUNDS_EPSILON = 0.01;
 
 type DialogueTextLayout = Pick<
   TextObject,
-  "fontSize" | "writingMode" | "textAlign" | "verticalAlign"
+  "fontSize" | "writingMode" | "textAlign" | "verticalAlign" | "padding"
 >;
 
 function dialogueTextBounds(balloon: Balloon) {
-  return {
-    x: balloon.x + TEXT_PADDING,
-    y: balloon.y + TEXT_PADDING,
-    width: Math.max(1, balloon.width - TEXT_PADDING * 2),
-    height: Math.max(1, balloon.height - TEXT_PADDING * 2),
-  };
+  return dialogueInnerRegion(balloon);
 }
 
 export function isDialogueTextContainedInBalloon(
@@ -63,12 +58,7 @@ export function isDialogueTextContainedInBalloon(
   balloon: Balloon,
 ) {
   const bounds = dialogueTextBounds(balloon);
-  return (
-    text.x + BOUNDS_EPSILON >= bounds.x &&
-    text.y + BOUNDS_EPSILON >= bounds.y &&
-    text.x + text.width <= bounds.x + bounds.width + BOUNDS_EPSILON &&
-    text.y + text.height <= bounds.y + bounds.height + BOUNDS_EPSILON
-  );
+  return dialogueRectInside({ x: 0, y: 0, width: text.width, height: text.height }, text, bounds) && dialogueInkFitsTextBox(text);
 }
 
 export function moveBalloonWithLinkedDialogue(
@@ -77,15 +67,47 @@ export function moveBalloonWithLinkedDialogue(
   position: { x: number; y: number },
 ) {
   const balloon = canvas.balloons.find((item) => item.id === balloonId);
-  if (!balloon) return false;
-  const deltaX = position.x - balloon.x;
-  const deltaY = position.y - balloon.y;
-  balloon.x = position.x;
-  balloon.y = position.y;
+  if (!balloon || balloon.locked || canvas.textObjects.some(text => text.parentBalloonId === balloonId && text.locked)) return false;
+  const attached = canvas.textObjects.filter(text => text.parentBalloonId === balloonId);
+  const points = [balloon, ...attached].flatMap(item => [[0, 0], [item.width, 0], [0, item.height], [item.width, item.height]].map(([x, y]) => {
+    const point = rotateDialoguePoint({ x, y }, item.rotation);
+    return { x: item.x + point.x, y: item.y + point.y };
+  }));
+  const minX = Math.min(...points.map(point => point.x));
+  const maxX = Math.max(...points.map(point => point.x));
+  const minY = Math.min(...points.map(point => point.y));
+  const maxY = Math.max(...points.map(point => point.y));
+  if (maxX - minX > canvas.width || maxY - minY > canvas.height) return false;
+  const deltaX = Math.max(-minX, Math.min(canvas.width - maxX, position.x - balloon.x));
+  const deltaY = Math.max(-minY, Math.min(canvas.height - maxY, position.y - balloon.y));
+  balloon.x += deltaX;
+  balloon.y += deltaY;
   for (const text of canvas.textObjects) {
     if (text.parentBalloonId !== balloonId) continue;
     text.x += deltaX;
     text.y += deltaY;
+  }
+  return true;
+}
+
+export function transformBalloonWithLinkedDialogue(canvas: PageCanvas, balloonId: string, next: Balloon, timestamp: string) {
+  const balloon = canvas.balloons.find(item => item.id === balloonId);
+  if (!balloon || balloon.locked || canvas.textObjects.some(text => text.parentBalloonId === balloonId && text.locked)) return false;
+  const previous = { ...balloon };
+  for (const text of canvas.textObjects) {
+    if (text.parentBalloonId !== balloonId) continue;
+    const local = rotateDialoguePoint({ x: text.x - previous.x, y: text.y - previous.y }, -previous.rotation);
+    const offset = rotateDialoguePoint(local, next.rotation);
+    text.x = next.x + offset.x;
+    text.y = next.y + offset.y;
+    text.rotation += next.rotation - previous.rotation;
+    text.updatedAt = timestamp;
+  }
+  Object.assign(balloon, next, { updatedAt: timestamp });
+  // Only the changed balloon: never repair unrelated manual text during editing.
+  for (const text of canvas.textObjects.filter(item => item.parentBalloonId === balloonId)) {
+    const repair = linkedDialogueBoundsRepair(canvas, text);
+    if (repair) Object.assign(text, repair, { updatedAt: timestamp });
   }
   return true;
 }
@@ -110,27 +132,30 @@ function readingOrder(a: Balloon, b: Balloon) {
   return b.x - a.x;
 }
 
-function fitDialogueTextLayout(text: string, balloon: Balloon): DialogueTextLayout | null {
+function fitDialogueTextLayout(text: string, balloon: Balloon, metrics: { lineHeight: number; letterSpacing: number } = { lineHeight: 1.2, letterSpacing: 0 }): DialogueTextLayout | null {
+  const { lineHeight, letterSpacing } = metrics;
   const box = dialogueTextBounds(balloon);
+  if (box.width <= 0 || box.height <= 0) return null;
   const plainText = parseRubyText(text).plainText;
+  const hasRuby = parseRubyText(text).annotations.length > 0;
+  const fits = (fontSize: number, writingMode: TextObject["writingMode"], textAlign: TextObject["textAlign"], verticalAlign: TextObject["verticalAlign"]) => dialogueInkFitsTextBox({ text, width: box.width, height: box.height, fontSize, writingMode, textAlign, verticalAlign, padding: hasRuby ? fontSize : 0, lineHeight, letterSpacing });
   const preferSingleColumn =
     !/[\r\n]/u.test(plainText) && segmentGraphemes(plainText).length <= 6;
-  let largestReadableSize: number | null = null;
   let singleColumnSize: number | null = null;
   for (let fontSize = MAX_FONT_SIZE; fontSize >= MIN_FONT_SIZE; fontSize -= 2) {
-    const layout = layoutVerticalText(text, box, {
+    const padding = hasRuby ? fontSize : 0;
+    const layout = layoutVerticalText(text, { ...box, width: box.width - padding * 2, height: box.height - padding * 2 }, {
       fontSize,
-      lineHeight: 1.2,
-      letterSpacing: 0,
+      lineHeight, letterSpacing,
     });
-    if (layout.overflow) continue;
-    largestReadableSize ??= fontSize;
+    if (layout.overflow || !fits(fontSize, "vertical", "start", "top")) continue;
     if (!preferSingleColumn)
       return {
         fontSize,
         writingMode: "vertical",
         textAlign: "start",
         verticalAlign: "top",
+        padding,
       };
     if (layout.columns === 1) {
       singleColumnSize = fontSize;
@@ -143,19 +168,20 @@ function fitDialogueTextLayout(text: string, balloon: Balloon): DialogueTextLayo
       fontSize >= PREFERRED_MIN_FONT_SIZE;
       fontSize -= 2
     ) {
-      const layout = layoutHorizontalText(text, box, {
+      const padding = hasRuby ? fontSize : 0;
+      const layout = layoutHorizontalText(text, { ...box, width: box.width - padding * 2, height: box.height - padding * 2 }, {
         fontSize,
-        lineHeight: 1.2,
-        letterSpacing: 0,
+        lineHeight, letterSpacing,
         textAlign: "center",
         verticalAlign: "middle",
       });
-      if (!layout.overflow && layout.lines.length === 1)
+      if (!layout.overflow && layout.lines.length === 1 && fits(fontSize, "horizontal", "center", "middle"))
         return {
           fontSize,
           writingMode: "horizontal",
           textAlign: "center",
           verticalAlign: "middle",
+          padding: hasRuby ? fontSize : 0,
         };
     }
   }
@@ -165,15 +191,9 @@ function fitDialogueTextLayout(text: string, balloon: Balloon): DialogueTextLayo
       writingMode: "vertical",
       textAlign: "start",
       verticalAlign: "top",
+      padding: hasRuby ? singleColumnSize : 0,
     };
-  return largestReadableSize == null
-    ? null
-    : {
-        fontSize: largestReadableSize,
-        writingMode: "vertical",
-        textAlign: "start",
-        verticalAlign: "top",
-      };
+  return null;
 }
 
 function textLayoutBox(text: TextObject) {
@@ -218,11 +238,13 @@ function shortVerticalDialogueRepairLayout(
     y: text.y - TEXT_PADDING,
     width: text.width + TEXT_PADDING * 2,
     height: text.height + TEXT_PADDING * 2,
-  });
+    type: "narration_box",
+    strokeWidth: 0,
+  }, text);
 }
 
 export function isDialogueTextLayoutReadable(text: TextObject) {
-  if (!text.visible || !text.text.trim()) return false;
+  if (!text.visible || !text.text.trim() || !dialogueInkFitsTextBox(text)) return false;
   const box = textLayoutBox(text);
   const plainText = parseRubyText(text.text).plainText;
   const shortText =
@@ -263,6 +285,7 @@ export function repairShortVerticalDialogueLayout(
     text.writingMode = layout.writingMode;
     text.textAlign = layout.textAlign;
     text.verticalAlign = layout.verticalAlign;
+    text.padding = layout.padding;
     text.updatedAt = timestamp;
     repairedTextCount += 1;
   }
@@ -278,9 +301,9 @@ function linkedDialogueBoundsRepair(
   const balloon = canvas.balloons.find((item) => item.id === text.parentBalloonId);
   if (!balloon || !balloon.visible || balloon.locked) return null;
   const expected = dialogueTextBounds(balloon);
-  const withinBalloon = isDialogueTextContainedInBalloon(text, balloon);
+  const withinBalloon = isDialogueTextContainedInBalloon(text, balloon) && isDialogueTextLayoutReadable(text);
   if (withinBalloon) return null;
-  const layout = fitDialogueTextLayout(text.text, balloon);
+  const layout = fitDialogueTextLayout(text.text, balloon, text);
   return layout == null ? null : { ...expected, ...layout };
 }
 
@@ -473,11 +496,7 @@ export function placeStructuredPageDialogue(input: {
         parentBalloonId: balloon.id,
         name: `${dialogue.speaker || "セリフ"} テキスト`,
         text: expectedText,
-        x: balloon.x + TEXT_PADDING,
-        y: balloon.y + TEXT_PADDING,
-        width: balloon.width - TEXT_PADDING * 2,
-        height: balloon.height - TEXT_PADDING * 2,
-        rotation: 0,
+        ...dialogueTextBounds(balloon),
         zIndex: balloon.zIndex + 1,
         visible: true,
         locked: false,
@@ -490,7 +509,7 @@ export function placeStructuredPageDialogue(input: {
         verticalAlign: textLayout.verticalAlign,
         lineHeight: 1.2,
         letterSpacing: 0,
-        padding: 0,
+        padding: textLayout.padding,
         opacity: 1,
         createdAt: reusableText?.createdAt ?? input.now,
         updatedAt: input.now,

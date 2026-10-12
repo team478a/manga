@@ -55,7 +55,7 @@ import { listPanelAssetRevisions, restorePanelAssetRevision } from "@/modules/ma
 import {
   countRepairableLinkedDialogueBounds,
   countRepairableShortVerticalDialogue,
-  moveBalloonWithLinkedDialogue,
+  transformBalloonWithLinkedDialogue,
   repairLinkedDialogueBounds,
   repairShortVerticalDialogueLayout,
 } from "@/modules/manga/domain/dialogue-placement";
@@ -77,6 +77,7 @@ import {
 } from "./hooks/useCanvasPointer";
 import { downloadCanvasPng } from "./services/canvas-download";
 import { createCanvasSvg } from "./services/canvas-svg";
+import { createCloudCanvasTextSvg } from "@/lib/cloud-canvas-svg";
 import {
   acquirePageEditLease,
   getOrCreatePageEditLockToken,
@@ -815,13 +816,14 @@ export function CloudCanvasEditor({
         update(item);
         return;
       }
-      const previousPosition = { x: item.x, y: item.y };
-      update(item);
-      const nextPosition = { x: item.x, y: item.y };
-      item.x = previousPosition.x;
-      item.y = previousPosition.y;
-      moveBalloonWithLinkedDialogue(draft, selection.id, nextPosition);
-      repairLinkedDialogueBounds(draft, now());
+      const next = { ...item } as Balloon;
+      update(next);
+      const geometryChanged = (["x", "y", "width", "height", "rotation", "type"] as const).some(key => next[key] !== (item as Balloon)[key]);
+      if (!geometryChanged) {
+        Object.assign(item, next);
+        return;
+      }
+      transformBalloonWithLinkedDialogue(draft, selection.id, next, now());
     });
   }
 
@@ -2772,11 +2774,12 @@ export function CloudCanvasEditor({
                     height: `${(balloon.height / canvas.height) * 100}%`,
                     zIndex: balloon.zIndex,
                     transform: `rotate(${balloon.rotation}deg)`,
+                    transformOrigin: "top left",
                     borderRadius:
                       balloon.type === "speech_ellipse"
                         ? "50%"
                         : balloon.type === "speech_rounded"
-                          ? "1.5rem"
+                          ? `${(30 / canvas.width) * 100}cqw`
                           : 0,
                     background: balloon.fillColor,
                     border: `2px solid ${balloon.strokeColor}`,
@@ -2790,7 +2793,7 @@ export function CloudCanvasEditor({
               .sort((a, b) => a.zIndex - b.zIndex)
               .map((text) => (
                 <div
-                  className={`absolute overflow-hidden whitespace-pre-wrap ${selection?.type === "text" && selection.id === text.id ? "ring-4 ring-blue-500" : ""}`}
+                  className={`absolute ${selection?.type === "text" && selection.id === text.id ? "ring-4 ring-blue-500" : ""}`}
                   key={text.id}
                   onPointerDown={(event) =>
                     pointerDown(event, { type: "text", id: text.id }, text)
@@ -2804,23 +2807,12 @@ export function CloudCanvasEditor({
                     height: `${(text.height / canvas.height) * 100}%`,
                     zIndex: text.zIndex,
                     transform: `rotate(${text.rotation}deg)`,
-                    writingMode:
-                      text.writingMode === "vertical"
-                        ? "vertical-rl"
-                        : "horizontal-tb",
-                    fontFamily: text.fontFamily,
-                    fontSize: `${(text.fontSize / canvas.width) * 100}cqw`,
-                    fontWeight: text.fontWeight,
-                    color: text.color,
-                    lineHeight: text.lineHeight,
-                    letterSpacing: `${text.letterSpacing}px`,
-                    padding: `${(text.padding / canvas.width) * 100}%`,
+                    transformOrigin: "top left",
                     opacity: text.opacity,
                     touchAction: "none",
                   }}
-                >
-                  {text.text}
-                </div>
+                  dangerouslySetInnerHTML={{ __html: createCloudCanvasTextSvg(text) }}
+                />
               ))}
           </div>
         </main>

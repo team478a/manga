@@ -1,4 +1,5 @@
 import type { Balloon, PageCanvas, Panel } from "@mangai/canvas-core";
+import { dialogueRectInside } from "./dialogue-region.ts";
 import {
   isDialogueTextContainedInBalloon,
   isDialogueTextLayoutReadable,
@@ -258,6 +259,12 @@ export function evaluateMangaPageCompletion(input: {
     }
 
     const dialoguesByPanel = new Map<number, RequiredPageDialogue[]>();
+    // Also inspect manual/extra linked text, not only required storyboard lines.
+    for (const text of canvas.textObjects.filter(item => item.visible && item.parentBalloonId && item.text.trim())) {
+      const balloon = canvas.balloons.find(item => item.id === text.parentBalloonId && item.visible);
+      if (!balloon || !isDialogueTextContainedInBalloon(text, balloon) || !isDialogueTextLayoutReadable(text) || !dialogueRectInside({ x: 0, y: 0, width: text.width, height: text.height }, text, { x: 0, y: 0, width: canvas.width, height: canvas.height, rotation: 0 }))
+        add({ code: "DIALOGUE_LAYOUT_UNREADABLE", message: "関連文字が吹き出し内またはページ内に収まっていないか、読みづらい配置です。", pageId: input.pageId, balloonId: text.parentBalloonId ?? undefined });
+    }
     for (const dialogue of input.requiredDialogues) {
       const values = dialoguesByPanel.get(dialogue.panelIndex) ?? [];
       values.push(dialogue);
