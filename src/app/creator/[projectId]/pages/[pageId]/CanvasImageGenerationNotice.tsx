@@ -55,7 +55,7 @@ export function CanvasImageGenerationNotice({
       ? `画像のないコマが${missingPanelCount}件、生成失敗が${failedCount}件あります。AI制作アシストの生成履歴から失敗したコマだけ再実行できます。`
       : completedCount
         ? `画像のないコマが${missingPanelCount}件あります。生成履歴の「手動確認待ち」から採用画像を選んでください。`
-        : "現在表示されているのはネーム（コマ枠・吹き出し・文字）で、完成原稿画像ではありません。画像生成を開始してください。";
+        : "現在表示されているのはネーム（コマ枠・吹き出し・文字）で、完成原稿画像ではありません。見積りを確認し、対象ページを選んで画像生成を開始してください。";
 
   return (
     <section
@@ -72,12 +72,15 @@ export function CanvasImageGenerationNotice({
               1コマだけ作る場合は、原稿上のコマを選び、左側の「AI制作アシスト」から生成できます。
             </p>
           ) : null}
+          <p className="mt-1 text-xs font-bold">
+            次の画面へ移動するだけでは生成・クレジット消費は始まりません。費用と対象を確認した後の明示操作が必要です。
+          </p>
         </div>
         <Link
           className="button shrink-0"
           href={`/creator/${projectId}#page-generation`}
         >
-          まとめて画像生成へ
+          画像生成の見積り・開始へ
         </Link>
       </div>
     </section>

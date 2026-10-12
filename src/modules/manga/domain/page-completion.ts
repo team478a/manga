@@ -1,5 +1,8 @@
 import type { Balloon, PageCanvas, Panel } from "@mangai/canvas-core";
-import { isDialogueTextLayoutReadable } from "./dialogue-placement.ts";
+import {
+  isDialogueTextContainedInBalloon,
+  isDialogueTextLayoutReadable,
+} from "./dialogue-placement.ts";
 
 export type MangaPageCompletionStatus =
   | "incomplete"
@@ -279,8 +282,11 @@ export function evaluateMangaPageCompletion(input: {
           add({ code: "DIALOGUE_MISSING", message: `${panel?.name ?? `${panelIndex + 1}コマ目`}の必須セリフが配置されていません。`, pageId: input.pageId, panelId: panel?.id, balloonId: balloon?.id });
         else {
           placedDialogueCount += 1;
-          if (!isDialogueTextLayoutReadable(matchingText))
-            add({ code: "DIALOGUE_LAYOUT_UNREADABLE", message: `${matchingText.name}が販売原稿で読みづらい配置です。`, pageId: input.pageId, panelId: panel?.id, balloonId: balloon?.id });
+          if (
+            !isDialogueTextContainedInBalloon(matchingText, balloon) ||
+            !isDialogueTextLayoutReadable(matchingText)
+          )
+            add({ code: "DIALOGUE_LAYOUT_UNREADABLE", message: `${matchingText.name}が吹き出し内に収まっていないか、販売原稿で読みづらい配置です。`, pageId: input.pageId, panelId: panel?.id, balloonId: balloon?.id });
         }
       });
     }

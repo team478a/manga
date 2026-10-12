@@ -35,6 +35,8 @@ test("blank name pages explain that image generation has not started", () => {
     "src/app/creator/[projectId]/LongformPageManager.tsx",
   );
   assert.match(editor, /<CanvasImageGenerationNotice/);
+  assert.match(notice, /画像生成の見積り・開始へ/);
+  assert.match(notice, /移動するだけでは生成・クレジット消費は始まりません/);
   assert.match(notice, /このページはまだ画像生成前です/);
   assert.match(notice, /完成原稿画像ではありません/);
   assert.match(notice, /href=\{`\/creator\/\$\{projectId\}#page-generation`\}/);

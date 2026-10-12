@@ -6,6 +6,8 @@ import { placeCompletedPageDialogue } from "../src/modules/manga/application/aut
 import {
   countRepairableLinkedDialogueBounds,
   countRepairableShortVerticalDialogue,
+  isDialogueTextContainedInBalloon,
+  moveBalloonWithLinkedDialogue,
   placeStructuredPageDialogue,
   repairLinkedDialogueBounds,
   repairShortVerticalDialogueLayout,
@@ -130,6 +132,25 @@ test("吹き出し外へずれた既存文字を追加生成なしで内側へ�
   assert.ok(repaired.x + repaired.width <= targetBalloon.x + targetBalloon.width);
   assert.ok(repaired.y + repaired.height <= targetBalloon.y + targetBalloon.height);
   assert.equal(countRepairableLinkedDialogueBounds(value), 0);
+  assert.equal(isDialogueTextContainedInBalloon(repaired, targetBalloon), true);
+});
+
+test("吹き出しを移動すると関連する文字も同じ距離だけ移動する", () => {
+  const targetBalloon = balloon({ x: 500, y: 140, width: 260, height: 180 });
+  const value = place(canvas({ balloons: [targetBalloon] })).canvas;
+  const originalText = structuredClone(value.textObjects[0]);
+  assert.equal(
+    moveBalloonWithLinkedDialogue(value, targetBalloon.id, { x: 320, y: 420 }),
+    true,
+  );
+  assert.equal(value.balloons[0].x, 320);
+  assert.equal(value.balloons[0].y, 420);
+  assert.equal(value.textObjects[0].x, originalText.x - 180);
+  assert.equal(value.textObjects[0].y, originalText.y + 280);
+  assert.equal(
+    isDialogueTextContainedInBalloon(value.textObjects[0], value.balloons[0]),
+    true,
+  );
 });
 
 test("横長吹き出しの短いセリフは可読サイズの横書き中央へ配置する", () => {

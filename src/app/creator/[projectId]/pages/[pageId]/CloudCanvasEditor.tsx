@@ -55,6 +55,7 @@ import { listPanelAssetRevisions, restorePanelAssetRevision } from "@/modules/ma
 import {
   countRepairableLinkedDialogueBounds,
   countRepairableShortVerticalDialogue,
+  moveBalloonWithLinkedDialogue,
   repairLinkedDialogueBounds,
   repairShortVerticalDialogueLayout,
 } from "@/modules/manga/domain/dialogue-placement";
@@ -809,7 +810,18 @@ export function CloudCanvasEditor({
       const item = collection.find(
         (candidate) => candidate.id === selection.id,
       );
-      if (item) update(item);
+      if (!item) return;
+      if (selection.type !== "balloon") {
+        update(item);
+        return;
+      }
+      const previousPosition = { x: item.x, y: item.y };
+      update(item);
+      const nextPosition = { x: item.x, y: item.y };
+      item.x = previousPosition.x;
+      item.y = previousPosition.y;
+      moveBalloonWithLinkedDialogue(draft, selection.id, nextPosition);
+      repairLinkedDialogueBounds(draft, now());
     });
   }
 

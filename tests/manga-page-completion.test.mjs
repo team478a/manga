@@ -130,8 +130,26 @@ test("存在するだけで読めない短文分割を完成扱いにしない",
   text.writingMode = "horizontal";
   text.textAlign = "center";
   text.verticalAlign = "middle";
+  text.x = canvas.balloons[0].x + 10;
+  text.y = canvas.balloons[0].y + 10;
+  text.width = canvas.balloons[0].width - 20;
+  text.height = canvas.balloons[0].height - 20;
   result = evaluateMangaPageCompletion(input({ canvas, requiredDialogues }));
   assert.equal(codes(result).has("DIALOGUE_LAYOUT_UNREADABLE"), false);
+});
+
+test("文字枠が吹き出し外にあるページを完成扱いにしない", () => {
+  const canvas = clone(source.canvas);
+  canvas.textObjects[0].x = canvas.balloons[0].x - 80;
+  const result = evaluateMangaPageCompletion(input({ canvas }));
+  assert.equal(result.status, "incomplete");
+  assert.ok(codes(result).has("DIALOGUE_LAYOUT_UNREADABLE"));
+  assert.match(
+    result.blockers.find(
+      (blocker) => blocker.code === "DIALOGUE_LAYOUT_UNREADABLE",
+    ).message,
+    /吹き出し内/,
+  );
 });
 
 test("未保存、revision競合、Asset不足、PNG失敗、寸法不正を同時に返す", () => {

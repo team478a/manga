@@ -14,6 +14,7 @@ import {
   type Panel,
   type TextObject,
 } from "@mangai/canvas-core";
+import { moveBalloonWithLinkedDialogue } from "@/modules/manga/domain/dialogue-placement";
 
 export type CanvasSelection =
   | { type: "panel" | "balloon" | "text"; id: string }
@@ -89,8 +90,12 @@ export function useCanvasPointer({
           { x, y, width: item.width, height: item.height },
           { width: canvas.width, height: canvas.height },
         );
-        item.x = constrained.x;
-        item.y = constrained.y;
+        if (active.type === "balloon")
+          moveBalloonWithLinkedDialogue(draft, active.id, constrained);
+        else {
+          item.x = constrained.x;
+          item.y = constrained.y;
+        }
       }
       return draft;
     });

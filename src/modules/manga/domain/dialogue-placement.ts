@@ -42,11 +42,53 @@ const MAX_FONT_SIZE = 32;
 const MIN_FONT_SIZE = 18;
 const PREFERRED_MIN_FONT_SIZE = 24;
 const TEXT_PADDING = 10;
+const BOUNDS_EPSILON = 0.01;
 
 type DialogueTextLayout = Pick<
   TextObject,
   "fontSize" | "writingMode" | "textAlign" | "verticalAlign"
 >;
+
+function dialogueTextBounds(balloon: Balloon) {
+  return {
+    x: balloon.x + TEXT_PADDING,
+    y: balloon.y + TEXT_PADDING,
+    width: Math.max(1, balloon.width - TEXT_PADDING * 2),
+    height: Math.max(1, balloon.height - TEXT_PADDING * 2),
+  };
+}
+
+export function isDialogueTextContainedInBalloon(
+  text: TextObject,
+  balloon: Balloon,
+) {
+  const bounds = dialogueTextBounds(balloon);
+  return (
+    text.x + BOUNDS_EPSILON >= bounds.x &&
+    text.y + BOUNDS_EPSILON >= bounds.y &&
+    text.x + text.width <= bounds.x + bounds.width + BOUNDS_EPSILON &&
+    text.y + text.height <= bounds.y + bounds.height + BOUNDS_EPSILON
+  );
+}
+
+export function moveBalloonWithLinkedDialogue(
+  canvas: PageCanvas,
+  balloonId: string,
+  position: { x: number; y: number },
+) {
+  const balloon = canvas.balloons.find((item) => item.id === balloonId);
+  if (!balloon) return false;
+  const deltaX = position.x - balloon.x;
+  const deltaY = position.y - balloon.y;
+  balloon.x = position.x;
+  balloon.y = position.y;
+  for (const text of canvas.textObjects) {
+    if (text.parentBalloonId !== balloonId) continue;
+    text.x += deltaX;
+    text.y += deltaY;
+  }
+  return true;
+}
 
 function centerInsidePanel(
   value: Pick<Balloon | TextObject, "x" | "y" | "width" | "height">,
@@ -69,12 +111,7 @@ function readingOrder(a: Balloon, b: Balloon) {
 }
 
 function fitDialogueTextLayout(text: string, balloon: Balloon): DialogueTextLayout | null {
-  const box = {
-    x: balloon.x + TEXT_PADDING,
-    y: balloon.y + TEXT_PADDING,
-    width: Math.max(1, balloon.width - TEXT_PADDING * 2),
-    height: Math.max(1, balloon.height - TEXT_PADDING * 2),
-  };
+  const box = dialogueTextBounds(balloon);
   const plainText = parseRubyText(text).plainText;
   const preferSingleColumn =
     !/[\r\n]/u.test(plainText) && segmentGraphemes(plainText).length <= 6;
@@ -240,17 +277,8 @@ function linkedDialogueBoundsRepair(
     return null;
   const balloon = canvas.balloons.find((item) => item.id === text.parentBalloonId);
   if (!balloon || !balloon.visible || balloon.locked) return null;
-  const expected = {
-    x: balloon.x + TEXT_PADDING,
-    y: balloon.y + TEXT_PADDING,
-    width: Math.max(1, balloon.width - TEXT_PADDING * 2),
-    height: Math.max(1, balloon.height - TEXT_PADDING * 2),
-  };
-  const withinBalloon =
-    text.x >= expected.x &&
-    text.y >= expected.y &&
-    text.x + text.width <= expected.x + expected.width &&
-    text.y + text.height <= expected.y + expected.height;
+  const expected = dialogueTextBounds(balloon);
+  const withinBalloon = isDialogueTextContainedInBalloon(text, balloon);
   if (withinBalloon) return null;
   const layout = fitDialogueTextLayout(text.text, balloon);
   return layout == null ? null : { ...expected, ...layout };
